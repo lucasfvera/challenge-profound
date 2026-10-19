@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { PRODUCT_NAME } from "@/lib/site";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata: Metadata = {
   title: PRODUCT_NAME,
@@ -17,7 +14,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn("dark h-full antialiased", geist.variable)}>
+    <html lang="en" className={cn("dark h-full antialiased")}>
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <header className="border-b border-border">
           <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
