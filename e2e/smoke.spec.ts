@@ -34,6 +34,12 @@ const AVERAGE_POSITION = /^Average Position/;
 /** The first tracked day of the Snapshot's window, as the axis labels it. */
 const FIRST_TRACKED_DAY = "Sep 1";
 
+/** The text of the first tracked Prompt, `p-01`. */
+const FIRST_PROMPT_TEXT = "best AI visibility analytics tools";
+
+/** The brand the Snapshot measures. */
+const NORTHSTAR = "Northstar";
+
 /**
  * The metric card of one KPI.
  *
@@ -63,7 +69,7 @@ test("The overview renders the metric cards and the chart", async ({
 
   const legend = page.getByRole("group", { name: "Series" });
   await expect(legend).toBeVisible();
-  await expect(legend.getByRole("button", { name: "Northstar" })).toBeVisible();
+  await expect(legend.getByRole("button", { name: NORTHSTAR })).toBeVisible();
   await expect(legend.getByRole("button", { name: "Lumen" })).toBeVisible();
   await expect(page.getByText("Last 30 days on ChatGPT")).toBeVisible();
 
@@ -74,4 +80,86 @@ test("The overview renders the metric cards and the chart", async ({
   const plot = page.getByTestId("visibility-chart-plot");
   await expect(plot).toBeVisible();
   await expect(plot.getByText(FIRST_TRACKED_DAY, { exact: true })).toBeVisible();
+});
+
+test("The platform switch rewrites the URL and moves the table's scope", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const table = page.getByRole("table");
+  await expect(
+    table.getByRole("columnheader", { name: "ChatGPT (selected platform)" }),
+  ).toBeVisible();
+
+  await page
+    .getByRole("group", { name: "Platform" })
+    .getByRole("button", { name: "Claude" })
+    .click();
+
+  // The scope lives in the URL, so the view is shareable: the switch has
+  // to rewrite it.
+  await expect(page).toHaveURL("/?platform=claude");
+
+  // The table reads the same scope as the metrics above it, so its
+  // selected column moves with the switch.
+  await expect(
+    table.getByRole("columnheader", { name: "Claude (selected platform)" }),
+  ).toBeVisible();
+
+  // The rows carry the scope as well: the row opens the detail with the
+  // platform the table is scoped to.
+  await expect(
+    table.getByRole("link", { name: FIRST_PROMPT_TEXT }),
+  ).toHaveAttribute("href", "/prompts/p-01?platform=claude");
+});
+
+test("A prompt row opens the detail with the highlighted mentions and the citations", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // The scope moves first, so the drill-down carries a platform of its own
+  // and not the default the reader never picked.
+  await page
+    .getByRole("group", { name: "Platform" })
+    .getByRole("button", { name: "Claude" })
+    .click();
+  await expect(page).toHaveURL("/?platform=claude");
+
+  await page
+    .getByRole("table")
+    .getByRole("link", { name: FIRST_PROMPT_TEXT })
+    .click();
+
+  await expect(page).toHaveURL("/prompts/p-01?platform=claude");
+  await expect(
+    page.getByRole("heading", { name: FIRST_PROMPT_TEXT }),
+  ).toBeVisible();
+
+  // The Mention of the brand being measured wears the brand accent. The
+  // app marks it with the label a screen reader reads, so the highlight is
+  // never colour alone — and that label is what the suite reads.
+  const mention = page.getByText(NORTHSTAR);
+  await expect(mention).toBeVisible();
+  await expect(mention).toContainText("(the brand being measured)");
+
+  // The sources behind the answer: the body carries a marker for each
+  // citation, and the marker points at the entry the panel lists.
+  const marker = page.getByRole("link", {
+    name: "[1] A Buyer's Guide to AI Visibility Platforms",
+  });
+  const source = page.getByRole("link", {
+    name: "A Buyer's Guide to AI Visibility Platforms (opens in a new tab)",
+  });
+
+  await expect(marker).toBeVisible();
+  await expect(source).toBeVisible();
+
+  // The marker's fragment is the id of the entry it points at.
+  const href = (await marker.getAttribute("href")) ?? "";
+  await expect(source.locator("xpath=..")).toHaveAttribute(
+    "id",
+    href.replace(/^#/, ""),
+  );
 });
