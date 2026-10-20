@@ -100,7 +100,7 @@ describe("the derivation layer", () => {
 
   it("compares the two halves of the tracked window for the Share of Voice", () => {
     expect(shareOfVoiceTrend(snapshot, "northstar", "chatgpt")).toBe(5.1);
-    expect(shareOfVoiceTrend(snapshot, "northstar", "perplexity")).toBe(2.7);
+    expect(shareOfVoiceTrend(snapshot, "northstar", "perplexity")).toBe(-7.9);
   });
 
   it("moves the Share of Voice trend when the tracked scores move", () => {
@@ -133,6 +133,35 @@ describe("the derivation layer", () => {
       shareOfVoiceTrend: 5.1,
       averagePositionTrend: null,
     });
+  });
+
+  it("holds the brand's bad case on the platform it is losing ground on", () => {
+    // Perplexity is where the Snapshot stops favouring the brand: it ends the
+    // tracked window named in four of the fifteen tracked Answers, and both of
+    // the movements it reports — the Visibility Score's and the Share of
+    // Voice's — go down.
+    expect(subjectMetrics(snapshot, "perplexity")).toEqual({
+      visibilityScore: 26.7,
+      shareOfVoice: 19,
+      averagePosition: 1.5,
+      visibilityTrend: -15.1,
+      shareOfVoiceTrend: -7.9,
+      averagePositionTrend: null,
+    });
+  });
+
+  it("gives every scope a movement, and a downward one somewhere", () => {
+    const movements = snapshot.platforms.map(
+      (platform) => subjectMetrics(snapshot, platform.id).visibilityTrend,
+    );
+
+    // Every scope carries a Visibility Score movement — the card is never
+    // mute — and the Snapshot holds the bad case, so at least one of them
+    // goes down.
+    expect(movements).not.toContain(null);
+    expect(
+      movements.some((movement) => movement !== null && movement < 0),
+    ).toBe(true);
   });
 
   it("reports no metrics when the Snapshot measures no brand", () => {

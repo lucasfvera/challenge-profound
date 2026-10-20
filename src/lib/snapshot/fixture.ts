@@ -22,6 +22,15 @@ import type {
  * The fixture is internally consistent: the last daily point of every series
  * is the Visibility Score of that brand on that platform, derived from the
  * stored Answers.
+ *
+ * The fixture holds a bad case for the brand as well as the good ones.
+ * Northstar gains ground on ChatGPT, Claude and Gemini, and loses it on
+ * Perplexity: it opens the window near the other brands, erodes through the
+ * second half, and ends the window named in four of the fifteen tracked
+ * Answers. The KPI cards report the brand's own numbers, so the Perplexity
+ * scope is the one that shows a downward movement — the case the dashboard
+ * has to be able to show, and the one a reader only meets by switching
+ * Platform.
  */
 
 const BRANDS: Brand[] = [
@@ -477,6 +486,12 @@ const ANSWERS: Answer[] = [
   },
 
   // Perplexity
+  //
+  // The Platform where the brand is being crowded out: Vantage owns the
+  // citation-analysis answers here, and only four of the fifteen Answers
+  // below name Northstar at all. The Answers are the last tracked day the
+  // Snapshot holds, so the series ends on the Visibility Score they produce:
+  // four of the fifteen tracked Prompts, 26.7%.
   {
     promptId: "p-01",
     platformId: "perplexity",
@@ -504,7 +519,7 @@ const ANSWERS: Answer[] = [
   {
     promptId: "p-05",
     platformId: "perplexity",
-    text: "Vantage computes share of voice from the citation set it stores [1]. Northstar computes it from every mention in the answer text, which is the broader reading of the metric [2].",
+    text: "Vantage computes share of voice from the citation set it stores [1]. The broader reading counts every mention in the answer text, which is the harder number to reproduce [2].",
     citations: [CITATIONS["c-05"], CITATIONS["c-12"]],
   },
   {
@@ -540,8 +555,8 @@ const ANSWERS: Answer[] = [
   {
     promptId: "p-11",
     platformId: "perplexity",
-    text: "Compare on the same prompts, the same platform, and the same day — Northstar's reports are built that way [1]. Average position tells you whether you are named early or buried, which is the part competitors rarely publish [2].",
-    citations: [CITATIONS["c-11"], CITATIONS["c-05"]],
+    text: "Compare on the same prompts, the same platform, and the same day [1]. Average position tells you whether you are named early or buried, which is the part competitors rarely publish [2].",
+    citations: [CITATIONS["c-05"], CITATIONS["c-11"]],
   },
   {
     promptId: "p-12",
@@ -640,9 +655,9 @@ const SERIES_SCORES: Record<BrandId, Record<PlatformId, DailyScores>> = {
       53.3, 53.3, 53.3, 60, 60, 66.7, 66.7, 60, 60, 60, 60, 60, 60, 60, 53.3,
     ],
     perplexity: [
-      26.7, 26.7, 33.3, 33.3, 40, 40, 40, 46.7, 46.7, 53.3, 53.3, 60, 60, 60,
-      53.3, 53.3, 60, 60, 53.3, 53.3, 53.3, 53.3, 53.3, 53.3, 53.3, 53.3, 46.7,
-      46.7, 40, 40,
+      40, 40, 46.7, 46.7, 46.7, 46.7, 53.3, 53.3, 53.3, 53.3, 46.7, 46.7, 40,
+      40, 40, 40, 33.3, 33.3, 33.3, 40, 33.3, 33.3, 33.3, 26.7, 26.7, 26.7,
+      26.7, 26.7, 26.7, 26.7,
     ],
   },
   lumen: {
