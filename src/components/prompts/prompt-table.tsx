@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import type { KeyboardEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -17,10 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { promptDetailHref, isRowActivation } from "@/lib/prompt-row";
+import type { RowActivation } from "@/lib/prompt-row";
 import { promptTableRows } from "@/lib/prompt-table";
 import type { MentionState, PromptRow } from "@/lib/prompt-table";
 import { snapshot } from "@/lib/snapshot";
-import type { Platform, PlatformId, PromptCategory } from "@/lib/snapshot";
+import type {
+  Platform,
+  PlatformId,
+  Prompt,
+  PromptCategory,
+} from "@/lib/snapshot";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,8 +42,9 @@ import { cn } from "@/lib/utils";
  * caller — the scope the overview already holds — so the two halves of the
  * page never show different Platforms.
  *
- * The rows are not links: navigation into the detail route lands with a
- * later ticket, so a row carries no hover and nothing to click.
+ * Every row is a link into the detail route. The link carries the Prompt's
+ * own text and is stretched over the row, so a click anywhere on the row
+ * opens the Prompt's detail — the Answer that Platform gave for it.
  *
  * Below `sm` the table gives way to a list of cards, the way the design
  * system's responsive conventions say it does. Both layouts render the same
@@ -92,9 +102,18 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
             </TableHeader>
             <TableBody>
               {rows.map((row) => (
-                <TableRow key={row.prompt.id}>
+                <TableRow
+                  key={row.prompt.id}
+                  // The row is a link, so it carries the hover the table
+                  // primitives draw for an interactive row.
+                  data-interactive
+                  // The row is the link's containing block: the link is
+                  // stretched over the whole row, so a click anywhere on it
+                  // opens the Prompt's detail.
+                  className="relative"
+                >
                   <TableCell className="whitespace-normal">
-                    {row.prompt.text}
+                    <PromptLink prompt={row.prompt} platformId={platformId} />
                   </TableCell>
                   <TableCell>
                     <CategoryBadge category={row.prompt.category} />
@@ -128,7 +147,8 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
  *
  * The card carries the same marks as the table — the category badge, the
  * Mention state of each Platform, and the Platform the table is scoped to —
- * so the two layouts say the same thing.
+ * so the two layouts say the same thing. It carries the same link, so the
+ * drill-down is the same either way.
  */
 function PromptCard({
   row,
@@ -140,14 +160,19 @@ function PromptCard({
   platformId: PlatformId;
 }) {
   return (
-    <div className="rounded-md border border-border p-3">
-      <p className="text-sm leading-5">{row.prompt.text}</p>
-      <div className="mt-2">
-        <CategoryBadge category={row.prompt.category} />
-      </div>
+    <Card
+      // The card is the link's containing block: the link is stretched over
+      // the whole card, so a click anywhere on it opens the Prompt's detail.
+      className="relative px-(--card-spacing) [--card-spacing:--spacing(3)]"
+      data-interactive
+    >
+      <p className="text-sm leading-5">
+        <PromptLink prompt={row.prompt} platformId={platformId} />
+      </p>
+      <CategoryBadge category={row.prompt.category} />
       {/* The platforms fill the grid row by row, so the card reads in the
           same Platform order as the table's columns. */}
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
         {row.mentions.map((mention) => {
           const selected = mention.platform.id === platformId;
 
@@ -174,8 +199,62 @@ function PromptCard({
           );
         })}
       </dl>
-    </div>
+    </Card>
   );
+}
+
+/**
+ * The link a prompt row navigates through.
+ *
+ * The link carries the Prompt's own text, so the row keeps one tab stop and
+ * a screen reader announces what the row is about. It is stretched over the
+ * row — or over the card, below `sm` — so a click anywhere on the row opens
+ * the Prompt's detail.
+ *
+ * The link carries the Platform the table is scoped to, so the detail route
+ * answers with the Platform the reader was looking at.
+ */
+function PromptLink({
+  prompt,
+  platformId,
+}: {
+  /** The Prompt the link opens. */
+  prompt: Prompt;
+  /** The Platform the drill-down carries. */
+  platformId: PlatformId;
+}) {
+  return (
+    <Link
+      href={promptDetailHref(prompt.id, platformId)}
+      className="underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
+      onKeyDown={activateRow}
+    >
+      {prompt.text}
+      <span className="sr-only"> (prompt detail)</span>
+    </Link>
+  );
+}
+
+/**
+ * A key press that activates a prompt row.
+ *
+ * Enter and Space both open the row's detail, and the click is dispatched on
+ * the link itself, so the row opens through the same path a mouse click
+ * takes. The browser's own activation is prevented first, so the row is not
+ * opened twice.
+ */
+function activateRow(event: KeyboardEvent<HTMLAnchorElement>) {
+  const press: RowActivation = {
+    key: event.key,
+    repeat: event.repeat,
+    modified:
+      event.metaKey || event.ctrlKey || event.altKey || event.shiftKey,
+  };
+
+  if (!isRowActivation(press)) return;
+
+  event.preventDefault();
+  event.currentTarget.click();
 }
 
 /**
