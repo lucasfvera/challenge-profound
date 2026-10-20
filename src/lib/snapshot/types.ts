@@ -3,7 +3,8 @@
  *
  * The Snapshot is a fixed, fictional dataset: a point-in-time view of how four
  * brands appear in the answers of four AI assistants. Nothing here is
- * collected live — see `GLOSSARY.md` for the vocabulary these names carry.
+ * collected live. The vocabulary follows the project glossary
+ * (`GLOSSARY.md`); the metric definitions are spelled out in `derive.ts`.
  */
 
 /** The AI assistants whose answers the Snapshot tracks. */
@@ -25,8 +26,9 @@ export interface Brand {
   id: BrandId;
   /**
    * Display name. It is also the string matched inside Answer text, so it
-   * must be a single word that never appears in ordinary prose — in any
-   * casing, because the matcher ignores case.
+   * must stay unambiguous there: the matcher ignores case and matches whole
+   * words, and an ordinary word used as a brand name would register a false
+   * Mention.
    */
   name: string;
   kind: BrandKind;

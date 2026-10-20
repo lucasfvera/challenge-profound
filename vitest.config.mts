@@ -8,10 +8,10 @@ export default defineConfig({
     },
   },
   test: {
-    // The derivation layer is pure and has no DOM.
+    // The derivation layer is pure and has no DOM. A component spec will need
+    // a DOM environment, which arrives with the first component test.
     environment: "node",
-    // Wide enough that a future component spec is collected rather than
-    // silently skipped.
+    // Wide enough that a spec is collected rather than silently skipped.
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
 });

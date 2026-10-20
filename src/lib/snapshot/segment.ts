@@ -112,7 +112,9 @@ function citationSpans(answer: Pick<Answer, "text" | "citations">): Span[] {
 
   // Matches the `[n]` citation markers: `[` plus digits plus `]`.
   for (const match of answer.text.matchAll(/\[(\d+)\]/g)) {
-    const citation = answer.citations.at(Number(match[1]) - 1);
+    // Markers are 1-based: `[1]` is the first citation of the answer.
+    const index = Number(match[1]) - 1;
+    const citation = index < 0 ? undefined : answer.citations.at(index);
     // A marker with no source behind it stays plain text.
     if (!citation) continue;
     spans.push({

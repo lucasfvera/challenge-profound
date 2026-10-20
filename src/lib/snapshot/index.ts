@@ -20,6 +20,7 @@ export {
   averageVisibilityScore,
   platformMetrics,
   platformSeries,
+  seriesPoints,
   shareOfVoice,
   visibilityScore,
   visibilityTrend,

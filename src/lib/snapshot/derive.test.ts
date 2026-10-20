@@ -3,61 +3,42 @@ import {
   averagePosition,
   averageVisibilityScore,
   platformMetrics,
-  platformSeries,
+  seriesPoints,
   shareOfVoice,
   snapshot,
   visibilityScore,
   visibilityTrend,
 } from "@/lib/snapshot";
-import type {
-  Answer,
-  BrandId,
-  PlatformId,
-  VisibilitySeries,
-} from "@/lib/snapshot";
+import type { Snapshot } from "@/lib/snapshot";
 
-const chatgptAnswers = snapshot.answers.filter(
-  (answer) => answer.platformId === "chatgpt",
-);
+/** A Snapshot whose only Answer names no tracked brand. */
+const withoutMentions: Snapshot = {
+  ...snapshot,
+  answers: snapshot.answers.filter(
+    (answer) => answer.promptId === "p-04" && answer.platformId === "chatgpt",
+  ),
+};
 
-/** The ChatGPT answer for a prompt no brand is named in. */
-const withoutMentions: Answer[] = snapshot.answers.filter(
-  (answer) => answer.promptId === "p-04" && answer.platformId === "chatgpt",
-);
-
-function seriesFor(brandId: BrandId, platformId: PlatformId): VisibilitySeries {
-  const series = platformSeries(snapshot, platformId).find(
-    (entry) => entry.brandId === brandId,
-  );
-  if (!series) throw new Error(`no series for ${brandId} on ${platformId}`);
-  return series;
-}
+/** A Snapshot with no Answer at all. */
+const withoutAnswers: Snapshot = { ...snapshot, answers: [] };
 
 describe("the derivation layer", () => {
   it("computes the Visibility Score as the share of tracked prompts whose answer mentions the brand", () => {
-    expect(
-      visibilityScore(chatgptAnswers, snapshot.brands, "northstar"),
-    ).toBe(66.7);
-    expect(
-      visibilityScore(chatgptAnswers, snapshot.brands, "arcadia"),
-    ).toBe(20);
+    expect(visibilityScore(snapshot, "northstar", "chatgpt")).toBe(66.7);
+    expect(visibilityScore(snapshot, "arcadia", "chatgpt")).toBe(20);
   });
 
   it("computes Share of Voice against every mention in the answers", () => {
     const shares = snapshot.brands.map(
-      (brand) => shareOfVoice(chatgptAnswers, snapshot.brands, brand.id),
+      (brand) => shareOfVoice(snapshot, brand.id, "chatgpt"),
     );
 
     expect(shares).toEqual([40, 28, 20, 12]);
   });
 
   it("computes Average Position from the first mention in each answer", () => {
-    expect(
-      averagePosition(chatgptAnswers, snapshot.brands, "northstar"),
-    ).toBe(1.5);
-    expect(
-      averagePosition(chatgptAnswers, snapshot.brands, "arcadia"),
-    ).toBe(2.3);
+    expect(averagePosition(snapshot, "northstar", "chatgpt")).toBe(1.5);
+    expect(averagePosition(snapshot, "arcadia", "chatgpt")).toBe(2.3);
   });
 
   it("aggregates every platform into one bundle of metrics", () => {
@@ -80,7 +61,7 @@ describe("the derivation layer", () => {
   });
 
   it("compares the two halves of a tracked window", () => {
-    const points = seriesFor("northstar", "chatgpt").points;
+    const points = seriesPoints(snapshot, "northstar", "chatgpt");
 
     expect(points).toHaveLength(30);
     expect(averageVisibilityScore(points)).toBe(58.9);
@@ -97,19 +78,15 @@ describe("the derivation layer", () => {
   });
 
   it("reports zero Visibility Score and null Share of Voice when no answer mentions the brand", () => {
-    expect(
-      visibilityScore(withoutMentions, snapshot.brands, "northstar"),
-    ).toBe(0);
-    expect(
-      shareOfVoice(withoutMentions, snapshot.brands, "northstar"),
-    ).toBeNull();
-    expect(
-      averagePosition(withoutMentions, snapshot.brands, "northstar"),
-    ).toBeNull();
+    expect(visibilityScore(withoutMentions, "northstar", "chatgpt")).toBe(0);
+    expect(shareOfVoice(withoutMentions, "northstar", "chatgpt")).toBeNull();
+    expect(averagePosition(withoutMentions, "northstar", "chatgpt")).toBeNull();
   });
 
   it("returns null when there is no answer to measure", () => {
-    expect(visibilityScore([], snapshot.brands, "northstar")).toBeNull();
+    expect(visibilityScore(withoutAnswers, "northstar", "chatgpt")).toBeNull();
+    expect(shareOfVoice(withoutAnswers, "northstar", "chatgpt")).toBeNull();
+    expect(averagePosition(withoutAnswers, "northstar", "chatgpt")).toBeNull();
   });
 
   it("returns null for an empty series", () => {

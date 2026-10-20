@@ -58,14 +58,17 @@ describe("answer segmentation", () => {
   });
 
   it("keeps a citation marker without a source behind it as plain text", () => {
-    const body = "The answer cites a source that is not in its list [2].";
     const onlyCitation = snapshot.answers[0].citations[0];
-    const segments = segmentAnswer(
-      { text: body, citations: [onlyCitation] },
-      snapshot.brands,
-    );
 
-    expect(segments.map((segment) => segment.kind)).toEqual(["text"]);
-    expect(segments.map((segment) => segment.text).join("")).toBe(body);
+    for (const marker of ["[2]", "[0]"]) {
+      const body = `The answer cites a source that is not in its list ${marker}.`;
+      const segments = segmentAnswer(
+        { text: body, citations: [onlyCitation] },
+        snapshot.brands,
+      );
+
+      expect(segments.map((segment) => segment.kind)).toEqual(["text"]);
+      expect(segments.map((segment) => segment.text).join("")).toBe(body);
+    }
   });
 });

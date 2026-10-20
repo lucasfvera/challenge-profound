@@ -18,6 +18,9 @@ import type {
  * randomness, no module state. A metric the data cannot answer is `null`,
  * which the dashboard renders as an em dash; it is never `NaN`, and never a
  * zero that would read as a real measurement.
+ *
+ * The metric definitions are the project's vocabulary; `GLOSSARY.md` is the
+ * source, and each function repeats the definition it implements.
  */
 
 /**
@@ -65,48 +68,56 @@ interface BrandMention {
 type AnswerMentions = BrandMention[][];
 
 /**
- * Visibility Score: the share of tracked Prompts whose Answer mentions the
- * brand.
+ * Visibility Score: the percentage of tracked Prompts whose Answer on the
+ * platform contains at least one Mention of the brand.
  *
- * `answers` must be the answers of a single Platform — the metric is defined
- * per Platform. `null` when there is no answer to measure.
+ * The denominator is the tracked Prompt set, so a platform that answered only
+ * part of it scores lower. `null` when there is no answer to measure.
  */
 export function visibilityScore(
-  answers: Answer[],
-  brands: Brand[],
+  snapshot: Snapshot,
   brandId: BrandId,
+  platformId: PlatformId,
 ): number | null {
-  return visibilityScoreFrom(mentionsOf(answers, brands), brandId);
+  return visibilityScoreFrom(
+    mentionsOf(answersOn(snapshot, platformId), snapshot.brands),
+    brandId,
+    snapshot.prompts.length,
+  );
 }
 
 /**
- * Share of Voice: the brand's Mentions as a share of every brand Mention in
- * the answers.
+ * Share of Voice: the brand's Mentions as a percentage of every brand Mention
+ * in the platform's Answers.
  *
- * `answers` must be the answers of a single Platform. `null` when the answers
- * hold no mention at all.
+ * `null` when the Answers hold no mention at all.
  */
 export function shareOfVoice(
-  answers: Answer[],
-  brands: Brand[],
+  snapshot: Snapshot,
   brandId: BrandId,
+  platformId: PlatformId,
 ): number | null {
-  return shareOfVoiceFrom(mentionsOf(answers, brands), brandId);
+  return shareOfVoiceFrom(
+    mentionsOf(answersOn(snapshot, platformId), snapshot.brands),
+    brandId,
+  );
 }
 
 /**
  * Average Position: the mean ordinal position of the brand's first Mention in
- * the answers that mention it.
+ * the platform's Answers that mention it.
  *
- * `answers` must be the answers of a single Platform. `null` when no answer
- * mentions the brand.
+ * `null` when no Answer mentions the brand.
  */
 export function averagePosition(
-  answers: Answer[],
-  brands: Brand[],
+  snapshot: Snapshot,
   brandId: BrandId,
+  platformId: PlatformId,
 ): number | null {
-  return averagePositionFrom(mentionsOf(answers, brands), brandId);
+  return averagePositionFrom(
+    mentionsOf(answersOn(snapshot, platformId), snapshot.brands),
+    brandId,
+  );
 }
 
 /**
@@ -118,9 +129,7 @@ export function averagePosition(
  */
 export function platformMetrics(snapshot: Snapshot): PlatformMetrics[] {
   return snapshot.platforms.map((platform) => {
-    const answers = snapshot.answers.filter(
-      (answer) => answer.platformId === platform.id,
-    );
+    const answers = answersOn(snapshot, platform.id);
     const mentions = mentionsOf(answers, snapshot.brands);
 
     return {
@@ -128,7 +137,11 @@ export function platformMetrics(snapshot: Snapshot): PlatformMetrics[] {
       answerCount: answers.length,
       brands: snapshot.brands.map((brand) => ({
         brandId: brand.id,
-        visibilityScore: visibilityScoreFrom(mentions, brand.id),
+        visibilityScore: visibilityScoreFrom(
+          mentions,
+          brand.id,
+          snapshot.prompts.length,
+        ),
         shareOfVoice: shareOfVoiceFrom(mentions, brand.id),
         averagePosition: averagePositionFrom(mentions, brand.id),
       })),
@@ -144,6 +157,22 @@ export function platformSeries(
   platformId: PlatformId,
 ): VisibilitySeries[] {
   return snapshot.series.filter((series) => series.platformId === platformId);
+}
+
+/**
+ * The tracked days of one brand on one platform, empty when the Snapshot does
+ * not track that pair.
+ */
+export function seriesPoints(
+  snapshot: Snapshot,
+  brandId: BrandId,
+  platformId: PlatformId,
+): VisibilityPoint[] {
+  const series = snapshot.series.find(
+    (entry) => entry.brandId === brandId && entry.platformId === platformId,
+  );
+
+  return series?.points ?? [];
 }
 
 /**
@@ -164,6 +193,9 @@ export function averageVisibilityScore(
  * half minus the mean of its first half. The later half takes the extra point
  * when the window has an odd number of days.
  *
+ * The halves are averaged before rounding, so the trend is not the difference
+ * of the two rounded averages.
+ *
  * `null` when there is nothing to compare — a window of one day or less.
  */
 export function visibilityTrend(points: VisibilityPoint[]): number | null {
@@ -175,6 +207,13 @@ export function visibilityTrend(points: VisibilityPoint[]): number | null {
 
   return roundToOneDecimal(
     meanVisibilityScore(later) - meanVisibilityScore(earlier),
+  );
+}
+
+/** The answers one platform gave for the tracked Prompts. */
+function answersOn(snapshot: Snapshot, platformId: PlatformId): Answer[] {
+  return snapshot.answers.filter(
+    (answer) => answer.platformId === platformId,
   );
 }
 
@@ -190,18 +229,19 @@ function mentionsOf(answers: Answer[], brands: Brand[]): AnswerMentions {
   );
 }
 
-/** The share of answers that mention the brand. */
+/** The share of the tracked Prompts whose answer mentions the brand. */
 function visibilityScoreFrom(
   mentions: AnswerMentions,
   brandId: BrandId,
+  trackedPrompts: number,
 ): number | null {
-  if (mentions.length === 0) return null;
+  if (mentions.length === 0 || trackedPrompts === 0) return null;
 
   const answered = mentions.filter((list) =>
     list.some((mention) => mention.brandId === brandId),
   ).length;
 
-  return roundToOneDecimal((answered / mentions.length) * 100);
+  return roundToOneDecimal((answered / trackedPrompts) * 100);
 }
 
 /** The brand's share of every mention in the answers. */

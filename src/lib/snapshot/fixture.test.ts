@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { platformSeries, snapshot, visibilityScore } from "@/lib/snapshot";
+import { platformSeries, segmentAnswer, snapshot, visibilityScore } from "@/lib/snapshot";
+import type { MentionSegment } from "@/lib/snapshot";
 
 describe("the Snapshot fixture", () => {
   it("holds the tracked scope", () => {
@@ -35,19 +36,26 @@ describe("the Snapshot fixture", () => {
     }
   });
 
+  it("names every brand at most once per answer", () => {
+    for (const answer of snapshot.answers) {
+      const mentions = segmentAnswer(answer, snapshot.brands).filter(
+        (segment): segment is MentionSegment => segment.kind === "mention",
+      );
+      const named = mentions.map((mention) => mention.brandId);
+
+      expect(new Set(named).size).toBe(named.length);
+    }
+  });
+
   it("ends every series on the score its answers produce", () => {
     for (const platform of snapshot.platforms) {
-      const answers = snapshot.answers.filter(
-        (answer) => answer.platformId === platform.id,
-      );
-
       for (const brand of snapshot.brands) {
         const series = platformSeries(snapshot, platform.id).find(
           (entry) => entry.brandId === brand.id,
         );
 
         expect(series?.points.at(-1)?.score).toBe(
-          visibilityScore(answers, snapshot.brands, brand.id),
+          visibilityScore(snapshot, brand.id, platform.id),
         );
       }
     }
