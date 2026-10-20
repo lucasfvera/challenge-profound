@@ -111,23 +111,35 @@ platform should be given.
 ## Verification
 
 ```bash
+npm run verify
+```
+
+That is the whole pass: the lint rules, the types, the unit and component
+suite, the production build, and the Playwright smoke suite, in that order,
+in one run, stopping at the first failure. The cheap checks come first, and
+the build comes before the browser suite because a build that does not
+compile should not cost a browser. Each of the five is a command of its own,
+and each answers a different question:
+
+```bash
 npm run lint
 npm run typecheck
 npm run test
 npm run build
 npm run test:e2e
-npm run docker:build
 ```
 
-Each command answers a different question. `npm run lint` asks whether the
-code follows the repo's rules; `npm run typecheck` asks whether the types
-hold; `npm run test` asks whether the derivation layer and the surfaces
-behave; `npm run build` asks whether the production bundle builds; `npm run
-test:e2e` asks whether the demo story works in a browser against a
-production build — the harness builds that bundle itself, so the suite pays
-for a second build; and `npm run docker:build` asks whether the image builds.
-The image itself is proved by `npm run docker:run`: the app answering on
-<http://localhost:3000> is the proof that the image carries it.
+`npm run lint` asks whether the code follows the repo's rules; `npm run
+typecheck` asks whether the types hold; `npm run test` asks whether the
+derivation layer and the surfaces behave; `npm run build` asks whether the
+production bundle builds; `npm run test:e2e` asks whether the demo story
+works in a browser against a production build — the harness builds that
+bundle itself, so the suite pays for a second build.
+
+The container is outside the chain, because it needs a Docker daemon and it
+is slow. It is checked beside the pass: `npm run docker:build` asks whether
+the image builds, and `npm run docker:run` proves it, with the app answering
+on <http://localhost:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
@@ -156,11 +168,6 @@ no other handle for: the metric cards, which the card primitive gives no
 role and no name, so the suite reaches them through the card primitive's
 `data-slot` attribute; and the chart's plot, a drawing with no text, which
 carries a test id of its own.
-
-`npm run docker:build` is its own command rather than part of the others,
-because it needs a daemon and it is slow. The build it runs is the
-container's own: the same source, built with the standalone output the image
-carries.
 
 ## What the app renders today
 
