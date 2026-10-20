@@ -1,0 +1,53 @@
+# The build context is what the image is built from, so it carries only what
+# the build needs.
+
+# Dependencies: the image installs them from the lockfile in the `deps`
+# stage. Copying the host's `node_modules` would carry the host's platform
+# into the image.
+node_modules
+
+# Build output and caches: the image builds its own.
+.next
+out
+build
+*.tsbuildinfo
+
+# Test artefacts: none of them is part of the image.
+coverage
+playwright-report
+blob-report
+test-results
+.playwright
+
+# The suites themselves: the image builds the app, and the suites are the
+# host's job. They are left out of the context so the build in the image
+# does not type-check the specs the host runs them with.
+e2e
+playwright.config.ts
+vitest.config.mts
+vitest.setup.ts
+**/*.test.ts
+**/*.test.tsx
+
+# The version control metadata: the image is built from the tree, not from
+# the history.
+.git
+.gitignore
+
+# The local agent files: they are instructions for whoever works in the
+# tree, not something the app serves.
+.cursor
+.agents
+.opencode
+AGENTS.md
+GLOSSARY.md
+
+# Environment files: the demo reads none, and an image carries no secret.
+.env
+.env.*
+
+# The editor and the operating system noise.
+.DS_Store
+.vscode
+.idea
+*.log
