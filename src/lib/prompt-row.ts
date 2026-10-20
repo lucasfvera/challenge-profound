@@ -39,7 +39,7 @@ export function promptDetailHref(
 /**
  * The facts of a key press a prompt row has to answer to.
  */
-export interface RowActivation {
+export interface RowPress {
   /** The key the browser reported. */
   key: string;
   /** Whether the press repeats, because the key is held down. */
@@ -49,21 +49,36 @@ export interface RowActivation {
 }
 
 /**
- * Whether a key press activates a prompt row.
+ * What a key press does to a prompt row.
+ *
+ * `activate` opens the row. `suppress` is a press the row has to keep the
+ * browser's default off for — a held key, which must not open the row again
+ * and must not scroll the page — without opening the row itself. `ignore` is
+ * a press that belongs to the browser.
+ */
+export type RowActivation = "activate" | "suppress" | "ignore";
+
+/**
+ * What a key press does to a prompt row.
  *
  * Enter and Space both activate the row, and the surface activates it for
  * both: the behaviour is the same whichever key the reader presses. The
- * browser's own Enter activation is prevented, so the row is not activated
+ * browser's own Enter activation is prevented, so the row is not opened
  * twice.
  *
- * A press that repeats is the key held down, and the row would be activated
- * again and again, leaving the history full of the same URL. A press with a
- * modifier belongs to the browser: a modified activation opens a new tab,
- * and the app must not take it over.
+ * A press that repeats is the key held down. The row must not open again,
+ * and the browser's default must not fire either — a held Space would
+ * scroll the page, and a held Enter would fill the history with the same
+ * URL.
+ *
+ * A press with a modifier belongs to the browser, and the app leaves it
+ * alone.
  */
-export function isRowActivation(press: RowActivation): boolean {
-  if (press.repeat) return false;
-  if (press.modified) return false;
+export function rowActivation(press: RowPress): RowActivation {
+  if (press.repeat) return "suppress";
+  if (press.modified) return "ignore";
 
-  return press.key === "Enter" || press.key === " ";
+  if (press.key === "Enter" || press.key === " ") return "activate";
+
+  return "ignore";
 }

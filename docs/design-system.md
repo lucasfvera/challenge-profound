@@ -312,11 +312,14 @@ a default, not a setting: there is no sort control, and Prompts the Platform
 ranks equally keep the Snapshot's own order.
 
 Below `sm` the table gives way to a list of cards — the Card primitive, one
-per Prompt — the way the responsive conventions say it does: the Prompt's
-text, its category badge, and the Platforms in two columns, each with the
-same mark. The card marks the scoped Platform in its label — the foreground
-colour instead of the muted one, and the label a screen reader reads —
-rather than with the column's fill.
+per Prompt, at the denser `--card-spacing` — the way the responsive
+conventions say it does: the Prompt's text, its category badge, and the
+Platforms in two columns, each with the same mark. The card is a panel like
+the one that holds the table: a `--card` surface with the panel's radius,
+and it carries `data-interactive`, so it hovers the way a card does. The
+card marks the scoped Platform in its label — the foreground colour instead
+of the muted one, and the label a screen reader reads — rather than with the
+column's fill.
 
 Every row is a link into the prompt detail route. The link carries the
 Prompt's own text, so the row keeps one tab stop, and it carries a hidden
@@ -331,8 +334,10 @@ answers with the Platform the reader was looking at.
 
 A row is activated by Enter and by Space, and the app activates it for both:
 the browser's own Enter activation is prevented, so the row is not opened
-twice. A press that repeats is the key held down, and a press with a
-modifier belongs to the browser — a modified activation opens a new tab.
+twice. A press that repeats is the key held down: the row does not open
+again, and the browser's default is kept off, so a held Space does not
+scroll the page and a held Enter does not fill the history with the same
+URL. A press with a modifier is left to the browser.
 
 ## The prompt detail route's surfaces
 

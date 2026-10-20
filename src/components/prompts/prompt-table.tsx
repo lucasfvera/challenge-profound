@@ -19,8 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { promptDetailHref, isRowActivation } from "@/lib/prompt-row";
-import type { RowActivation } from "@/lib/prompt-row";
+import { promptDetailHref, rowActivation } from "@/lib/prompt-row";
+import type { RowPress } from "@/lib/prompt-row";
 import { promptTableRows } from "@/lib/prompt-table";
 import type { MentionState, PromptRow } from "@/lib/prompt-table";
 import { snapshot } from "@/lib/snapshot";
@@ -240,21 +240,24 @@ function PromptLink({
  *
  * Enter and Space both open the row's detail, and the click is dispatched on
  * the link itself, so the row opens through the same path a mouse click
- * takes. The browser's own activation is prevented first, so the row is not
+ * takes. The browser's own activation is kept off first, so the row is not
  * opened twice.
  */
 function activateRow(event: KeyboardEvent<HTMLAnchorElement>) {
-  const press: RowActivation = {
+  const press: RowPress = {
     key: event.key,
     repeat: event.repeat,
     modified:
       event.metaKey || event.ctrlKey || event.altKey || event.shiftKey,
   };
 
-  if (!isRowActivation(press)) return;
+  const activation = rowActivation(press);
+
+  if (activation === "ignore") return;
 
   event.preventDefault();
-  event.currentTarget.click();
+
+  if (activation === "activate") event.currentTarget.click();
 }
 
 /**
