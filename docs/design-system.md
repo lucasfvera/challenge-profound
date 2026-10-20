@@ -8,7 +8,7 @@ so this table changes in the same commit.
 
 The UI is **dark-only by deliberate choice**. There is no light mode and no
 theme switcher: the token values live on `:root`, and the `dark` class stays on
-`<html>` so shadcn's `dark:` utility variants resolve to their dark form.
+`<html>` so `dark:` utilities resolve for every descendant.
 
 ## Direction
 
@@ -73,6 +73,9 @@ shadcn's sidebar primitives stay on-contract.
 
 ### Rules
 
+- `--accent` is an alias of `--brand`: both resolve to Profound Blue. The
+  difference is intent, not colour — `--primary` is the primary action,
+  `--accent` is brand data (Northstar).
 - The accent is reserved for Northstar and for primary actions. Hover and
   selected chrome use `--secondary` / `--muted`: shadcn's default `bg-accent`
   recipe would paint the brand blue, so it is not used for chrome states.
@@ -124,7 +127,9 @@ Numbers must align in columns.
 
 - **One focus system.** The base layer draws focus once: a 2px `--ring`
   outline with a 2px offset. Components do not add their own focus rings or
-  focus-tinted borders.
+  focus-tinted borders — the shadcn CLI writes `focus-visible:ring-*` into every
+  component it generates, and those utilities are stripped when a component
+  lands.
 - **Hover** is a quiet surface shift: chrome moves to `--secondary` /
   `--muted`, and a filled variant shifts its own fill (`bg-primary/80` for a
   brand fill, `bg-destructive/20` for a destructive one). Hover never reaches
@@ -141,8 +146,9 @@ Numbers must align in columns.
 
 ## Spacing and layout
 
-- Horizontal page padding: `px-4` (`sm:px-6`).
+- Horizontal page padding: `px-4` (`sm:px-6`); vertical page padding `py-10`.
 - Content max width: `max-w-6xl`, centered.
+- Header row: `h-14` tall, its items separated by `gap-4`.
 - Vertical rhythm: `gap-6` (24px) between panels, `gap-2`..`gap-3` (8–12px)
   inside compact rows.
 - Dividers: `border-border`. Shadows only for focus and overlays.
@@ -187,8 +193,9 @@ document.
 - Colour is never the only signal: trends carry up/down/neutral text, mentions
   carry brand labels, chart series differ by lightness and line treatment.
 - Focus is always visible and is drawn by the global outline.
-- `--input` clears 3:1 against both `--background` and `--card`. `--border` is
-  a hairline divider and is not a control boundary.
+- Controls (inputs, selects, textareas) set `border-input`; the universal
+  `border-border` rule colours dividers only. `--input` clears 3:1 against
+  both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
 
 ## Data semantics

@@ -50,4 +50,9 @@ The dark app shell: a header with the product name and a "Simulated data" badge.
 npx shadcn add <component>
 ```
 
-The CLI reads `components.json`; components land in `src/components/ui/`.
+The CLI reads `components.json`; components land in `src/components/ui/`. It
+writes its own defaults, which the design system overrides: strip the
+`focus-visible:ring-*` utilities (focus is drawn once, by the global outline in
+`src/app/globals.css`) and replace `bg-accent` chrome with `bg-secondary` or
+`bg-muted` (`--accent` is the brand color). See
+[`docs/design-system.md`](docs/design-system.md).
