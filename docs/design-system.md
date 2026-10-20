@@ -243,13 +243,15 @@ for are bound to the control by the overview, below.
 
 Three surfaces compose the base components; none adds to the inventory above.
 
-**The platform scope control** (`src/components/overview/platform-scope.tsx`)
+**The platform scope control** (`src/components/platform-scope.tsx`)
 is the segmented control bound to the Platforms the Snapshot tracks. The group
 carries the accessible name (`Platform`); each segment is named by its own
 label. The selected Platform holds the group's single tab stop, so tabbing
 into the control lands on it. The scope follows the focus between the
 segments, the way a radio group behaves: the arrow keys move between the
-Platforms and the filter changes with them.
+Platforms and the filter changes with them. The control is shared: the
+overview and the prompt detail route both scope by it, so it lives outside
+the overview's folder.
 
 **The KPI cards** (`src/components/overview/kpi-card.tsx`) are cards, not new
 components: the metric's name in the label role, the value in the display

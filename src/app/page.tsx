@@ -1,5 +1,5 @@
 import { Overview } from "@/components/overview/overview";
-import { PLATFORM_PARAM, resolvePlatformId } from "@/lib/platform-scope";
+import { PLATFORM_PARAM, resolvePlatform } from "@/lib/platform-scope";
 import type { PlatformSearchParams } from "@/lib/platform-scope";
 import { PRODUCT_NAME } from "@/lib/site";
 
@@ -17,7 +17,7 @@ export default async function Home({
         {PRODUCT_NAME} is a deterministic snapshot of how Northstar appears in
         AI answers.
       </p>
-      <Overview platformId={resolvePlatformId(params[PLATFORM_PARAM])} />
+      <Overview platform={resolvePlatform(params[PLATFORM_PARAM])} />
     </main>
   );
 }

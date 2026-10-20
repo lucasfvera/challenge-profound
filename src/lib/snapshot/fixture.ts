@@ -1,10 +1,10 @@
+import { PLATFORMS } from "./platforms";
 import type {
   Answer,
   Brand,
   BrandId,
   Citation,
   CitationId,
-  Platform,
   PlatformId,
   Prompt,
   Snapshot,
@@ -23,13 +23,6 @@ import type {
  * is the Visibility Score of that brand on that platform, derived from the
  * stored Answers.
  */
-
-const PLATFORMS: Platform[] = [
-  { id: "chatgpt", name: "ChatGPT" },
-  { id: "claude", name: "Claude" },
-  { id: "gemini", name: "Gemini" },
-  { id: "perplexity", name: "Perplexity" },
-];
 
 const BRANDS: Brand[] = [
   { id: "northstar", name: "Northstar", kind: "subject" },

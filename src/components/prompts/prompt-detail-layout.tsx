@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
  */
 export function PromptDetailLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+    <div className="mt-6 grid grid-cols-1 items-start gap-6 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       {children}
     </div>
   );
