@@ -6,21 +6,28 @@ import { cn } from "cn"
 // The shadcn CLI writes per-component focus rings; the app draws focus once,
 // with the global `:focus-visible` outline in src/app/globals.css. The ring
 // below is the invalid state, not a focus state.
+//
+// The badge is a `<span>` by default, so it is not interactive and carries no
+// hover. The hover utilities are scoped to the link rendering (`[a]:`), which
+// is the interactive form of a badge.
+//
+// The secondary variant mixes the fill with 5% of the foreground on hover:
+// no token is lighter than `--secondary`, and dimming the fill (`/80`) reads
+// as a press instead of a hover.
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
-          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground [a]:hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]",
         destructive:
-          "bg-destructive/10 text-destructive dark:bg-destructive/20 [a]:hover:bg-destructive/20",
+          "bg-destructive/10 text-destructive [a]:hover:bg-destructive/20",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
-        ghost:
-          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
-        link: "text-primary underline-offset-4 hover:underline",
+        ghost: "[a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        link: "text-primary underline-offset-4 [a]:hover:underline",
       },
     },
     defaultVariants: {
@@ -29,12 +36,14 @@ const badgeVariants = cva(
   }
 )
 
+type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>["variant"]>
+
 function Badge({
   className,
   variant = "default",
   render,
   ...props
-}: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
+}: useRender.ComponentProps<"span"> & { variant?: BadgeVariant }) {
   return useRender({
     defaultTagName: "span",
     props: mergeProps<"span">(
