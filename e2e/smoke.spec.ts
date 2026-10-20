@@ -173,14 +173,15 @@ function seriesReferences(page: Page) {
  * in it.
  */
 function saturation(colour: string) {
-  const channels = colour.match(/\d+/g)?.map(Number) ?? [];
+  const channels = colour.match(/^rgb\((\d+), (\d+), (\d+)\)$/);
 
-  if (channels.length !== 3) {
+  if (!channels) {
     throw new Error(`the series colour ${colour} is not a colour`);
   }
 
-  const lightest = Math.max(...channels);
-  const darkest = Math.min(...channels);
+  const [red, green, blue] = channels.slice(1).map(Number);
+  const lightest = Math.max(red, green, blue);
+  const darkest = Math.min(red, green, blue);
 
   return (lightest - darkest) / lightest;
 }
@@ -243,6 +244,30 @@ test("The chart tells its series apart by colour", async ({ page }) => {
   // name a line.
   for (const colour of colours) {
     expect(saturation(colour)).toBeGreaterThanOrEqual(SERIES_HUE_FLOOR);
+  }
+});
+
+test("The chart draws each series' reference at the scale of the line it names", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // The reference is what names the line, so it is drawn at the scale the
+  // plot draws it at: the sample is as long as the space it declares, or
+  // the dash it shows is not the dash the line wears.
+  const samples = await seriesReferences(page).evaluateAll((marks) =>
+    marks.map((mark) => ({
+      drawn: mark.getBoundingClientRect().width,
+      declared: Number(
+        mark.parentElement?.getAttribute("viewBox")?.split(" ")[2],
+      ),
+    })),
+  );
+
+  expect(samples).toHaveLength(4);
+
+  for (const sample of samples) {
+    expect(sample.drawn).toBe(sample.declared);
   }
 });
 

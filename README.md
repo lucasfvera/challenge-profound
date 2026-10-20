@@ -173,11 +173,13 @@ detail with the highlighted mentions and the citations, an unknown prompt id
 answers 404, the overview holds at 390px, and an unknown platform param falls
 back to the default with the table still rendered. It reads the app the way a
 reader does — by role and accessible name, and by the text a reader sees
-where the surface carries no name — with two kinds of surface reached another
-way: the cards, which the card primitive gives no role and no name, so the
-suite takes them through the primitive's `data-slot` attribute, and the
-chart's series references, which are decorative drawings inside named
-toggles, so the suite takes them through the markup they are drawn in.
+where the surface carries no name — with three kinds of surface reached
+another way: the cards, which the card primitive gives no role and no name,
+so the suite takes them through the primitive's `data-slot` attribute; the
+badge, which is a span with no name of its own, so the suite reads the text
+it shows; and the chart's series references, which are decorative drawings
+inside named toggles, so the suite takes them through the markup they are
+drawn in.
 
 ## What the app renders today
 

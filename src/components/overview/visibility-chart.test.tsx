@@ -52,8 +52,8 @@ class MeasuredResizeObserver implements ResizeObserver {
 }
 
 /**
- * The size of a series' reference: how wide the sample is, and how long the
- * dash pattern it draws takes.
+ * The size of a series' reference: the space its dash is drawn in, and how
+ * long the dash pattern takes.
  *
  * The reference has to carry a whole dash pattern: a sample too short for
  * the pattern cuts the dash that tells the series apart.
@@ -62,7 +62,11 @@ function referenceSample(button: HTMLElement) {
   const reference = button.querySelector("svg");
   if (!reference) throw new Error("the series reference drew no sample");
 
-  const width = Number(reference.getAttribute("width"));
+  // The space the dash is drawn in is the sample's own viewBox: the width
+  // it declares is the width the pattern has to fit in.
+  const space = reference.getAttribute("viewBox")?.split(" ").map(Number) ?? [];
+  const width = space[2];
+
   const dash = reference
     .querySelector("line")
     ?.getAttribute("stroke-dasharray");
