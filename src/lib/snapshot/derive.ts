@@ -185,7 +185,7 @@ export function averageVisibilityScore(
   points: VisibilityPoint[],
 ): number | null {
   if (points.length === 0) return null;
-  return roundToOneDecimal(meanVisibilityScore(points));
+  return roundToOneDecimal(mean(scoresOf(points)));
 }
 
 /**
@@ -199,15 +199,88 @@ export function averageVisibilityScore(
  * `null` when there is nothing to compare — a window of one day or less.
  */
 export function visibilityTrend(points: VisibilityPoint[]): number | null {
-  if (points.length < 2) return null;
+  return periodTrend(scoresOf(points));
+}
 
-  const split = Math.floor(points.length / 2);
-  const earlier = points.slice(0, split);
-  const later = points.slice(split);
+/**
+ * The period-over-period movement of the brand's Share of Voice across a
+ * tracked window.
+ *
+ * A tracked day's Share of Voice is the brand's share of the tracked Mentions
+ * of that day. The Snapshot tracks the Visibility Scores rather than the
+ * Mentions, and a score counts the tracked Prompts whose Answer mentions the
+ * brand once — so the score-derived share equals the mention share while no
+ * Answer names a brand twice, which the fixture holds. The trend compares the
+ * two halves of the window, the way `visibilityTrend` compares the two halves
+ * of the Visibility Score.
+ *
+ * `null` when the window holds nothing to compare.
+ */
+export function shareOfVoiceTrend(
+  snapshot: Snapshot,
+  brandId: BrandId,
+  platformId: PlatformId,
+): number | null {
+  return periodTrend(dailyShareOfVoice(snapshot, brandId, platformId));
+}
 
-  return roundToOneDecimal(
-    meanVisibilityScore(later) - meanVisibilityScore(earlier),
-  );
+/**
+ * The metrics of the brand the Snapshot measures on one platform, with the
+ * movements the tracked window can answer.
+ *
+ * The Average Position has no movement: the Snapshot tracks no daily mention
+ * positions, so there is no earlier period to compare it with.
+ */
+export interface SubjectMetrics {
+  /** Visibility Score: the percentage of tracked Prompts whose Answer mentions the brand. */
+  visibilityScore: number | null;
+  /** Share of Voice: the brand's Mentions as a percentage of all brand Mentions. */
+  shareOfVoice: number | null;
+  /** Average Position: the mean ordinal position of the brand's first Mention. */
+  averagePosition: number | null;
+  /** The movement of the Visibility Score over the tracked window. */
+  visibilityTrend: number | null;
+  /** The movement of the Share of Voice over the tracked window. */
+  shareOfVoiceTrend: number | null;
+  /** The movement of the Average Position; the Snapshot tracks no daily positions. */
+  averagePositionTrend: number | null;
+}
+
+/**
+ * The metrics of the brand the Snapshot measures on one platform.
+ *
+ * The measured brand is the one the Snapshot marks as the subject. Its
+ * movements come from the tracked window, so they are `null` when the window
+ * cannot answer them.
+ */
+export function subjectMetrics(
+  snapshot: Snapshot,
+  platformId: PlatformId,
+): SubjectMetrics {
+  const brand = snapshot.brands.find((entry) => entry.kind === "subject");
+  if (!brand) {
+    return {
+      visibilityScore: null,
+      shareOfVoice: null,
+      averagePosition: null,
+      visibilityTrend: null,
+      shareOfVoiceTrend: null,
+      averagePositionTrend: null,
+    };
+  }
+
+  const metrics = platformMetrics(snapshot)
+    .find((entry) => entry.platformId === platformId)
+    ?.brands.find((entry) => entry.brandId === brand.id);
+
+  return {
+    visibilityScore: metrics?.visibilityScore ?? null,
+    shareOfVoice: metrics?.shareOfVoice ?? null,
+    averagePosition: metrics?.averagePosition ?? null,
+    visibilityTrend: visibilityTrend(seriesPoints(snapshot, brand.id, platformId)),
+    shareOfVoiceTrend: shareOfVoiceTrend(snapshot, brand.id, platformId),
+    averagePositionTrend: null,
+  };
 }
 
 /** The answers one platform gave for the tracked Prompts. */
@@ -278,10 +351,60 @@ function averagePositionFrom(
   return roundToOneDecimal(total / firstPositions.length);
 }
 
-/** The mean Visibility Score of a window of points. */
-function meanVisibilityScore(points: VisibilityPoint[]): number {
-  const total = points.reduce((sum, point) => sum + point.score, 0);
-  return total / points.length;
+/** The scores of a tracked window, in the order the days were tracked. */
+function scoresOf(points: VisibilityPoint[]): number[] {
+  return points.map((point) => point.score);
+}
+
+/**
+ * The brand's Share of Voice on every tracked day of a platform, as a
+ * percentage of the tracked Mentions of that day.
+ */
+function dailyShareOfVoice(
+  snapshot: Snapshot,
+  brandId: BrandId,
+  platformId: PlatformId,
+): number[] {
+  const totals = new Map<string, number>();
+  const own = new Map<string, number>();
+
+  for (const series of platformSeries(snapshot, platformId)) {
+    for (const point of series.points) {
+      totals.set(point.date, (totals.get(point.date) ?? 0) + point.score);
+      if (series.brandId === brandId) own.set(point.date, point.score);
+    }
+  }
+
+  return [...own.entries()].map(([date, score]) => {
+    const total = totals.get(date) ?? 0;
+
+    // A tracked day nobody was mentioned on leaves every brand without a
+    // share of voice. The day stays in the window, so both halves of the
+    // comparison cover the same days.
+    return total > 0 ? (score / total) * 100 : 0;
+  });
+}
+
+/**
+ * The period-over-period movement of a tracked window of values: the mean of
+ * its second half minus the mean of its first half.
+ *
+ * `null` when there is nothing to compare — a window of one day or less.
+ */
+function periodTrend(values: number[]): number | null {
+  if (values.length < 2) return null;
+
+  const split = Math.floor(values.length / 2);
+  const earlier = values.slice(0, split);
+  const later = values.slice(split);
+
+  return roundToOneDecimal(mean(later) - mean(earlier));
+}
+
+/** The mean of a list of values. */
+function mean(values: number[]): number {
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return total / values.length;
 }
 
 /**

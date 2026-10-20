@@ -175,8 +175,9 @@ Numbers must align in columns.
 
 ## Responsive conventions
 
-These are the conventions the dashboard is built against; only the shell
-exists today, and the surfaces below arrive with their own tickets.
+These are the conventions the dashboard is built against; only the shell and
+the overview's surfaces exist today, and the rest arrive with their own
+tickets.
 
 | Breakpoint | Width | Behavior |
 |------------|-------|----------|
@@ -231,8 +232,26 @@ no focus ring of its own, and its padding rhythm lives in one CSS variable
 control holds no domain state: the group is single-select and takes its
 pressed values as an array through `value`, reporting them through
 `onValueChange` — the way Base UI's toggle group models them — and a segment
-expresses its selection as `aria-pressed`. Which platform a segment stands
-for belongs to the ticket that wires the data.
+expresses its selection as `aria-pressed`. The Platforms the segments stand
+for are bound to the control by the overview, below.
+
+## The overview's surfaces
+
+Two surfaces compose the base components; neither adds to the inventory above.
+
+**The platform scope control** (`src/components/overview/platform-scope.tsx`)
+is the segmented control bound to the Platforms the Snapshot tracks. The group
+carries the accessible name (`Platform`); each segment is named by its own
+label. The selected Platform holds the group's single tab stop, so tabbing
+into the control lands on it. The scope follows the focus between the
+segments, the way a radio group behaves: the arrow keys move between the
+Platforms and the filter changes with them.
+
+**The KPI cards** (`src/components/overview/kpi-card.tsx`) are cards, not new
+components: the metric's name in the label role, the value in the display
+metric role, and the movement in the micro role. A movement carries its
+direction in an icon and in the words a screen reader reads, so colour is
+never the only signal.
 
 ## Accessibility rules
 
@@ -251,3 +270,5 @@ for belongs to the ticket that wires the data.
 - Northstar uses `--accent` and `--chart-1`.
 - Competitors use the neutral chart ramp plus a distinct line treatment.
 - Missing or undefined metrics render as an em dash (`—`), never `NaN`.
+- A movement with no earlier period to compare against renders as an em dash
+  too, and says so to a screen reader.

@@ -2,8 +2,10 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { KpiCard } from "@/components/overview/kpi-card";
 import { PlatformScope } from "@/components/overview/platform-scope";
 import { PLATFORM_PARAM } from "@/lib/platform-scope";
+import { snapshot, subjectMetrics } from "@/lib/snapshot";
 import type { PlatformId } from "@/lib/snapshot";
 
 /**
@@ -36,6 +38,8 @@ export function Overview({ platformId }: { platformId: PlatformId }) {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
+  const kpis = subjectMetrics(snapshot, selected);
+
   return (
     <section className="mt-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -43,6 +47,26 @@ export function Overview({ platformId }: { platformId: PlatformId }) {
         <PlatformScope
           platformId={selected}
           onPlatformChange={selectPlatform}
+        />
+      </div>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="Visibility Score"
+          value={kpis.visibilityScore}
+          unit="percent"
+          delta={kpis.visibilityTrend}
+        />
+        <KpiCard
+          label="Share of Voice"
+          value={kpis.shareOfVoice}
+          unit="percent"
+          delta={kpis.shareOfVoiceTrend}
+        />
+        <KpiCard
+          label="Average Position"
+          value={kpis.averagePosition}
+          unit="position"
+          delta={kpis.averagePositionTrend}
         />
       </div>
     </section>

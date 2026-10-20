@@ -33,9 +33,10 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
-primitives, skeleton, and the segmented control. Only the shell's "Simulated
-data" badge uses one today — the dashboard surfaces arrive with their own
-tickets.
+primitives, skeleton, and the segmented control. The overview's own surfaces —
+the platform scope control and the KPI cards — live in
+`src/components/overview/`, and compose the base components rather than
+adding to the inventory.
 
 ## Requirements
 
@@ -59,15 +60,21 @@ npm run test
 npm run build
 ```
 
-`npm run test` runs the Vitest suite over the derivation layer and the
-fixture. `npm run build` produces a production bundle; run it with `npm run start` to serve that bundle locally.
+`npm run test` runs the Vitest suite over the derivation layer, the fixture,
+and the platform scope contract. `npm run build` produces a production bundle;
+run it with `npm run start` to serve that bundle locally.
 
 ## What the app renders today
 
-The dark app shell: a header with the product name and a "Simulated data"
-badge, and an Overview heading on the home route. The dashboard surfaces read
-the Snapshot module but do not render it yet — they arrive with their own
-tickets.
+The dark app shell — a header with the product name and a "Simulated data"
+badge — and, on the home route, the overview: the platform scope control and
+the three KPI cards. The scope control filters the overview by Platform and
+writes the choice to the `platform` search param, so a view of the dashboard
+is shareable; a value the Snapshot does not track falls back to ChatGPT. The
+KPI cards report Northstar's Visibility Score, Share of Voice, and Average
+Position for the selected Platform. The Visibility Score and the Share of Voice
+carry the movement of the tracked window; the Average Position has none to
+compare, because the Snapshot tracks no daily mention positions.
 
 ## Adding shadcn/ui components
 
