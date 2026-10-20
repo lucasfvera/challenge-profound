@@ -51,6 +51,30 @@ class MeasuredResizeObserver implements ResizeObserver {
   disconnect(): void {}
 }
 
+/**
+ * The size of a series' reference: how wide the sample is, and how long the
+ * dash pattern it draws takes.
+ *
+ * The reference has to carry a whole dash pattern: a sample too short for
+ * the pattern cuts the dash that tells the series apart.
+ */
+function referenceSample(button: HTMLElement) {
+  const reference = button.querySelector("svg");
+  if (!reference) throw new Error("the series reference drew no sample");
+
+  const width = Number(reference.getAttribute("width"));
+  const dash = reference
+    .querySelector("line")
+    ?.getAttribute("stroke-dasharray");
+  const cycle = (dash ?? "")
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map(Number)
+    .reduce((sum, part) => sum + part, 0);
+
+  return { width, cycle };
+}
+
 describe("the chart", () => {
   it("names every series and shows the tracked score of the hovered day", async () => {
     vi.stubGlobal("ResizeObserver", MeasuredResizeObserver);
@@ -92,5 +116,21 @@ describe("the chart", () => {
     expect(readings[1]).toHaveTextContent(/Lumen.*53\.3%/);
     expect(readings[2]).toHaveTextContent(/Vantage.*26\.7%/);
     expect(readings[3]).toHaveTextContent(/Arcadia.*26\.7%/);
+  });
+
+  it("gives every series a reference that carries its own dash", () => {
+    vi.stubGlobal("ResizeObserver", MeasuredResizeObserver);
+
+    render(<VisibilityChart platformId="chatgpt" />);
+
+    const legend = screen.getByRole("group", { name: "Series" });
+    const samples = within(legend)
+      .getAllByRole("button")
+      .map(referenceSample);
+
+    // The reference is what names the line, so it has to carry a whole dash
+    // pattern: a sample too short for the pattern cuts the dash that tells
+    // the series apart.
+    expect(samples.filter(({ cycle, width }) => cycle > width)).toEqual([]);
   });
 });

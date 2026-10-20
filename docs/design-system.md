@@ -78,7 +78,9 @@ happened, so they are literals and not derivations.
 Every brand wears a colour of its own, so the lines are told apart by colour.
 The competitor hues are less saturated than the brand's, so they read as rivals
 rather than as decoration, and the series separate by line treatment as well,
-so colour is never the only signal.
+so colour is never the only signal. **Every series colour is a hue**: a grey
+cannot tell one series from another, so the neutral ramp of the surfaces is
+not a series colour.
 
 The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
 shadcn's sidebar primitives stay on-contract.
