@@ -4,9 +4,11 @@ A deterministic, dark-only dashboard for the fictional brand **Northstar**: how 
 
 > **All data is simulated.** Every figure in this app comes from a fixed, fictional snapshot. Nothing here is collected live from ChatGPT, Claude, Gemini, Perplexity, or any other platform.
 
+**What this is:** a portfolio demo for Profound — a working slice of an AI-visibility dashboard, built to be read, run and reviewed end to end. It ships the whole story: the Snapshot the numbers come from, the metrics derived from it, the surfaces that show them, the evidence behind each number, and the suites that keep them honest. There is no account, nothing is saved, and no platform is ever contacted.
+
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`) · Recharts 3 · Playwright.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`) · Recharts 3 · Playwright · Docker.
 
 ## Data
 
@@ -66,6 +68,8 @@ machine — `npx playwright install chromium`, or
 `npx playwright install --with-deps chromium` on Linux, where the browser
 also needs the system libraries it links against.
 
+The container needs Docker, and the image is built from this tree.
+
 ## Run locally
 
 ```bash
@@ -75,6 +79,35 @@ npm run dev
 
 Open <http://localhost:3000>.
 
+## Run in a container
+
+```bash
+npm run docker:build
+npm run docker:run
+```
+
+`npm run docker:build` builds the image; `npm run docker:run` serves it on
+<http://localhost:3000> and removes the container when it stops. Stop the dev
+server first: the container takes the same port. The image is multi-stage: it
+installs from the lockfile, builds the app, and carries the production server
+alone in the last stage — the traced server, the static assets and the
+production dependencies, with no toolchain and no test runner in it. It runs
+as a non-root user, the `node` user the base image ships, and it needs no
+secret and no configuration from whoever runs it: the image supplies its own
+port and host, and the demo fetches nothing at serve time.
+
+## Deployment
+
+The app is a plain Next.js app, so Vercel deploys it with no configuration:
+the build Vercel runs is the plain build this repo has always produced. The
+standalone output — the traced server the container carries — is asked for by
+the container's build only (`BUILD_OUTPUT=standalone` in the `Dockerfile`),
+and a Vercel build never gets it, so no hosting platform is handed a build it
+did not ask for. The guard is deliberate: on Next 16.3 the standalone output
+broke every Vercel deployment of a standalone-configured app, and the fix
+landed upstream, but a build that no platform asked for is a build that no
+platform should be given.
+
 ## Verification
 
 ```bash
@@ -83,7 +116,18 @@ npm run typecheck
 npm run test
 npm run build
 npm run test:e2e
+npm run docker:build
 ```
+
+Each command answers a different question. `npm run lint` asks whether the
+code follows the repo's rules; `npm run typecheck` asks whether the types
+hold; `npm run test` asks whether the derivation layer and the surfaces
+behave; `npm run build` asks whether the production bundle builds; `npm run
+test:e2e` asks whether the demo story works in a browser against a
+production build — the harness builds that bundle itself, so the suite pays
+for a second build; and `npm run docker:build` asks whether the image builds.
+The image itself is proved by `npm run docker:run`: the app answering on
+<http://localhost:3000> is the proof that the image carries it.
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
@@ -112,6 +156,11 @@ no other handle for: the metric cards, which the card primitive gives no
 role and no name, so the suite reaches them through the card primitive's
 `data-slot` attribute; and the chart's plot, a drawing with no text, which
 carries a test id of its own.
+
+`npm run docker:build` is its own command rather than part of the others,
+because it needs a daemon and it is slow. The build it runs is the
+container's own: the same source, built with the standalone output the image
+carries.
 
 ## What the app renders today
 

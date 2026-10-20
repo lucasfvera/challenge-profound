@@ -6,8 +6,8 @@
 # Tailwind, no test runner — so the image is small and so is its surface.
 #
 # The demo reads a fixed, fictional Snapshot and fetches nothing at runtime,
-# so the container needs no secret, no environment variable and no network at
-# serve time.
+# so the container needs no secret, no configuration from whoever runs it, and
+# no network at serve time.
 
 ARG NODE_VERSION=22-alpine
 
