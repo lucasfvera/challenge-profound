@@ -300,6 +300,19 @@ export interface SubjectMetrics {
 }
 
 /**
+ * The brand the Snapshot measures: the one it marks as the subject.
+ *
+ * It is the brand the dashboard reports on — the KPI cards and the prompt
+ * table read it from here, so the two cannot disagree about whose Mentions
+ * they count.
+ *
+ * `undefined` when the Snapshot marks no brand as the subject.
+ */
+export function subjectBrand(snapshot: Snapshot): Brand | undefined {
+  return snapshot.brands.find((entry) => entry.kind === "subject");
+}
+
+/**
  * The metrics of the brand the Snapshot measures on one platform.
  *
  * The measured brand is the one the Snapshot marks as the subject. Its
@@ -310,7 +323,7 @@ export function subjectMetrics(
   snapshot: Snapshot,
   platformId: PlatformId,
 ): SubjectMetrics {
-  const brand = snapshot.brands.find((entry) => entry.kind === "subject");
+  const brand = subjectBrand(snapshot);
   if (!brand) {
     return {
       visibilityScore: null,

@@ -30,6 +30,7 @@ export {
   seriesPoints,
   shareOfVoice,
   shareOfVoiceTrend,
+  subjectBrand,
   subjectMetrics,
   visibilityScore,
   visibilityTrend,
