@@ -40,7 +40,7 @@ export function Overview({ platform }: { platform: Platform }) {
         <KpiCard
           kpi={KPIS.visibilityScore}
           value={kpis.visibilityScore}
-          delta={kpis.visibilityScoreTrend}
+          delta={kpis.visibilityTrend}
         />
         <KpiCard
           kpi={KPIS.shareOfVoice}
