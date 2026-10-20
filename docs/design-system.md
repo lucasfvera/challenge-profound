@@ -272,3 +272,6 @@ never the only signal.
 - Missing or undefined metrics render as an em dash (`—`), never `NaN`.
 - A movement with no earlier period to compare against renders as an em dash
   too, and says so to a screen reader.
+- The movement beside the Share of Voice is the movement of the tracked
+  window's score-derived share of voice, which equals the mention share while
+  no Answer names a brand twice.

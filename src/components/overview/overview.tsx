@@ -3,10 +3,18 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { KpiCard } from "@/components/overview/kpi-card";
+import type { Kpi } from "@/components/overview/kpi-card";
 import { PlatformScope } from "@/components/overview/platform-scope";
 import { PLATFORM_PARAM } from "@/lib/platform-scope";
 import { snapshot, subjectMetrics } from "@/lib/snapshot";
 import type { PlatformId } from "@/lib/snapshot";
+
+/** The metrics the overview reports, with the unit each one is reported in. */
+const KPIS = {
+  visibilityScore: { label: "Visibility Score", unit: "percent" },
+  shareOfVoice: { label: "Share of Voice", unit: "percent" },
+  averagePosition: { label: "Average Position", unit: "position" },
+} as const satisfies Record<string, Kpi>;
 
 /**
  * The overview: the platform scope and everything that scope filters.
@@ -35,6 +43,8 @@ export function Overview({ platformId }: { platformId: PlatformId }) {
     setSelected(next);
     const params = new URLSearchParams(searchParams);
     params.set(PLATFORM_PARAM, next);
+    // The scope is a filter, not a step in a flow: it replaces the entry
+    // instead of pushing one, so the history is not flooded with platforms.
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
@@ -51,21 +61,18 @@ export function Overview({ platformId }: { platformId: PlatformId }) {
       </div>
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
-          label="Visibility Score"
+          kpi={KPIS.visibilityScore}
           value={kpis.visibilityScore}
-          unit="percent"
           delta={kpis.visibilityTrend}
         />
         <KpiCard
-          label="Share of Voice"
+          kpi={KPIS.shareOfVoice}
           value={kpis.shareOfVoice}
-          unit="percent"
           delta={kpis.shareOfVoiceTrend}
         />
         <KpiCard
-          label="Average Position"
+          kpi={KPIS.averagePosition}
           value={kpis.averagePosition}
-          unit="position"
           delta={kpis.averagePositionTrend}
         />
       </div>

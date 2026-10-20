@@ -39,6 +39,9 @@ const oneDay: Snapshot = {
   })),
 };
 
+/** How many days of the tracked window its first half holds. */
+const FIRST_HALF_DAYS = 15;
+
 describe("the derivation layer", () => {
   it("computes the Visibility Score as the share of tracked prompts whose answer mentions the brand", () => {
     expect(visibilityScore(snapshot, "northstar", "chatgpt")).toBe(66.7);
@@ -99,14 +102,20 @@ describe("the derivation layer", () => {
     expect(shareOfVoiceTrend(snapshot, "northstar", "perplexity")).toBe(2.7);
   });
 
-  it("follows the tracked scores in the Share of Voice trend", () => {
+  it("moves the Share of Voice trend when the tracked scores move", () => {
     // The brand drops out of the first half of the window, so its share of
     // voice there falls to nothing and the movement grows.
     const withoutFirstHalf: Snapshot = {
       ...snapshot,
       series: snapshot.series.map((series) =>
         series.brandId === "northstar" && series.platformId === "chatgpt"
-          ? { ...series, points: series.points.map((point, index) => ({ ...point, score: index < 15 ? 0 : point.score })) }
+          ? {
+              ...series,
+              points: series.points.map((point, index) => ({
+                ...point,
+                score: index < FIRST_HALF_DAYS ? 0 : point.score,
+              })),
+            }
           : series,
       ),
     };
@@ -115,14 +124,10 @@ describe("the derivation layer", () => {
   });
 
   it("reports the measured brand's metrics and movements for a platform", () => {
-    const northstar = platformMetrics(snapshot)
-      .find((entry) => entry.platformId === "chatgpt")
-      ?.brands.find((entry) => entry.brandId === "northstar");
-
     expect(subjectMetrics(snapshot, "chatgpt")).toEqual({
-      visibilityScore: northstar?.visibilityScore,
-      shareOfVoice: northstar?.shareOfVoice,
-      averagePosition: northstar?.averagePosition,
+      visibilityScore: 66.7,
+      shareOfVoice: 40,
+      averagePosition: 1.5,
       visibilityTrend: 6.7,
       shareOfVoiceTrend: 5.1,
       averagePositionTrend: null,

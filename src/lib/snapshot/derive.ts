@@ -358,7 +358,11 @@ function scoresOf(points: VisibilityPoint[]): number[] {
 
 /**
  * The brand's Share of Voice on every tracked day of a platform, as a
- * percentage of the tracked Mentions of that day.
+ * percentage of the tracked Scores of that day.
+ *
+ * The Snapshot tracks Scores rather than Mentions, so this is the score-
+ * derived share of voice; `shareOfVoiceTrend` spells out when the two
+ * agree.
  */
 function dailyShareOfVoice(
   snapshot: Snapshot,
