@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { ArrowDown, ArrowUp, Info, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Popover,
@@ -15,6 +15,21 @@ import { cn } from "@/lib/utils";
 type Direction = "up" | "down" | "neutral";
 
 /**
+ * The mark each direction is drawn with, and the word that names it.
+ *
+ * The arrow is the shape of the movement, so the direction is readable
+ * without the colour: the words say it, the arrow shows it, and the colour
+ * says which way the reader should read it. The mark carries the word as
+ * its accessible name, so it is not a decoration a screen reader skips, and
+ * the mark and the word are bound together in one place.
+ */
+const MARKS = {
+  up: { Icon: ArrowUp, name: "Up" },
+  down: { Icon: ArrowDown, name: "Down" },
+  neutral: { Icon: Minus, name: "No change" },
+} as const;
+
+/**
  * A KPI card: the metric's name, its value, and its movement over the
  * tracked window.
  *
@@ -26,8 +41,8 @@ type Direction = "up" | "down" | "neutral";
  *
  * A metric the Snapshot cannot answer renders as an em dash — the design
  * system's rule for a missing metric — and so does a movement with no
- * earlier period to compare. The movement carries its direction in the
- * words, so colour is never the only signal.
+ * earlier period to compare. The movement carries its direction in the mark,
+ * in the words and in the colour, so colour is never the only signal.
  */
 export function KpiCard({
   kpi,
@@ -90,14 +105,17 @@ function Trend({
 
   const direction: Direction = delta > 0 ? "up" : delta < 0 ? "down" : "neutral";
   const amount = Math.abs(delta).toFixed(1);
+  const { Icon, name } = MARKS[direction];
 
   return (
     <p
       className={cn(
-        "mt-2 text-xs leading-4 tabular-nums text-muted-foreground",
+        "mt-2 flex items-center gap-1 text-xs leading-4 tabular-nums text-muted-foreground",
+        direction === "up" && "text-positive",
         direction === "down" && "text-destructive",
       )}
     >
+      <Icon role="img" aria-label={name} className="size-3 shrink-0" />
       <span aria-hidden="true">{formatDelta(direction, amount, unit)}</span>
       <span className="sr-only">{trendText(direction, amount, unit)}</span>
     </p>
@@ -117,11 +135,11 @@ function formatDelta(
   amount: string,
   unit: Kpi["unit"],
 ): string {
-  if (direction === "neutral") return "No change";
+  if (direction === "neutral") return MARKS.neutral.name;
 
   const unitLabel = unit === "percent" ? "pts" : "positions";
 
-  return `${direction === "up" ? "Up" : "Down"} ${amount} ${unitLabel}`;
+  return `${MARKS[direction].name} ${amount} ${unitLabel}`;
 }
 
 /** The movement, spelled out for a screen reader. */
@@ -134,5 +152,5 @@ function trendText(
 
   const unitLabel = unit === "percent" ? "points" : "positions";
 
-  return `${direction === "up" ? "Up" : "Down"} ${amount} ${unitLabel} versus the first half of the tracked window.`;
+  return `${MARKS[direction].name} ${amount} ${unitLabel} versus the first half of the tracked window.`;
 }

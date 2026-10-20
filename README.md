@@ -158,17 +158,17 @@ build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: seven end-to-end tests that prove the demo
+The smoke suite is the third seam: eight end-to-end tests that prove the demo
 story — the metric cards and the chart render, the platform switch rewrites
 the URL and moves the table's scope, the clickable filters say they are
-clickable, a prompt row opens the detail with the highlighted mentions and
-the citations, an unknown prompt id answers 404, the overview holds at 390px,
-and an unknown platform param falls back to the default with the table still
-rendered. It reads the app the way a reader does — by role and accessible
-name, and by the text a reader sees where the surface carries no name — with
-one kind of surface reached through a hook of its own: the cards, which the
-card primitive gives no role and no name, so the suite takes them through the
-primitive's `data-slot` attribute.
+clickable, the movements say which way they went, a prompt row opens the
+detail with the highlighted mentions and the citations, an unknown prompt id
+answers 404, the overview holds at 390px, and an unknown platform param falls
+back to the default with the table still rendered. It reads the app the way a
+reader does — by role and accessible name, and by the text a reader sees
+where the surface carries no name — with one kind of surface reached through
+a hook of its own: the cards, which the card primitive gives no role and no
+name, so the suite takes them through the primitive's `data-slot` attribute.
 
 ## What the app renders today
 
@@ -182,9 +182,10 @@ Northstar's Visibility Score, Share of Voice, and Average Position for the
 selected Platform, and each metric's name carries an information icon: hover
 it, click it or tap it, and the metric's explanation opens in a popover, so
 a reader who does not know what the metric measures can ask. The Visibility
-Score and the Share of Voice carry the movement of the tracked window; the
-Average Position has none to compare, because the Snapshot tracks no daily
-mention positions.
+Score and the Share of Voice carry the movement of the tracked window, marked
+with an arrow and coloured by the way it went — green for up, red for down —
+so the direction is readable at a glance; the Average Position has none to
+compare, because the Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.

@@ -26,6 +26,8 @@ never decorative.
 | `--ink` | `#050505` | the darkest tone: page base, and text on brand fills |
 
 Everything else derives from these two, so a brand change is a one-line change.
+The two status tones — `--destructive` and `--positive` — are the exception:
+a status colour says what happened, so it is a literal and not a derivation.
 
 ### Surfaces and text
 
@@ -53,6 +55,7 @@ Everything else derives from these two, so a brand change is a one-line change.
 | `--accent-foreground` | `var(--ink)` | text on the accent |
 | `--destructive` | `#FF6464` | negative trend, destructive action |
 | `--destructive-foreground` | `#1A0505` | text on destructive |
+| `--positive` | `#4ADE80` | positive trend — the movement that went the good way (11.29:1 on `--card`) |
 | `--border` | `#232327` | hairline dividers between panels and rows |
 | `--input` | `#61616A` | control boundary (3.33:1 on `--background`, 3.21:1 on `--card`) |
 | `--ring` | `#7395FF` | focus outline (7.25:1 on `--background`) |
@@ -295,8 +298,12 @@ the overview's folder.
 **The KPI cards** (`src/components/overview/kpi-card.tsx`) are cards, not new
 components: the metric's name in the label role, the value in the display
 metric role, and the movement in the micro role. A movement carries its
-direction in an icon and in the words a screen reader reads, so colour is
-never the only signal.
+direction in the mark that points it, in the colour that names it, and in
+the words a screen reader reads, so colour is never the only signal. The
+colour follows the direction of the number: up is `--positive`, down is
+`--destructive`, and a movement of nothing keeps the muted foreground. Both
+metrics that report a movement are ones where more is better — the Average
+Position has none, because the Snapshot tracks no daily mention positions.
 
 The metric's name is a label with an explanation behind it. Beside the name
 sits the information icon, and the popover it opens carries the metric's
@@ -479,8 +486,9 @@ interactive during the wait.
 
 - Body and label text meets WCAG AA on `--background` and `--card`.
 - Brand fills carry `--primary-foreground` / `--accent-foreground`.
-- Colour is never the only signal: trends carry up/down/neutral text, mentions
-  carry brand labels, chart series differ by lightness and line treatment.
+- Colour is never the only signal: a movement carries the mark that points it
+  and the words beside it, mentions carry brand labels, chart series differ by
+  lightness and line treatment.
 - A popover's trigger carries an accessible name that says what it explains,
   so the icon is not the only clue, and the popup is a named dialog with a
   description, so a screen reader reads it.

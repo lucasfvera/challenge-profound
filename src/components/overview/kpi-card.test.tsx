@@ -58,6 +58,23 @@ describe("the KPI card", () => {
     ).toBeInTheDocument();
   });
 
+  it("points the way the metric moved", () => {
+    render(
+      <>
+        <KpiCard kpi={VISIBILITY_SCORE} value={42.5} delta={-3.2} />
+        <KpiCard kpi={SHARE_OF_VOICE} value={30} delta={4.1} />
+        <KpiCard kpi={VISIBILITY_SCORE} value={66.7} delta={0} />
+      </>,
+    );
+
+    // The mark points the way the metric moved, and it carries that
+    // direction as its name, so the shape is not a decoration a screen
+    // reader skips.
+    expect(screen.getByRole("img", { name: "Down" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Up" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "No change" })).toBeInTheDocument();
+  });
+
   it("explains the metric behind the name", async () => {
     const user = userEvent.setup();
 
