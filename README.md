@@ -109,7 +109,8 @@ overview holds at 390px, and an unknown platform param falls back to the
 default with the table still rendered. It reads the app the way a reader
 does — by role and accessible name — with two exceptions the surfaces leave
 no other handle for: the metric cards, which the card primitive gives no
-role and no name, and the chart's plot, a drawing with no text, which
+role and no name, so the suite reaches them through the card primitive's
+`data-slot` attribute; and the chart's plot, a drawing with no text, which
 carries a test id of its own.
 
 ## What the app renders today
