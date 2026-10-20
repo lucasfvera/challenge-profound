@@ -284,6 +284,41 @@ no token.
   thinned so the labels thin out instead of overlapping at 390px.
 - A Platform the Snapshot tracks no window for renders the em dash, not an
   empty plot.
+**The prompt table** (`src/components/prompts/prompt-table.tsx`) is the
+read-only view of the tracked Prompts: one row per Prompt, the Prompt's
+category in the secondary badge (`--secondary`), and a column per Platform
+carrying the brand's Mention state on that Platform. The state has three
+marks, and the em dash covers the two states the Snapshot cannot report:
+
+| Mention state | Mark | Label a screen reader reads |
+|---------------|------|------------------------------|
+| mentioned | the brand accent as a fill (`--accent`), with the position the brand was named at | "Mentioned on ChatGPT, at position 1" |
+| not mentioned | a hollow ring in `--muted-foreground` | "Not mentioned on ChatGPT" |
+| the Platform gave no Answer | the em dash in `--muted-foreground` | "No answer on ChatGPT" |
+| the Snapshot measures no brand | the em dash in `--muted-foreground` | "No brand to measure on ChatGPT" |
+
+The em dash is this document's mark for a value the Snapshot cannot report,
+and the ring says the Answer exists and does not name the brand. The three
+marks are three shapes, so the state never rests on colour alone, and every
+cell carries the label a screen reader reads.
+
+The table is scoped by the Platform the overview's scope holds: the selected
+Platform's column sits on the selected chrome (`--secondary`) and its head
+reads in the foreground colour, and the rows are ordered by the brand's
+strength on that Platform — a Prompt whose Answer names the brand first, the
+earlier position first among them, then the Prompts the Platform answered
+without naming it, and last the Prompts with no Answer to read. The order is
+a default, not a setting: there is no sort control, and Prompts the Platform
+ranks equally keep the Snapshot's own order.
+
+Below `sm` the table gives way to a list of cards, the way the responsive
+conventions say it does: the Prompt's text, its category badge, and the
+Platforms in two columns, each with the same mark. The card marks the scoped
+Platform in its label — the foreground colour instead of the muted one, and
+the label a screen reader reads — rather than with the column's fill. The
+rows are not links yet — navigation into the prompt detail route lands with a
+later ticket — so a row carries no hover and nothing to click.
+
 ## The prompt detail route's surfaces
 
 The prompt detail route (`/prompts/<prompt-id>`) is the app's first surface
