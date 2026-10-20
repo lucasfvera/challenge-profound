@@ -87,7 +87,7 @@ npm run docker:run
 ```
 
 `npm run docker:build` builds the image; `npm run docker:run` serves it on
-<http://localhost:3000> and removes the container when it stops. Stop the dev
+<http://127.0.0.1:3000> and removes the container when it stops. Stop the dev
 server first: the container takes the same port. The image is multi-stage: it
 installs from the lockfile, builds the app, and carries the production server
 alone in the last stage — the traced server, the static assets and the
@@ -116,10 +116,11 @@ npm run verify
 
 That is the whole pass: the lint rules, the types, the unit and component
 suite, the production build, and the Playwright smoke suite, in that order,
-in one run, stopping at the first failure. The cheap checks come first, and
-the build comes before the browser suite because a build that does not
-compile should not cost a browser. Each of the five is a command of its own,
-and each answers a different question:
+in one run, stopping at the first failure. The cheap checks come first. The
+build is the pass's own gate on the production bundle: when it fails, the
+pass says the bundle does not compile, instead of the browser suite reporting
+a server that never came up. Each of the five is a command of its own, and
+each answers a different question:
 
 ```bash
 npm run lint
@@ -139,7 +140,7 @@ bundle itself, so the suite pays for a second build.
 The container is outside the chain, because it needs a Docker daemon and it
 is slow. It is checked beside the pass: `npm run docker:build` asks whether
 the image builds, and `npm run docker:run` proves it, with the app answering
-on <http://localhost:3000>. See [Run in a container](#run-in-a-container).
+on <http://127.0.0.1:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table

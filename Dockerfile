@@ -71,8 +71,8 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
 USER node
 
-# The port the app serves, taken from the one the app is given, so the two
-# cannot drift apart.
+# The port the app serves, taken from the one the app is given, so the
+# image's own two never drift apart.
 EXPOSE ${PORT}
 
 CMD ["node", "server.js"]
