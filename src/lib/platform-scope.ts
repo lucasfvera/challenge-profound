@@ -9,6 +9,11 @@ import type { PlatformId } from "@/lib/snapshot";
 /** The search param that carries the selected Platform. */
 export const PLATFORM_PARAM = "platform";
 
+/** The search params the platform scope reads from the URL. */
+export type PlatformSearchParams = {
+  [K in typeof PLATFORM_PARAM]?: string | string[];
+};
+
 /**
  * The Platform the scope falls back to: the Snapshot's first Platform,
  * ChatGPT. Reading it from the fixture keeps one list of Platforms in the
@@ -17,7 +22,7 @@ export const PLATFORM_PARAM = "platform";
 export const DEFAULT_PLATFORM_ID: PlatformId = snapshot.platforms[0].id;
 
 /** Whether a raw value stands for one of the tracked Platforms. */
-export function isPlatformId(value: string): value is PlatformId {
+export function isPlatformId(value: string | undefined): value is PlatformId {
   return snapshot.platforms.some((platform) => platform.id === value);
 }
 

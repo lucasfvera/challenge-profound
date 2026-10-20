@@ -23,5 +23,6 @@ describe("the platform scope", () => {
   it("tells a tracked Platform from an unknown one", () => {
     expect(isPlatformId("perplexity")).toBe(true);
     expect(isPlatformId(UNKNOWN_PLATFORM)).toBe(false);
+    expect(isPlatformId(undefined)).toBe(false);
   });
 });
