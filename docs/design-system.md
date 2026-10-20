@@ -1,0 +1,198 @@
+# Design System — AI Visibility Snapshot
+
+This document is the **source of truth** for the visual language. Tokens live in
+`src/app/globals.css`; components consume them through semantic Tailwind
+utilities (`bg-card`, `text-muted-foreground`, `border-border`, `bg-primary`).
+No call site may introduce a raw color. Changing a token value changes the app,
+so this table changes in the same commit.
+
+The UI is **dark-only by deliberate choice**. There is no light mode and no
+theme switcher: the token values live on `:root`, and the `dark` class stays on
+`<html>` so shadcn's `dark:` utility variants resolve to their dark form.
+
+## Direction
+
+A black base with a single Profound Blue accent, hairline borders, dense
+tabular data, and restrained motion. The accent means **Northstar** — it is
+never decorative.
+
+## Color tokens
+
+### Source tones
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--brand` | `#376CFF` | Profound Blue; the only brand color in the app |
+| `--ink` | `#050505` | the darkest tone: page base, and text on brand fills |
+
+Everything else derives from these two, so a brand change is a one-line change.
+
+### Surfaces and text
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--background` | `var(--ink)` | page background |
+| `--foreground` | `#F4F4F5` | primary text (18.54:1 on `--background`) |
+| `--card` | `#0B0B0D` | panels, tables, KPI cards |
+| `--card-foreground` | `var(--foreground)` | text on cards |
+| `--popover` | `#101013` | overlays |
+| `--popover-foreground` | `var(--foreground)` | text on overlays |
+| `--muted` | `#121214` | quiet surface: selected chrome, table header fills |
+| `--muted-foreground` | `#9A9AA3` | secondary text and labels (7.30:1 on `--background`) |
+| `--secondary` | `#17171A` | hover surface |
+| `--secondary-foreground` | `#E6E6E9` | text on secondary |
+
+### Brand, lines, and focus
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--primary` | `var(--brand)` | primary action; Northstar series |
+| `--primary-foreground` | `var(--ink)` | text on a brand fill (4.61:1) |
+| `--accent` | `var(--brand)` | brand meaning only: Northstar mentions, Northstar data |
+| `--accent-foreground` | `var(--ink)` | text on the accent |
+| `--destructive` | `#FF6464` | negative trend, destructive action |
+| `--destructive-foreground` | `#1A0505` | text on destructive |
+| `--border` | `#232327` | hairline dividers between panels and rows |
+| `--input` | `#61616A` | control boundary (3.33:1 on `--background`, 3.21:1 on `--card`) |
+| `--ring` | `#7395FF` | focus outline (7.25:1 on `--background`) |
+| `--selection` | `color-mix(in oklab, var(--brand) 30%, transparent)` | text selection tint |
+| `--radius` | `0.625rem` | panel and control radius |
+
+### Series
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--chart-1` | `var(--brand)` | Northstar |
+| `--chart-2` | `#A1A1AA` | competitor 1 (7.67:1 on `--card`) |
+| `--chart-3` | `#8B8B95` | competitor 2 (5.83:1 on `--card`) |
+| `--chart-4` | `#75757F` | competitor 3 (4.31:1 on `--card`) |
+| `--chart-5` | `#62626C` | competitor 4 (3.26:1 on `--card`) |
+
+The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
+shadcn's sidebar primitives stay on-contract.
+
+### Rules
+
+- The accent is reserved for Northstar and for primary actions. Hover and
+  selected chrome use `--secondary` / `--muted`: shadcn's default `bg-accent`
+  recipe would paint the brand blue, so it is not used for chrome states.
+- Never put `--foreground` on `--primary` (4.02:1 — below AA). A brand fill
+  always carries `--primary-foreground` or `--accent-foreground`.
+- Every series colour clears 3:1 against `--card`; competitors are separable
+  by lightness and by line treatment, not by hue.
+
+## Typography
+
+One family: **Inter**, a neo-grotesque sans. It is self-hosted from
+`src/app/fonts/Inter-Variable.woff2` through `next/font/local`, so the
+production build never calls a font CDN — `next/font/google` hard-fails the
+build when Google Fonts is unreachable. The variable font carries the `wght`
+axis 100–900 and the `opsz` axis 14–32; optical sizing is left on automatic.
+
+Coverage: the bundled file is the Google Fonts latin subset — Latin-1 plus
+General Punctuation, so `—` and `·` are covered, and a few extras such as `↑`
+and `↓`. It does **not** include `→` (U+2192), Greek, Cyrillic, or Latin
+Extended-A. Glyphs outside the subset fall back to the system sans, so new copy
+stays inside it and symbols come from `lucide-react` icons rather than from
+glyphs.
+
+### Type scale
+
+| Role | Class | Size / line-height | Use |
+|------|-------|--------------------|-----|
+| Display metric | `text-3xl font-semibold tracking-tight tabular-nums` | 30 / 36 | KPI values |
+| Page title | `text-2xl font-semibold tracking-tight` | 24 / 32 | route headings |
+| Section title | `text-sm font-semibold tracking-tight` | 14 / 20 | panel headers; the header product name |
+| Body | `text-sm leading-6` | 14 / 24 | prose |
+| Compact body | `text-sm leading-5` | 14 / 20 | table cells |
+| Label | `text-xs font-medium uppercase tracking-widest` | 12 / 16 | eyebrows |
+| Column label | `text-xs font-medium uppercase tracking-wide` | 12 / 16 | dense table heads |
+| Micro | `text-xs leading-4` | 12 / 16 | badges, captions |
+
+### Tabular numerals
+
+Numbers must align in columns.
+
+- Tables and `<time>` elements get tabular figures from the base layer; no
+  extra class is needed.
+- Metrics, deltas, and other numeric text outside a table add the
+  `tabular-nums` utility.
+- The shell has no numeric surface yet; the KPI cards are the first consumer
+  of these rules.
+
+## Focus and interaction states
+
+- **One focus system.** The base layer draws focus once: a 2px `--ring`
+  outline with a 2px offset. Components do not add their own focus rings or
+  focus-tinted borders.
+- **Hover** is a quiet surface shift: chrome moves to `--secondary` /
+  `--muted`, and a filled variant shifts its own fill (`bg-primary/80` for a
+  brand fill, `bg-destructive/20` for a destructive one). Hover never reaches
+  for the brand accent.
+- **Selected** chrome uses `bg-secondary` plus `text-foreground` and a hairline
+  border. The accent stays out of chrome.
+- **Disabled** reduces opacity and drops the pointer affordance; the label
+  still has to meet contrast.
+- **Invalid** is a state, not a focus state: a `--destructive` border plus a
+  3px `--destructive` ring at 40% opacity.
+- **Selection** uses `--selection` — the accent at 30% — with `--foreground`
+  as the selected text colour. This is the one sanctioned use of the brand
+  outside Northstar data.
+
+## Spacing and layout
+
+- Horizontal page padding: `px-4` (`sm:px-6`).
+- Content max width: `max-w-6xl`, centered.
+- Vertical rhythm: `gap-6` (24px) between panels, `gap-2`..`gap-3` (8–12px)
+  inside compact rows.
+- Dividers: `border-border`. Shadows only for focus and overlays.
+- Radii come from `--radius`: `rounded-lg` for panels, `rounded-md` for
+  controls, `rounded-4xl` for pills.
+
+## Responsive conventions
+
+These are the conventions the dashboard is built against; only the shell
+exists today, and the surfaces below arrive with their own tickets.
+
+| Breakpoint | Width | Behavior |
+|------------|-------|----------|
+| Base | `< 640px` | single column; KPI cards stack; the prompt table becomes cards; the chart keeps at least `h-60` of height with fewer labels |
+| `sm` | `≥ 640px` | KPI cards in a 3-column grid; table view returns |
+| `md` | `≥ 768px` | two-column detail layout (answer + citations) |
+| `lg` | `≥ 1024px` | full dashboard density |
+
+The whole flow has to work from ~390px to desktop without horizontal overflow.
+
+## Component inventory
+
+The inventory is capped. A new component needs a product need, not a style
+preference.
+
+| Component | Path | States |
+|-----------|------|--------|
+| Badge | `src/components/ui/badge.tsx` | default, secondary, outline, ghost, destructive, link; hover, invalid |
+| Card | planned | default |
+| Button | planned | default, hover, focus-visible, disabled, outline, ghost |
+| Table primitives | planned | default; hover only when a row sets `data-interactive` |
+| Skeleton | planned | default |
+| Segmented control | planned | default, hover, focus-visible, selected, disabled |
+
+"Planned" components are built by the base-component ticket, against this
+document.
+
+## Accessibility rules
+
+- Body and label text meets WCAG AA on `--background` and `--card`.
+- Brand fills carry `--primary-foreground` / `--accent-foreground`.
+- Colour is never the only signal: trends carry up/down/neutral text, mentions
+  carry brand labels, chart series differ by lightness and line treatment.
+- Focus is always visible and is drawn by the global outline.
+- `--input` clears 3:1 against both `--background` and `--card`. `--border` is
+  a hairline divider and is not a control boundary.
+- Every chart series clears 3:1 against `--card`.
+
+## Data semantics
+
+- Northstar uses `--accent` and `--chart-1`.
+- Competitors use the neutral chart ramp plus a distinct line treatment.
+- Missing or undefined metrics render as an em dash (`—`), never `NaN`.
