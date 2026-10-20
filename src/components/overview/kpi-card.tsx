@@ -1,17 +1,15 @@
+import { Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import type { Kpi } from "@/components/overview/kpis";
 import { formatMetric } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-/**
- * The metrics the overview reports, with the unit each one is reported in.
- *
- * They are the glossary's names, and each name comes with its own unit, so
- * a fourth KPI means a fourth glossary entry.
- */
-export type Kpi =
-  | { label: "Visibility Score"; unit: "percent" }
-  | { label: "Share of Voice"; unit: "percent" }
-  | { label: "Average Position"; unit: "position" };
 
 /** The direction a metric moved in. */
 type Direction = "up" | "down" | "neutral";
@@ -19,6 +17,12 @@ type Direction = "up" | "down" | "neutral";
 /**
  * A KPI card: the metric's name, its value, and its movement over the
  * tracked window.
+ *
+ * The name is a label with an explanation behind it: the information icon
+ * beside the name opens the metric's explanation, so a reader who does not
+ * know what the metric measures can ask. The popover opens on a hover, on a
+ * click and on a tap, so it is reachable whichever way the reader arrives —
+ * a hover-only overlay would answer nobody on a phone.
  *
  * A metric the Snapshot cannot answer renders as an em dash — the design
  * system's rule for a missing metric — and so does a movement with no
@@ -30,7 +34,7 @@ export function KpiCard({
   value,
   delta,
 }: {
-  /** The metric, with the unit it is reported in. */
+  /** The metric, with the unit it is reported in and its explanation. */
   kpi: Kpi;
   /** The metric's value; `null` when the Snapshot cannot answer it. */
   value: number | null;
@@ -40,8 +44,21 @@ export function KpiCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        <CardTitle className="flex items-center gap-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
           {kpi.label}
+          <Popover>
+            <PopoverTrigger
+              openOnHover
+              aria-label={`What ${kpi.label} means`}
+              className="inline-flex size-6 shrink-0 items-center justify-center rounded-sm"
+            >
+              <Info aria-hidden="true" className="size-3.5" />
+            </PopoverTrigger>
+            <PopoverContent side="top">
+              <PopoverTitle className="sr-only">{kpi.label}</PopoverTitle>
+              <PopoverDescription>{kpi.description}</PopoverDescription>
+            </PopoverContent>
+          </Popover>
         </CardTitle>
       </CardHeader>
       <CardContent>

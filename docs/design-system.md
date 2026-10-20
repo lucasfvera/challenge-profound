@@ -218,6 +218,7 @@ preference.
 | Table primitives | `src/components/ui/table.tsx` | default; hover when a row sets `data-interactive`; selected when a row sets `data-state="selected"`; disabled when a row sets `aria-disabled` |
 | Skeleton | `src/components/ui/skeleton.tsx` | default — inert, it has no interactive states |
 | Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled, pointer |
+| Popover | `src/components/ui/popover.tsx` | default; the trigger carries hover, focus-visible and pointer |
 
 The vocabulary is shared; each component implements the states in its
 inventory row.
@@ -226,7 +227,7 @@ inventory row.
 |-------|---------------------|
 | default | the variant's own surface and text tokens |
 | hover | a quiet surface shift to `--muted` with the foreground text; a filled variant shifts its own fill; a link underlines |
-| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, and the badge in its link rendering, where it covers the anchor that is not a hyperlink. An element that is not clickable keeps the default cursor. |
+| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, the badge in its link rendering, where it covers the anchor that is not a hyperlink, and the popover's trigger. An element that is not clickable keeps the default cursor. |
 | focus-visible | the global outline — a component never draws one and never suppresses one |
 | disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
 | invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
@@ -234,7 +235,8 @@ inventory row.
 
 The components are generated with the shadcn CLI and restyled against this
 document: the CLI's `focus-visible:ring-*` and `outline-none` utilities are
-stripped, `bg-accent` chrome becomes `bg-secondary` or `bg-muted`, and the
+stripped, `bg-accent` chrome becomes `bg-secondary` or `bg-muted`, an
+overlay's `ring-foreground/10` becomes the `--border` hairline, and the
 `dark:` duplicates go — the app is dark-only, so the `dark:` variant is the
 only one that ever applies. The documentation is not a class source: it is
 excluded from the scan in `src/app/globals.css`, so the utilities it names as
@@ -253,6 +255,28 @@ reporting them through `onValueChange` — the way Base UI's toggle group
 models them — and a segment expresses its selection as `aria-pressed`. The
 Platforms the segments stand for are bound to the control by the platform
 scope control, below.
+
+**The popover** (`src/components/ui/popover.tsx`) is the overlay the app reads
+a secondary piece of copy from — a metric's explanation, today. It opens on a
+click and on a tap, and a trigger can ask for it to open on a hover as well.
+
+The popover is the overlay, and the hover-only label is not: a label of that
+kind answers a pointer and nothing else — it is disabled on touch devices,
+and the copy inside it is never announced. A popover opens on a click, so the
+reader reaches it with a tap or with the keyboard, and its popup is a dialog
+with a name and a description, so a screen reader reads it. The card's
+information icon is a popover for that reason: the explanation is worth
+reading on a phone. The chart's tooltip is a different thing — a drawing
+inside the plot, not an overlay the reader opens.
+
+The trigger is a control — it takes focus and it answers a click — so it
+carries the pointer, the affordance the button, the segmented control's
+segment and the badge's link rendering carry.
+
+The popup is an overlay: it wears `--popover` with `--popover-foreground` on
+it, the hairline `--border` around it and a shadow, the way the popover
+token is meant to be used. The shadcn CLI slides and zooms the popup in; the
+app asks for restrained motion, so the popup fades.
 
 ## The overview's surfaces
 
@@ -273,6 +297,15 @@ components: the metric's name in the label role, the value in the display
 metric role, and the movement in the micro role. A movement carries its
 direction in an icon and in the words a screen reader reads, so colour is
 never the only signal.
+
+The metric's name is a label with an explanation behind it. Beside the name
+sits the information icon, and the popover it opens carries the metric's
+explanation: hovering it opens the popover, and so does a click or a tap. The
+explanation repeats the metric's definition in `GLOSSARY.md`, in the
+glossary's vocabulary. The icon carries an accessible name that says which
+metric it explains, so the explanation is reachable without seeing the icon
+at all, and the popover's own title and description name the metric and its
+explanation to a screen reader.
 
 **The visibility chart** (`src/components/overview/visibility-chart.tsx`) is
 the overview's third surface: the Visibility Score over the tracked window,
@@ -448,6 +481,9 @@ interactive during the wait.
 - Brand fills carry `--primary-foreground` / `--accent-foreground`.
 - Colour is never the only signal: trends carry up/down/neutral text, mentions
   carry brand labels, chart series differ by lightness and line treatment.
+- A popover's trigger carries an accessible name that says what it explains,
+  so the icon is not the only clue, and the popup is a named dialog with a
+  description, so a screen reader reads it.
 - The chart's legend carries its state in `aria-pressed`, so a hidden series
   is readable without colour, and the tooltip names the day and every visible
   series.

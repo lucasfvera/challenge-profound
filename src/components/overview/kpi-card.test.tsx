@@ -1,16 +1,21 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { KpiCard } from "@/components/overview/kpi-card";
-import type { Kpi } from "@/components/overview/kpi-card";
+import { KPIS } from "@/components/overview/kpis";
+import type { Kpi } from "@/components/overview/kpis";
 
 /** The Visibility Score, reported as a percentage. */
-const VISIBILITY_SCORE: Kpi = { label: "Visibility Score", unit: "percent" };
+const VISIBILITY_SCORE: Kpi = KPIS.visibilityScore;
 
 /** The Average Position, reported in positions. */
-const AVERAGE_POSITION: Kpi = { label: "Average Position", unit: "position" };
+const AVERAGE_POSITION: Kpi = KPIS.averagePosition;
 
 /** The Share of Voice, reported as a percentage. */
-const SHARE_OF_VOICE: Kpi = { label: "Share of Voice", unit: "percent" };
+const SHARE_OF_VOICE: Kpi = KPIS.shareOfVoice;
+
+/** The accessible name the icon beside the Visibility Score carries. */
+const TRIGGER_NAME = "What Visibility Score means";
 
 describe("the KPI card", () => {
   it("spells the movement out for a reader who cannot see the colour", () => {
@@ -51,5 +56,48 @@ describe("the KPI card", () => {
     expect(
       screen.getByText("No earlier period to compare."),
     ).toBeInTheDocument();
+  });
+
+  it("explains the metric behind the name", async () => {
+    const user = userEvent.setup();
+
+    render(<KpiCard kpi={VISIBILITY_SCORE} value={42.5} delta={-3.2} />);
+
+    // The icon beside the name is the affordance that says there is more to
+    // read, and it is named so a reader who cannot see the icon knows which
+    // metric it explains.
+    const trigger = screen.getByRole("button", { name: TRIGGER_NAME });
+
+    await user.hover(trigger);
+
+    // Hovering it opens the explanation the card carries for the metric, in
+    // a popover that is a named dialog, so a screen reader reads it too.
+    const popover = await screen.findByRole("dialog", {
+      name: VISIBILITY_SCORE.label,
+    });
+
+    expect(popover).toHaveAccessibleDescription(VISIBILITY_SCORE.description);
+  });
+
+  it("opens the explanation for a reader who reaches the icon by keyboard", async () => {
+    const user = userEvent.setup();
+
+    render(<KpiCard kpi={VISIBILITY_SCORE} value={42.5} delta={-3.2} />);
+
+    // The icon takes focus, so a reader who never points at anything can
+    // still ask what the metric measures.
+    await user.tab();
+
+    const trigger = screen.getByRole("button", { name: TRIGGER_NAME });
+
+    expect(trigger).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+
+    const popover = await screen.findByRole("dialog", {
+      name: VISIBILITY_SCORE.label,
+    });
+
+    expect(popover).toHaveAccessibleDescription(VISIBILITY_SCORE.description);
   });
 });

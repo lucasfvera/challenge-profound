@@ -52,9 +52,9 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
-primitives, skeleton, and the segmented control. The platform scope control
-lives in `src/components/`, because the overview and the prompt detail route
-share it; the KPI cards and the visibility chart live in
+primitives, skeleton, the segmented control, and the popover. The platform
+scope control lives in `src/components/`, because the overview and the prompt
+detail route share it; the KPI cards and the visibility chart live in
 `src/components/overview/`, and the overview's prompt table and the prompt
 detail route's panels in `src/components/prompts/`. They compose the base
 components rather than adding to the inventory.
@@ -148,10 +148,10 @@ contract, the prompt row contract, the six component tests, and the app's
 date formatting. The component tests are the second seam, next to the pure
 one: they render the surfaces in a DOM and assert the interaction and
 accessibility contracts — the segmented control's keyboard and ARIA, the KPI
-card's delta formatting, the answer panel's Mention highlights, the prompt
-row's activation, the chart's tooltip and legend, and the citations panel's
-links. `npm run build` produces a production bundle; run it with `npm run
-start` to serve that bundle locally.
+card's delta formatting and its metric explanation, the answer panel's Mention
+highlights, the prompt row's activation, the chart's tooltip and legend, and
+the citations panel's links. `npm run build` produces a production bundle;
+run it with `npm run start` to serve that bundle locally.
 
 `npm run test:e2e` runs the Playwright smoke suite against a **production
 build**: the harness runs `next build && next start` on a port of its own and
@@ -179,9 +179,12 @@ control filters the overview by Platform and writes the choice to the
 `platform` search param, so a view of the dashboard is shareable; a value the
 Snapshot does not track falls back to ChatGPT. The KPI cards report
 Northstar's Visibility Score, Share of Voice, and Average Position for the
-selected Platform. The Visibility Score and the Share of Voice carry the
-movement of the tracked window; the Average Position has none to compare,
-because the Snapshot tracks no daily mention positions.
+selected Platform, and each metric's name carries an information icon: hover
+it, click it or tap it, and the metric's explanation opens in a popover, so
+a reader who does not know what the metric measures can ask. The Visibility
+Score and the Share of Voice carry the movement of the tracked window; the
+Average Position has none to compare, because the Snapshot tracks no daily
+mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.
@@ -226,6 +229,9 @@ npx shadcn add <component>
 The CLI reads `components.json`; components land in `src/components/ui/`. It
 writes its own defaults, which the design system overrides: strip the
 `focus-visible:ring-*` and `outline-none` utilities (focus is drawn once, by
-the global outline in `src/app/globals.css`) and replace `bg-accent` chrome
-with `bg-secondary` or `bg-muted` (`--accent` is the brand color). See
+the global outline in `src/app/globals.css`), replace `bg-accent` chrome
+with `bg-secondary` or `bg-muted` (`--accent` is the brand color), and
+restyle an overlay: the popover's `ring-foreground/10` becomes the
+`--border` hairline, its fixed `w-72` panel becomes a popup that fits its
+copy, and its slide-and-zoom becomes a fade. See
 [`docs/design-system.md`](docs/design-system.md).
