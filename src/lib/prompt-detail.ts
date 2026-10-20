@@ -1,5 +1,5 @@
 import { snapshot } from "@/lib/snapshot";
-import type { Answer, Prompt } from "@/lib/snapshot";
+import type { Answer, CitationId, Prompt } from "@/lib/snapshot";
 
 /**
  * The prompt detail contract: the detail route's read of the Snapshot.
@@ -42,6 +42,16 @@ export function findAnswer(
 
 /** The URL schemes a Citation may be linked to. */
 const LINKABLE_PROTOCOLS = ["http:", "https:"];
+
+/**
+ * The id of a Citation's entry in the citations panel.
+ *
+ * The marker in the answer body links to it, so both sides of that link
+ * agree on the id.
+ */
+export function citationAnchorId(citationId: CitationId): string {
+  return `citation-${citationId}`;
+}
 
 /**
  * Whether a Citation's URL is safe to link to.
