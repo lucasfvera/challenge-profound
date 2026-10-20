@@ -1,20 +1,20 @@
 import * as React from "react"
 import { cn } from "cn"
 
-// The card is a panel, not a control. It carries no focus ring of its own —
-// the app draws focus once, with the global `:focus-visible` outline in
+// The card is a panel, not a control. It draws no focus indicator of its
+// own — the app draws focus once, with the global `:focus-visible` rule in
 // src/app/globals.css — and it hovers only when the caller marks it
 // `data-interactive`, the same contract the table rows use. The disabled
 // state is `aria-disabled`, because a card is not a form control.
 //
-// `--card-spacing` holds the card's padding rhythm in one place: override it
-// with a class (`[--card-spacing:--spacing(3)]`) for a denser card.
+// `--card-spacing` holds the card's padding rhythm in one place, so a denser
+// card is a class rather than a variant.
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg border border-border bg-card py-(--card-spacing) text-sm text-card-foreground data-[interactive]:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
+        "flex flex-col gap-(--card-spacing) overflow-hidden rounded-lg border border-border bg-card py-(--card-spacing) text-sm text-card-foreground transition-colors data-[interactive]:hover:bg-muted aria-disabled:pointer-events-none aria-disabled:opacity-50 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 *:[img:first-child]:rounded-t-lg *:[img:last-child]:rounded-b-lg",
         className
       )}
       {...props}

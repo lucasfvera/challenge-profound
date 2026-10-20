@@ -3,9 +3,9 @@ import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-// The shadcn CLI writes per-component focus rings; the app draws focus once,
-// with the global `:focus-visible` outline in src/app/globals.css. The ring
-// below is the invalid state, not a focus state.
+// The shadcn CLI writes a focus indicator of its own; the app draws focus
+// once, with the global `:focus-visible` rule in src/app/globals.css. The
+// `aria-invalid` mark below is the invalid state, not a focus state.
 //
 // The badge is a `<span>` by default, so it is not interactive and carries no
 // hover. The hover utilities are scoped to the link rendering (`[a]:`), which
@@ -21,12 +21,12 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
         secondary:
-          "bg-secondary text-secondary-foreground [a]:hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)]",
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary-hover",
         destructive:
           "bg-destructive/10 text-destructive [a]:hover:bg-destructive/20",
         outline:
-          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
-        ghost: "[a]:hover:bg-muted [a]:hover:text-muted-foreground",
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-foreground",
+        ghost: "[a]:hover:bg-muted [a]:hover:text-foreground",
         link: "text-primary underline-offset-4 [a]:hover:underline",
       },
     },

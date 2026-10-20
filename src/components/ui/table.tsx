@@ -1,8 +1,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-// The table primitives carry no focus ring of their own: the app draws focus
-// once, with the global `:focus-visible` outline in src/app/globals.css.
+// The table primitives draw no focus indicator of their own: the app draws
+// focus once, with the global `:focus-visible` rule in src/app/globals.css.
 //
 // A row is a static row until the caller marks it `data-interactive`, which
 // turns on the hover surface. The selected state is the document's selected

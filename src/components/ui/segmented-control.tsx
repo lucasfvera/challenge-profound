@@ -5,8 +5,8 @@ import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group
 import { cn } from "cn"
 
 // The segmented control is a quiet track with one selected segment. It
-// carries no focus ring of its own — the app draws focus once, with the
-// global `:focus-visible` outline in src/app/globals.css — and it never
+// draws no focus indicator of its own — the app draws focus once, with the
+// global `:focus-visible` rule in src/app/globals.css — and it never
 // reaches for the brand accent: the selected segment is the document's
 // selected chrome, the quiet surface with the foreground text, and the
 // hairline border is the track's.

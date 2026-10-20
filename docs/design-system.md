@@ -41,6 +41,7 @@ Everything else derives from these two, so a brand change is a one-line change.
 | `--muted-foreground` | `#9A9AA3` | secondary text and labels (7.30:1 on `--background`) |
 | `--secondary` | `#17171A` | secondary variant fill; selected chrome |
 | `--secondary-foreground` | `#E6E6E9` | text on secondary |
+| `--secondary-hover` | `color-mix(in oklab, var(--secondary), var(--foreground) 5%)` | hover fill for a surface that already rests on `--secondary` |
 
 ### Brand, lines, and focus
 
@@ -133,13 +134,15 @@ Numbers must align in columns.
   it sits in the utilities layer and would kill the base-layer outline, so a
   component that suppresses the outline suppresses the only focus affordance
   in the app.
-- **Hover** is a quiet surface shift: chrome moves to `--muted`, and a filled
-  variant shifts its own fill (`bg-primary/80` for a brand fill,
-  `bg-destructive/20` for a destructive one). Hover never reaches for the
-  brand accent. `--secondary` is the lightest quiet surface in the ramp, so a
-  control that already rests on it mixes 5% of the foreground into its own
-  fill on hover instead of dimming it — dimming a near-black fill reads as a
-  press, not a hover.
+- **Hover** is a quiet surface shift: chrome moves to `--muted` with the
+  foreground text, and a filled variant shifts its own fill (`bg-primary/80`
+  for a brand fill, `bg-destructive/20` for a destructive one,
+  `bg-secondary-hover` for a secondary one). A link underlines instead of
+  shifting a surface. Hover never reaches for the brand accent.
+  `--secondary` is the lightest quiet surface in the ramp, so a control that
+  already rests on it takes the `--secondary-hover` mix on hover instead of
+  dimming its own fill — dimming a near-black fill reads as a press, not a
+  hover.
 - **Selected** chrome uses `bg-secondary` plus `text-foreground`, on the
   hairline it already carries — a table row's divider, a segment's track. The
   accent stays out of chrome. A hover rule must not reach the selected
@@ -204,7 +207,7 @@ inventory row.
 | State | How it is expressed |
 |-------|---------------------|
 | default | the variant's own surface and text tokens |
-| hover | a quiet surface shift, never the brand accent |
+| hover | a quiet surface shift to `--muted` with the foreground text; a filled variant shifts its own fill; a link underlines |
 | focus-visible | the global outline — a component never draws one and never suppresses one |
 | disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
 | invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
@@ -214,7 +217,9 @@ The components are generated with the shadcn CLI and restyled against this
 document: the CLI's `focus-visible:ring-*` and `outline-none` utilities are
 stripped, `bg-accent` chrome becomes `bg-secondary` or `bg-muted`, and the
 `dark:` duplicates go — the app is dark-only, so the `dark:` variant is the
-only one that ever applies.
+only one that ever applies. The documentation is not a class source: it is
+excluded from the scan in `src/app/globals.css`, so the utilities it names as
+examples never reach the stylesheet.
 
 The button's variants are `default`, `outline`, `secondary`, `ghost`,
 `destructive` and `link`, on four sizes: `default` (32px), `sm` (28px), `lg`
