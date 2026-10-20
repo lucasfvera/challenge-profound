@@ -163,3 +163,61 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
     href.replace(/^#/, ""),
   );
 });
+
+test("An unknown prompt id answers 404", async ({ page }) => {
+  const response = await page.goto("/prompts/p-99");
+
+  // The status is the contract: a Prompt the Snapshot does not track is
+  // not a page.
+  expect(response?.status()).toBe(404);
+
+  // And the page that answers is the route's own.
+  await expect(
+    page.getByRole("heading", {
+      name: "The Snapshot has no answer for this prompt",
+    }),
+  ).toBeVisible();
+});
+
+test("An unknown platform param falls back to the default platform", async ({
+  page,
+}) => {
+  await page.goto("/?platform=not-a-platform");
+
+  // A hand-edited link has to render a view, and it must never select a
+  // platform the Snapshot does not track: the scope falls back to the
+  // Snapshot's first platform, and the table is scoped to it.
+  await expect(
+    page
+      .getByRole("table")
+      .getByRole("columnheader", { name: "ChatGPT (selected platform)" }),
+  ).toBeVisible();
+
+  // The scope control agrees with the scope the table reads.
+  await expect(
+    page
+      .getByRole("group", { name: "Platform" })
+      .getByRole("button", { name: "ChatGPT" }),
+  ).toHaveAttribute("aria-pressed", "true");
+});
+
+test("The overview holds at a phone viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  // Below the `sm` breakpoint the table gives way to cards, so the same
+  // rows are still reachable on a phone.
+  await expect(page.getByRole("table", { includeHidden: true })).toBeHidden();
+  await expect(page.getByRole("link", { name: FIRST_PROMPT_TEXT })).toBeVisible();
+
+  // The flow has to work from ~390px to desktop without scrolling
+  // sideways. The measure is the content's width against the layout
+  // viewport, so a vertical scrollbar is not counted as an overflow.
+  const overflow = await page.evaluate(
+    () =>
+      document.documentElement.scrollWidth -
+      document.documentElement.clientWidth,
+  );
+
+  expect(overflow).toBeLessThanOrEqual(0);
+});
