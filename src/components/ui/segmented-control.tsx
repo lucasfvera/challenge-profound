@@ -14,6 +14,10 @@ import { cn } from "cn"
 // The control holds no domain state. Which segment is selected belongs to
 // the caller: the group takes the pressed values through `value` and reports
 // them through `onValueChange`, the way Base UI's toggle group models them.
+//
+// A segment is clickable, so it carries the pointer: the cursor is the
+// affordance that says the segment answers a click. A disabled segment drops
+// it with the `pointer-events-none` below.
 function SegmentedControl({
   className,
   ...props
@@ -50,7 +54,7 @@ function SegmentedControlItem({
     <TogglePrimitive
       data-slot="segmented-control-item"
       className={cn(
-        "inline-flex h-7 items-center justify-center px-2.5 text-xs font-medium whitespace-nowrap text-muted-foreground transition-colors first:rounded-l-sm last:rounded-r-sm hover:not-aria-pressed:bg-muted hover:not-aria-pressed:text-foreground aria-pressed:bg-secondary aria-pressed:text-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
+        "inline-flex h-7 items-center justify-center px-2.5 text-xs font-medium whitespace-nowrap text-muted-foreground cursor-pointer transition-colors first:rounded-l-sm last:rounded-r-sm hover:not-aria-pressed:bg-muted hover:not-aria-pressed:text-foreground aria-pressed:bg-secondary aria-pressed:text-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
         className
       )}
       {...props}

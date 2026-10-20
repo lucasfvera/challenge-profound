@@ -11,8 +11,13 @@ import { cn } from "cn"
 // The secondary variant mixes the fill with 5% of the foreground on hover:
 // no token is lighter than `--secondary`, and dimming the fill (`/80`) reads
 // as a press instead of a hover.
+//
+// The pointer is the affordance that says the button is clickable, so it
+// belongs to the button and not to the call site. A disabled button drops it
+// with the `pointer-events-none` below: a control that cannot be pressed is
+// not hit-tested, so the cursor never reaches it.
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-colors select-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap cursor-pointer transition-colors select-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
