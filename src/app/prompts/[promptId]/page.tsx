@@ -1,11 +1,18 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AnswerPanel } from "@/components/prompts/answer-panel";
 import { CitationsPanel } from "@/components/prompts/citations-panel";
 import { PromptDetail } from "@/components/prompts/prompt-detail";
-import { PLATFORM_PARAM, resolvePlatform } from "@/lib/platform-scope";
+import { buttonVariants } from "@/components/ui/button";
+import {
+  overviewHref,
+  PLATFORM_PARAM,
+  resolvePlatform,
+} from "@/lib/platform-scope";
 import type { PlatformSearchParams } from "@/lib/platform-scope";
 import { findAnswer, findPrompt } from "@/lib/prompt-detail";
 import { snapshot } from "@/lib/snapshot";
+import { cn } from "@/lib/utils";
 
 /**
  * The prompt detail route: one tracked Prompt, the Answer the selected
@@ -15,6 +22,10 @@ import { snapshot } from "@/lib/snapshot";
  * the path and the Platform from the `platform` search param, so a shared
  * link carries both halves of the view. A Prompt the Snapshot does not track
  * is a 404.
+ *
+ * The route carries its way back to the overview, scoped to the Platform it
+ * is showing: the drill-down out of the table is one half of the flow, and
+ * on a phone — where there is no browser chrome — the way back is the other.
  */
 export default async function PromptPage({
   params,
@@ -35,6 +46,16 @@ export default async function PromptPage({
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+      {/* The way back is a link, so it is a link and not a button: a control
+          that navigates has to say so. The button's link variant gives it the
+          app's own link styling, and the variant's own padding is dropped so
+          the link's text sits on the page's edge with the rest of the route. */}
+      <Link
+        href={overviewHref(platform.id)}
+        className={cn(buttonVariants({ variant: "link" }), "px-0")}
+      >
+        Back to the overview
+      </Link>
       <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
         {prompt.category}
       </p>

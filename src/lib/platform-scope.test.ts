@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isPlatformId,
+  overviewHref,
   platformScopeHref,
   resolvePlatform,
 } from "@/lib/platform-scope";
@@ -43,5 +44,11 @@ describe("the platform scope", () => {
     expect(platformScopeHref("/prompts/p-01", new URLSearchParams(), "claude")).toBe(
       "/prompts/p-01?platform=claude",
     );
+  });
+
+  it("writes the overview's URL with the scope on it", () => {
+    for (const platform of PLATFORMS) {
+      expect(overviewHref(platform.id)).toBe(`/?platform=${platform.id}`);
+    }
   });
 });
