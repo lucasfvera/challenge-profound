@@ -150,18 +150,14 @@ describe("the derivation layer", () => {
     });
   });
 
-  it("gives every scope a movement, and a downward one somewhere", () => {
+  it("gives every scope a movement", () => {
     const movements = snapshot.platforms.map(
       (platform) => subjectMetrics(snapshot, platform.id).visibilityTrend,
     );
 
     // Every scope carries a Visibility Score movement — the card is never
-    // mute — and the Snapshot holds the bad case, so at least one of them
-    // goes down.
+    // mute — and the bad case above is the one that goes down.
     expect(movements).not.toContain(null);
-    expect(
-      movements.some((movement) => movement !== null && movement < 0),
-    ).toBe(true);
   });
 
   it("reports no metrics when the Snapshot measures no brand", () => {

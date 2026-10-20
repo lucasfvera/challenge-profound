@@ -519,7 +519,7 @@ const ANSWERS: Answer[] = [
   {
     promptId: "p-05",
     platformId: "perplexity",
-    text: "Vantage computes share of voice from the citation set it stores [1]. The broader reading counts every mention in the answer text, which is the harder number to reproduce [2].",
+    text: "Vantage computes share of voice from the citation set it stores [1]. Counting every mention in the answer text is the broader reading, and the harder number to reproduce [2].",
     citations: [CITATIONS["c-05"], CITATIONS["c-12"]],
   },
   {
