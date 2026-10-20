@@ -6,7 +6,7 @@ A deterministic, dark-only dashboard for the fictional brand **Northstar**: how 
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`).
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`) · Recharts 3.
 
 ## Data
 
@@ -15,7 +15,8 @@ The app reads one module: `src/lib/snapshot`. It holds the Snapshot fixture —
 Answers those Prompts collected (with their Mentions and Citations), and 30
 daily visibility points per brand and Platform — plus the pure derivations on
 top of it: Visibility Score, Share of Voice, Average Position, per-platform
-aggregation, answer segmentation, and the window-level average and trend.
+aggregation, answer segmentation, the window-level average and trend, and the
+chart's series and tracked-day rows.
 
 Nothing is fetched and nothing is generated at runtime: the fixture is a set of
 literals, and the derivations are pure functions of it. A metric the data
@@ -34,7 +35,7 @@ colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
 primitives, skeleton, and the segmented control. The overview's own surfaces —
-the platform scope control and the KPI cards — live in
+the platform scope control, the KPI cards, and the visibility chart — live in
 `src/components/overview/`, and compose the base components rather than
 adding to the inventory.
 
@@ -61,20 +62,29 @@ npm run build
 ```
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
-and the platform scope contract. `npm run build` produces a production bundle;
-run it with `npm run start` to serve that bundle locally.
+the platform scope contract, and the app's date formatting. `npm run build`
+produces a production bundle; run it with `npm run start` to serve that bundle
+locally.
 
 ## What the app renders today
 
 The dark app shell — a header with the product name and a "Simulated data"
-badge — and, on the home route, the overview: the platform scope control and
-the three KPI cards. The scope control filters the overview by Platform and
-writes the choice to the `platform` search param, so a view of the dashboard
-is shareable; a value the Snapshot does not track falls back to ChatGPT. The
-KPI cards report Northstar's Visibility Score, Share of Voice, and Average
-Position for the selected Platform. The Visibility Score and the Share of Voice
-carry the movement of the tracked window; the Average Position has none to
-compare, because the Snapshot tracks no daily mention positions.
+badge — and, on the home route, the overview: the platform scope control, the
+three KPI cards, and the visibility chart. The scope control filters the
+overview by Platform and writes the choice to the `platform` search param, so
+a view of the dashboard is shareable; a value the Snapshot does not track
+falls back to ChatGPT. The KPI cards report Northstar's Visibility Score,
+Share of Voice, and Average Position for the selected Platform. The Visibility
+Score and the Share of Voice carry the movement of the tracked window; the
+Average Position has none to compare, because the Snapshot tracks no daily
+mention positions.
+
+Below them, the visibility chart draws the Visibility Score of Northstar and
+its three competitors over the 30 tracked days of the selected Platform.
+Northstar wears the brand accent; the competitors take the neutral chart ramp
+and separate by line pattern, so no two series are told apart by hue alone.
+The legend toggles a series out of the plot and the tooltip, and the tooltip
+names the exact tracked score of every visible series on the hovered day.
 
 ## Adding shadcn/ui components
 
