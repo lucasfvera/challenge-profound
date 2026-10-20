@@ -15,10 +15,10 @@ The app reads one module: `src/lib/snapshot`. It holds the Snapshot fixture —
 Answers those Prompts collected (with their Mentions and Citations), and 30
 daily visibility points per brand and Platform — plus the pure derivations on
 top of it: Visibility Score, Share of Voice, Average Position, per-platform
-aggregation, answer segmentation, the window-level average and trend, and the
-chart's series and tracked-day rows, and the prompt table's rows — every
-tracked Prompt with the brand's Mention state on each Platform, ordered by the
-Platform the view is scoped to.
+aggregation, answer segmentation, the window-level average and trend, the
+first-mention position, the chart's series and tracked-day rows, and the
+prompt table's rows — every tracked Prompt with the brand's Mention state on
+each Platform, ordered by the Platform the view is scoped to.
 
 Nothing is fetched and nothing is generated at runtime: the fixture is a set of
 literals, and the derivations are pure functions of it. A metric the data
@@ -29,6 +29,11 @@ on that Platform produce, so the history and the evidence agree.
 The tracked Platforms live in their own module
 (`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
 boundary can read them without pulling the whole fixture into the browser.
+
+The prompt table reads the Snapshot through its own contract
+(`src/lib/prompt-table.ts`): it derives every tracked Prompt's Mention state
+on every Platform from the same segmentation the KPI cards count, and orders
+the rows by the Platform the view is scoped to.
 
 ## Design system
 

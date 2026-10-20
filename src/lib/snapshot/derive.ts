@@ -412,6 +412,42 @@ function mentionsOf(answers: Answer[], brands: Brand[]): AnswerMentions {
   );
 }
 
+/**
+ * The position of the brand's first Mention in one Answer.
+ *
+ * The lowest ordinal of the brand's Mentions in the Answer: 1 means the
+ * brand was named first. `null` when the Answer does not name the brand.
+ *
+ * The Average Position averages these positions, so the prompt table's
+ * indicator and the KPI card report the same number seen per Answer.
+ */
+export function firstMentionPosition(
+  answer: Answer,
+  brands: Brand[],
+  brandId: BrandId,
+): number | null {
+  return firstPosition(mentionsOf([answer], brands)[0], brandId);
+}
+
+/**
+ * The position of the brand's first Mention in one Answer's mentions.
+ *
+ * The lowest ordinal of the brand's Mentions: 1 means the brand was named
+ * first. `null` when the Answer does not name the brand.
+ */
+function firstPosition(
+  mentions: BrandMention[],
+  brandId: BrandId,
+): number | null {
+  const ordinals = mentions
+    .filter((mention) => mention.brandId === brandId)
+    .map((mention) => mention.ordinal);
+
+  if (ordinals.length === 0) return null;
+
+  return Math.min(...ordinals);
+}
+
 /** The share of the tracked Prompts whose answer mentions the brand. */
 function visibilityScoreFrom(
   mentions: AnswerMentions,
@@ -446,13 +482,8 @@ function averagePositionFrom(
   brandId: BrandId,
 ): number | null {
   const firstPositions = mentions
-    .map((list) =>
-      list
-        .filter((mention) => mention.brandId === brandId)
-        .map((mention) => mention.ordinal),
-    )
-    .filter((ordinals) => ordinals.length > 0)
-    .map((ordinals) => Math.min(...ordinals));
+    .map((list) => firstPosition(list, brandId))
+    .filter((position): position is number => position !== null);
 
   if (firstPositions.length === 0) return null;
 

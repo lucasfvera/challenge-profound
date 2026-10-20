@@ -278,7 +278,8 @@ function mentionLabel(
 }
 
 /**
- * The category of a tracked Prompt, in the glossary's own words.
+ * The category of a tracked Prompt, in the words the Snapshot's own
+ * `PromptCategory` uses.
  */
 const CATEGORY_LABELS: Record<PromptCategory, string> = {
   discovery: "Discovery",

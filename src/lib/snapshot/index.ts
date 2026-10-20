@@ -25,6 +25,7 @@ export {
   averagePosition,
   averageVisibilityScore,
   chartData,
+  firstMentionPosition,
   platformMetrics,
   platformSeries,
   seriesPoints,

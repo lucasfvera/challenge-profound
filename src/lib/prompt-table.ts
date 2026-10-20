@@ -1,8 +1,7 @@
-import { segmentAnswer, subjectBrand } from "@/lib/snapshot";
+import { firstMentionPosition, subjectBrand } from "@/lib/snapshot";
 import type {
   Answer,
   Brand,
-  MentionSegment,
   Platform,
   PlatformId,
   Prompt,
@@ -127,10 +126,9 @@ function answersByPrompt(snapshot: Snapshot): Map<PromptId, Answer[]> {
 /**
  * The brand's Mention state in one Platform's Answer for one Prompt.
  *
- * The brand's first Mention is the one the Answer reports: the segments come
- * out of the Answer in the order the Mentions appear in it, so the first
- * segment naming the brand carries the lowest ordinal of that brand — the
- * same ordinal `averagePosition` averages over.
+ * The position comes from the derivation layer's `firstMentionPosition`, so
+ * the number the table shows beside a Mention is the number the Average
+ * Position averages over.
  */
 function mentionState(
   snapshot: Snapshot,
@@ -146,14 +144,11 @@ function mentionState(
 
   if (!answer) return { kind: "no-data", reason: "no-answer" };
 
-  const mention = segmentAnswer(answer, snapshot.brands).find(
-    (segment): segment is MentionSegment =>
-      segment.kind === "mention" && segment.brandId === brand.id,
-  );
+  const position = firstMentionPosition(answer, snapshot.brands, brand.id);
 
-  if (!mention) return { kind: "absent" };
+  if (position === null) return { kind: "absent" };
 
-  return { kind: "mentioned", position: mention.ordinal };
+  return { kind: "mentioned", position };
 }
 
 /**
