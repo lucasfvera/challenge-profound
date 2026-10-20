@@ -18,7 +18,10 @@ top of it: Visibility Score, Share of Voice, Average Position, per-platform
 aggregation, answer segmentation, the window-level average and trend, the
 first-mention position, the chart's series and tracked-day rows, and the
 prompt table's rows — every tracked Prompt with the brand's Mention state on
-each Platform, ordered by the Platform the view is scoped to.
+each Platform, ordered by the Platform the view is scoped to. The chart reads
+the tracked window through the same layer, and the last tracked day of a
+series is the score its Answers produce, so the chart's history ends where
+the cards' number begins.
 
 Nothing is fetched and nothing is generated at runtime: the fixture is a set of
 literals, and the derivations are pure functions of it. A metric the data
@@ -78,9 +81,14 @@ npm run build
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
-contract, the prompt row contract, and the app's date formatting. `npm run
-build` produces a production
-bundle; run it with `npm run start` to serve that bundle locally.
+contract, the prompt row contract, the six component tests, and the app's
+date formatting. The component tests are the second seam, next to the pure
+one: they render the surfaces in a DOM and assert the interaction and
+accessibility contracts — the segmented control's keyboard and ARIA, the KPI
+card's delta formatting, the answer panel's Mention highlights, the prompt
+row's activation, the chart's tooltip and legend, and the citations panel's
+links. `npm run build` produces a production bundle; run it with `npm run
+start` to serve that bundle locally.
 
 ## What the app renders today
 
@@ -89,18 +97,20 @@ badge — and, on the home route, the overview: the platform scope control, the
 three KPI cards, the visibility chart, and the prompt table. The scope
 control filters the overview by Platform and writes the choice to the
 `platform` search param, so a view of the dashboard is shareable; a value the
-Snapshot does not track falls back to ChatGPT. The KPI cards report Northstar's
-Visibility Score, Share of Voice, and Average Position for the selected
-Platform. The Visibility Score and the Share of Voice carry the movement of the
-tracked window; the Average Position has none to compare, because the Snapshot
-tracks no daily mention positions.
+Snapshot does not track falls back to ChatGPT. The KPI cards report
+Northstar's Visibility Score, Share of Voice, and Average Position for the
+selected Platform. The Visibility Score and the Share of Voice carry the
+movement of the tracked window; the Average Position has none to compare,
+because the Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
-its three competitors over the 30 tracked days of the selected Platform.
-Northstar wears the brand accent; the competitors take the neutral chart ramp
-and separate by line pattern, so no two series are told apart by hue alone.
-The legend toggles a series out of the plot and the tooltip, and the tooltip
-names the exact tracked score of every visible series on the hovered day.
+its three competitors over the tracked 30 days, for the selected Platform.
+Northstar's line is the brand accent; the competitors take the neutral ramp
+and a line pattern of their own, so the series are told apart by lightness
+and by treatment rather than by hue. The legend is a set of toggles that
+carry their state in `aria-pressed`, and the tooltip names the tracked day
+and the exact score of every visible series on it. A Platform with no tracked
+window draws the em dash instead of an empty plot.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the

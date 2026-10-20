@@ -241,7 +241,7 @@ for are bound to the control by the platform scope control, below.
 
 ## The overview's surfaces
 
-Three surfaces compose the base components; none adds to the inventory above.
+Four surfaces compose the base components; none adds to the inventory above.
 
 **The platform scope control** (`src/components/platform-scope.tsx`)
 is the segmented control bound to the Platforms the Snapshot tracks. The group
@@ -284,6 +284,37 @@ no token.
   thinned so the labels thin out instead of overlapping at 390px.
 - A Platform the Snapshot tracks no window for renders the em dash, not an
   empty plot.
+**The visibility chart** (`src/components/overview/visibility-chart.tsx`) is a
+card as well, and it draws the series the design system already fixed: the
+measured brand takes `--chart-1` — the brand accent — on a solid, heavier
+line, and the competitors take the neutral ramp from `--chart-2` (`--chart-5`
+is the ramp's reserved fourth step) on a line pattern of their own, so the
+series are told apart by lightness and by treatment rather than by hue. The
+colours are CSS custom properties, so no raw colour reaches the DOM.
+
+The chart's legend is a control, not a key: a group of toggle buttons named
+`Series`, each carrying `aria-pressed`, so a hidden series is readable
+without colour. A hidden series is hidden from the plot and from the tooltip
+as well, and the legend keeps its state when the Platform changes, so the
+reader's reading of the chart survives a re-scope.
+
+The tooltip is a custom one: the tracked day as its heading, then one row
+per visible series with its exact score to one decimal, in the legend's
+order. The values are the tracked scores, and the last tracked day's score
+is the number the KPI card reports, so the chart's history ends where the
+card's number begins. The vertical axis is fixed at 0–100 and labelled in
+percent, so the series move and the axis does not; the horizontal axis
+carries the tracked days, thinned by `minTickGap` so the labels thin out
+instead of overlapping at 390px. The dates are formatted from their ISO
+parts, not through `Date`, so the day never shifts with the reader's time
+zone. The plot keeps at least `h-60` of height below `sm`, and a Platform
+with no tracked window renders the em dash instead of an empty plot — the
+mark this document reserves for a value the Snapshot cannot report. Every
+Platform the Snapshot holds carries a window, so the chart never draws it.
+
+The chart is a client component: the charting library measures its
+container, so the chart cannot be rendered on the server.
+
 **The prompt table** (`src/components/prompts/prompt-table.tsx`) is the
 read-only view of the tracked Prompts: one row per Prompt, the Prompt's
 category in the secondary badge (`--secondary`), and a column per Platform
@@ -402,6 +433,9 @@ interactive during the wait.
 - Brand fills carry `--primary-foreground` / `--accent-foreground`.
 - Colour is never the only signal: trends carry up/down/neutral text, mentions
   carry brand labels, chart series differ by lightness and line treatment.
+- The chart's legend carries its state in `aria-pressed`, so a hidden series
+  is readable without colour, and the tooltip names the day and every visible
+  series.
 - Focus is always visible and is drawn by the global outline.
 - Controls (inputs, selects, textareas) set `border-input`; the universal
   `border-border` rule colours dividers only. `--input` clears 3:1 against
