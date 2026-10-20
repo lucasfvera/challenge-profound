@@ -10,11 +10,11 @@ const HEIGHT = 320;
 /**
  * The x the first tracked day is hovered at.
  *
- * The chart's vertical axis is 36 wide, so the first day is drawn just
+ * The chart's vertical axis is 44 wide, so the first day is drawn just
  * right of that. The hover has to stay inside the plot area: Recharts
  * clears the tooltip outside it.
  */
-const FIRST_DAY_X = 40;
+const FIRST_DAY_X = 48;
 
 /**
  * A `ResizeObserver`, which jsdom does not have.
