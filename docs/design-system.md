@@ -158,10 +158,11 @@ Numbers must align in columns.
   pointer for free and gives a button nothing, so a button left without this
   rule reads as text — the chart's legend, whose series toggles wear the
   quiet variant, is the clearest case. The badge states the pointer itself,
-  and only in its interactive rendering, the link rendering, the same form
-  its hover belongs to: the anchor that is not a hyperlink shows the pointer
-  because of it, and an inert badge never shows one. An element that is not
-  clickable keeps the default cursor.
+  and only in the interactive rendering it has, the link rendering — the
+  same form its hover belongs to — so the anchor that is not a hyperlink
+  shows the pointer too. The app renders the badge inert today, and an
+  inert badge never shows one. An element that is not clickable keeps the
+  default cursor.
 - **Disabled** reduces opacity (`opacity-50`) and drops the pointer
   affordance. The label token still has to clear AA before the dimming —
   inactive controls are exempt from the contrast requirement (WCAG 1.4.3).

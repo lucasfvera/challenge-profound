@@ -59,6 +59,9 @@ const SIMULATED_DATA = "Simulated data";
 /** The title of the source the answer for the first Prompt cites. */
 const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
 
+/** The hook the card primitive leaves for the suite to take a card by. */
+const CARD_SLOT = "[data-slot='card']";
+
 /**
  * The name of a column header for the platform the table is scoped to.
  *
@@ -67,6 +70,19 @@ const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
  */
 function selectedPlatform(platform: string) {
   return `${platform} (selected platform)`;
+}
+
+/**
+ * The segment of the platform scope that names one Platform.
+ *
+ * The scope control is a group named `Platform` and a segment is a button
+ * inside it, so the suite reaches a Platform the way a reader does: by the
+ * name the group and the segment carry.
+ */
+function platformSegment(page: Page, platform: string) {
+  return page
+    .getByRole("group", { name: PLATFORM_GROUP })
+    .getByRole("button", { name: platform });
 }
 
 /**
@@ -79,7 +95,7 @@ function selectedPlatform(platform: string) {
  * legend, which no metric card carries.
  */
 function kpiCard(page: Page, metric: RegExp) {
-  return page.locator("[data-slot='card']").filter({
+  return page.locator(CARD_SLOT).filter({
     hasText: metric,
     hasNot: page.getByRole("group", { name: SERIES_GROUP }),
   });
@@ -93,7 +109,7 @@ function kpiCard(page: Page, metric: RegExp) {
  * which no metric card carries.
  */
 function chartCard(page: Page, legend: Locator) {
-  return page.locator("[data-slot='card']").filter({ has: legend });
+  return page.locator(CARD_SLOT).filter({ has: legend });
 }
 
 test("The overview renders the metric cards and the chart", async ({
@@ -118,10 +134,9 @@ test("The overview renders the metric cards and the chart", async ({
     chartCard(page, legend).getByText("ChatGPT · Sep 1 – Sep 30, 2026"),
   ).toBeVisible();
 
-  // The plot is a drawing, and the accessibility layer names it: the chart
-  // is an image whose name says the metric, the brands and the Platform it
-  // draws, so a screen reader does not read the axis ticks as the chart's
-  // name.
+  // The plot is a drawing, and the chart names it: it is an image whose
+  // name says the metric, the brands and the Platform it draws, so a screen
+  // reader does not read the axis ticks as the chart's name.
   const plot = page.getByRole("img", { name: /Visibility Score of/ });
 
   await expect(plot).toBeVisible();
@@ -143,10 +158,7 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
     table.getByRole("columnheader", { name: selectedPlatform("ChatGPT") }),
   ).toBeVisible();
 
-  await page
-    .getByRole("group", { name: PLATFORM_GROUP })
-    .getByRole("button", { name: CLAUDE })
-    .click();
+  await platformSegment(page, CLAUDE).click();
 
   // The scope lives in the URL, so the view is shareable: the switch has
   // to rewrite it.
@@ -171,11 +183,7 @@ test("The clickable filters say they are clickable", async ({ page }) => {
   // The platform scope and the chart's legend are the two filters of the
   // overview, and both answer a click. The cursor is the affordance that
   // says so, so the reader is not left to find out by clicking.
-  await expect(
-    page
-      .getByRole("group", { name: PLATFORM_GROUP })
-      .getByRole("button", { name: CLAUDE }),
-  ).toHaveCSS("cursor", "pointer");
+  await expect(platformSegment(page, CLAUDE)).toHaveCSS("cursor", "pointer");
 
   await expect(
     page
@@ -195,10 +203,7 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
 
   // The scope moves first, so the drill-down carries a platform of its own
   // and not the default the reader never picked.
-  await page
-    .getByRole("group", { name: PLATFORM_GROUP })
-    .getByRole("button", { name: CLAUDE })
-    .click();
+  await platformSegment(page, CLAUDE).click();
   await expect(page).toHaveURL("/?platform=claude");
 
   await page
@@ -268,11 +273,10 @@ test("An unknown platform param falls back to the default platform", async ({
   ).toBeVisible();
 
   // The scope control agrees with the scope the table reads.
-  await expect(
-    page
-      .getByRole("group", { name: PLATFORM_GROUP })
-      .getByRole("button", { name: "ChatGPT" }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await expect(platformSegment(page, "ChatGPT")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 });
 
 test("The overview holds at a phone viewport", async ({ page }) => {
