@@ -158,17 +158,17 @@ build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: six end-to-end tests that prove the demo
+The smoke suite is the third seam: seven end-to-end tests that prove the demo
 story — the metric cards and the chart render, the platform switch rewrites
-the URL and moves the table's scope, a prompt row opens the detail with the
-highlighted mentions and the citations, an unknown prompt id answers 404, the
-overview holds at 390px, and an unknown platform param falls back to the
-default with the table still rendered. It reads the app the way a reader
-does — by role and accessible name — with two exceptions the surfaces leave
-no other handle for: the metric cards, which the card primitive gives no
-role and no name, so the suite reaches them through the card primitive's
-`data-slot` attribute; and the chart's plot, a drawing with no text, which
-carries a test id of its own.
+the URL and moves the table's scope, the clickable filters say they are
+clickable, a prompt row opens the detail with the highlighted mentions and
+the citations, an unknown prompt id answers 404, the overview holds at 390px,
+and an unknown platform param falls back to the default with the table still
+rendered. It reads the app the way a reader does — by role and accessible
+name, and by the text a reader sees where the surface carries no name — with
+one kind of surface reached through a hook of its own: the cards, which the
+card primitive gives no role and no name, so the suite takes them through the
+primitive's `data-slot` attribute.
 
 ## What the app renders today
 
