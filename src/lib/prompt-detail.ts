@@ -1,5 +1,5 @@
 import { snapshot } from "@/lib/snapshot";
-import type { Answer, CitationId, Prompt } from "@/lib/snapshot";
+import type { Answer, CitationId, PlatformId, Prompt, PromptId } from "@/lib/snapshot";
 
 /**
  * The prompt detail contract: the detail route's read of the Snapshot.
@@ -26,13 +26,14 @@ export function findPrompt(promptId: string): Prompt | undefined {
 /**
  * The Answer a Platform gave for a Prompt, or `undefined`.
  *
- * Both ids are matched exactly, so a pair the Snapshot does not hold — a
- * Prompt that is not tracked, a Platform that is not tracked — answers
- * `undefined` rather than a neighbouring Answer.
+ * The ids are the Snapshot's own, and the pair is matched exactly. A pair
+ * the Snapshot does not hold answers `undefined` rather than a neighbouring
+ * Answer — the fixture is a hand-edited literal, so a Platform can be
+ * tracked before its Answers are written.
  */
 export function findAnswer(
-  promptId: string,
-  platformId: string,
+  promptId: PromptId,
+  platformId: PlatformId,
 ): Answer | undefined {
   return snapshot.answers.find(
     (answer) =>

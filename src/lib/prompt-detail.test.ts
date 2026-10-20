@@ -28,12 +28,6 @@ describe("the prompt detail contract", () => {
     }
   });
 
-  it("does not resolve a pair the Snapshot does not hold", () => {
-    expect(findAnswer("p-99", "chatgpt")).toBeUndefined();
-    expect(findAnswer("p-01", "gpt-4")).toBeUndefined();
-    expect(findAnswer("", "")).toBeUndefined();
-  });
-
   it("links every Citation the Snapshot holds", () => {
     for (const answer of snapshot.answers) {
       for (const citation of answer.citations) {

@@ -36,6 +36,26 @@ describe("the Snapshot fixture", () => {
     }
   });
 
+  it("answers every prompt on every platform", () => {
+    const answered = new Set(
+      snapshot.answers.map((answer) => `${answer.promptId}-${answer.platformId}`),
+    );
+
+    for (const prompt of snapshot.prompts) {
+      for (const platform of snapshot.platforms) {
+        expect(answered.has(`${prompt.id}-${platform.id}`)).toBe(true);
+      }
+    }
+  });
+
+  it("cites nothing outside the reserved example domains", () => {
+    for (const answer of snapshot.answers) {
+      for (const citation of answer.citations) {
+        expect(new URL(citation.url).hostname).toMatch(/\.example\.com$/);
+      }
+    }
+  });
+
   it("names every brand at most once per answer", () => {
     for (const answer of snapshot.answers) {
       const mentions = segmentAnswer(answer, snapshot.brands).filter(

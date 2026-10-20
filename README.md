@@ -25,8 +25,8 @@ dash. The last daily point of every series is the score that brand's Answers
 on that Platform produce, so the history and the evidence agree.
 
 The tracked Platforms live in their own module
-(`src/lib/snapshot/platforms.ts`) so the client boundary can read them
-without pulling the whole fixture into the browser.
+(`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
+boundary can read them without pulling the whole fixture into the browser.
 
 ## Design system
 
@@ -100,8 +100,9 @@ are picked out in the brand accent and the Competitors' Mentions in a dotted
 underline, each with a label a screen reader reads. The same `platform` search
 param scopes the route, so a shared link carries both halves of the view, and
 a prompt id the Snapshot does not track — or a platform with no answer for it
-— is a 404. The prompt list that links into the route arrives with the
-prompt table.
+— is a 404. Switching the platform is a navigation, so a loading skeleton
+holds the content while the server answers. The prompt list that links into
+the route arrives with the prompt table.
 
 ## Adding shadcn/ui components
 
