@@ -45,9 +45,9 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
   const platforms = snapshot.platforms;
 
   return (
-    <Card className="mt-6">
+    <Card>
       <CardHeader>
-        <CardTitle>Mentions by Platform</CardTitle>
+        <CardTitle>Tracked prompts</CardTitle>
         <CardDescription>
           Every tracked Prompt, with Northstar&apos;s Mentions on each
           Platform. The number beside a Mention is the position Northstar was
