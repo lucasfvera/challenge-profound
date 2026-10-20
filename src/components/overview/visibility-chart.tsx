@@ -17,10 +17,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatDate, formatDay, formatPeriod } from "@/lib/dates";
+import { formatMetric, formatPercentTick } from "@/lib/format";
 import { chartData, snapshot } from "@/lib/snapshot";
 import type { Brand, BrandId, ChartRow, PlatformId } from "@/lib/snapshot";
-import { cn } from "@/lib/utils";
 
 /**
  * How one series is drawn: its colour token, its line pattern, its weight.
@@ -60,11 +61,11 @@ const TREATMENTS: Record<BrandId, Treatment> = {
  * The display names of the tracked Platforms, by Platform id.
  *
  * The Snapshot's Platform list is the only source of a Platform's name, and it
- * holds every Platform the app can select, so the lookup always resolves.
+ * holds every Platform the app can select.
  */
-const PLATFORM_NAMES: Record<PlatformId, string> = Object.fromEntries(
-  snapshot.platforms.map((platform) => [platform.id, platform.name]),
-) as Record<PlatformId, string>;
+const PLATFORM_NAMES = new Map(
+  snapshot.platforms.map((platform) => [platform.id, platform.name] as const),
+);
 
 /** One series of the chart: the brand it draws, and how it is drawn. */
 interface DrawnSeries {
@@ -103,12 +104,15 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
     );
   }
 
+  const platformName = PLATFORM_NAMES.get(platformId) ?? "—";
+  const seriesNames = series.map((brand) => brand.name).join(", ");
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Visibility Score</CardTitle>
         <CardDescription>
-          {PLATFORM_NAMES[platformId]} · {formatPeriod(snapshot.period)}
+          {platformName} · {formatPeriod(snapshot.period)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -128,6 +132,10 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
                 <LineChart
                   data={rows}
                   margin={{ top: 8, right: 16, bottom: 0, left: 0 }}
+                  role="img"
+                  accessibilityLayer={false}
+                  aria-label={`Visibility Score of ${seriesNames} on ${platformName}, over the tracked window`}
+                  desc={`A line chart of the Visibility Score of every brand on each tracked day of the window, from ${formatDay(snapshot.period.start)} to ${formatDay(snapshot.period.end)}. The vertical axis runs from 0 to 100 percent.`}
                 >
                   <CartesianGrid stroke="var(--border)" vertical={false} />
                   <XAxis
@@ -141,7 +149,7 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
                   <YAxis
                     domain={[0, 100]}
                     ticks={[0, 25, 50, 75, 100]}
-                    tickFormatter={formatPercent}
+                    tickFormatter={formatPercentTick}
                     tickLine={false}
                     axisLine={false}
                     width={44}
@@ -163,10 +171,10 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
                       key={brand.id}
                       type="monotone"
                       dataKey={(row: ChartRow) => row.scores[brand.id]}
-                      name={brand.name}
                       stroke={treatment.color}
                       strokeWidth={treatment.width}
                       strokeDasharray={treatment.dash}
+                      strokeLinecap="round"
                       dot={false}
                       isAnimationActive={false}
                     />
@@ -184,8 +192,9 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
 /**
  * The legend: a toggle per series.
  *
- * Each toggle carries `aria-pressed`, so the state of every series is readable
- * without colour.
+ * The toggles are the base button in its selected and its quiet rendering, so
+ * the legend holds no chrome of its own. Each toggle carries `aria-pressed`,
+ * so the state of every series is readable without colour.
  */
 function SeriesLegend({
   drawn,
@@ -202,21 +211,18 @@ function SeriesLegend({
         const shown = !hidden.includes(brand.id);
 
         return (
-          <button
+          <Button
             key={brand.id}
             type="button"
+            variant={shown ? "secondary" : "ghost"}
+            size="sm"
             aria-pressed={shown}
             onClick={() => onToggle(brand.id)}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-md border border-transparent px-2 py-1 text-xs font-medium transition-colors",
-              "hover:not-aria-pressed:bg-muted hover:not-aria-pressed:text-foreground",
-              "aria-pressed:bg-secondary aria-pressed:text-foreground",
-              !shown && "text-muted-foreground opacity-70",
-            )}
+            className={shown ? "gap-2" : "gap-2 text-muted-foreground"}
           >
             <SeriesMark treatment={treatment} />
             {brand.name}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -266,7 +272,9 @@ function VisibilityTooltip({
                 <SeriesMark treatment={treatment} />
                 {brand.name}
               </span>
-              <span className="tabular-nums">{score.toFixed(1)}%</span>
+              <span className="tabular-nums">
+                {formatMetric(score, "percent")}
+              </span>
             </li>
           );
         })}
@@ -313,9 +321,4 @@ function NoTrackedWindow() {
       <span className="sr-only">This Platform has no tracked window.</span>
     </p>
   );
-}
-
-/** The axis tick of a Visibility Score: `25%`. */
-function formatPercent(value: number): string {
-  return `${value}%`;
 }

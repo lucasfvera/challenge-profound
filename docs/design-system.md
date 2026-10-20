@@ -261,14 +261,17 @@ never the only signal.
 the overview's third surface: the Visibility Score over the tracked window,
 for the selected Platform. It is a card — the title names the metric, the
 description names the Platform and the tracked window — drawn with Recharts
-and the chart ramp. It adds no component and no token.
+and the chart ramp. It composes the base components; it adds no component and
+no token.
 
 - Northstar wears `--chart-1` and a solid, heavier line. The competitors take
   the neutral ramp and separate by line pattern — dashed, dotted, dash-dot —
   so no two series are told apart by hue alone.
 - The legend is a real control, not a static key: every series is a toggle
   carrying `aria-pressed`, and a hidden series leaves the plot and the
-  tooltip as well. The choice survives a change of Platform.
+  tooltip as well. The choice survives a change of Platform. The toggles are
+  the base button in its selected and its quiet rendering, so the legend
+  holds no chrome of its own.
 - The tooltip is a custom component, never Recharts' default chrome: the
   hovered day as its heading, then one row per visible series with its exact
   tracked score, in the legend's order. The scores are the tracked ones, so
@@ -291,6 +294,9 @@ and the chart ramp. It adds no component and no token.
   `border-border` rule colours dividers only. `--input` clears 3:1 against
   both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
+- The chart's plot is an image with a description: it names the metric, the
+  brands and the Platform, so a screen reader does not read the axis ticks as
+  the chart's name. The legend is the chart's control.
 
 ## Data semantics
 

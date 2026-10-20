@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatMetric } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -90,7 +91,7 @@ function Trend({
 function formatValue(value: number | null, unit: Kpi["unit"]): string {
   if (value === null) return "—";
 
-  return unit === "percent" ? `${value.toFixed(1)}%` : value.toFixed(1);
+  return formatMetric(value, unit);
 }
 
 /** The movement, in the metric's own unit. */
