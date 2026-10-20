@@ -305,6 +305,15 @@ colour follows the direction of the number: up is `--positive`, down is
 metrics that report a movement are ones where more is better — the Average
 Position has none, because the Snapshot tracks no daily mention positions.
 
+A movement has three states — up, down and no change — and the card renders
+all three. A downward movement takes the `--destructive` colour, because it
+is the one the reader has to act on: the Snapshot holds a Platform where the
+measured brand's movement goes down, so the state is one the demo reaches,
+not one it only documents. No tracked window moves by nothing, so "no change"
+is a state the card implements rather than one the data reaches. A movement
+with no earlier period to compare renders the em dash, with the reason a
+screen reader reads.
+
 The metric's name is a label with an explanation behind it. Beside the name
 sits the information icon, and the popover it opens carries the metric's
 explanation: hovering it opens the popover, and so does a click or a tap. The
