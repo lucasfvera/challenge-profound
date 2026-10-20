@@ -40,6 +40,28 @@ const FIRST_PROMPT_TEXT = "best AI visibility analytics tools";
 /** The brand the Snapshot measures. */
 const NORTHSTAR = "Northstar";
 
+/** The scope control, as the app names its group. */
+const PLATFORM_GROUP = "Platform";
+
+/** The chart's legend, as the app names its group. */
+const SERIES_GROUP = "Series";
+
+/** The Claude platform, as the scope control names it. */
+const CLAUDE = "Claude";
+
+/** The title of the source the answer for the first Prompt cites. */
+const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
+
+/**
+ * The name of a column header for the platform the table is scoped to.
+ *
+ * The table marks the scoped platform in the header's accessible name, so
+ * that name is how the suite reads the table's scope.
+ */
+function selectedPlatform(platform: string) {
+  return `${platform} (selected platform)`;
+}
+
 /**
  * The metric card of one KPI.
  *
@@ -52,7 +74,7 @@ const NORTHSTAR = "Northstar";
 function kpiCard(page: Page, metric: RegExp) {
   return page.locator("[data-slot='card']").filter({
     hasText: metric,
-    hasNot: page.getByRole("group", { name: "Series" }),
+    hasNot: page.getByRole("group", { name: SERIES_GROUP }),
   });
 }
 
@@ -67,7 +89,7 @@ test("The overview renders the metric cards and the chart", async ({
   await expect(kpiCard(page, SHARE_OF_VOICE)).toBeVisible();
   await expect(kpiCard(page, AVERAGE_POSITION)).toBeVisible();
 
-  const legend = page.getByRole("group", { name: "Series" });
+  const legend = page.getByRole("group", { name: SERIES_GROUP });
   await expect(legend).toBeVisible();
   await expect(legend.getByRole("button", { name: NORTHSTAR })).toBeVisible();
   await expect(legend.getByRole("button", { name: "Lumen" })).toBeVisible();
@@ -89,12 +111,12 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
 
   const table = page.getByRole("table");
   await expect(
-    table.getByRole("columnheader", { name: "ChatGPT (selected platform)" }),
+    table.getByRole("columnheader", { name: selectedPlatform("ChatGPT") }),
   ).toBeVisible();
 
   await page
-    .getByRole("group", { name: "Platform" })
-    .getByRole("button", { name: "Claude" })
+    .getByRole("group", { name: PLATFORM_GROUP })
+    .getByRole("button", { name: CLAUDE })
     .click();
 
   // The scope lives in the URL, so the view is shareable: the switch has
@@ -104,7 +126,7 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
   // The table reads the same scope as the metrics above it, so its
   // selected column moves with the switch.
   await expect(
-    table.getByRole("columnheader", { name: "Claude (selected platform)" }),
+    table.getByRole("columnheader", { name: selectedPlatform(CLAUDE) }),
   ).toBeVisible();
 
   // The rows carry the scope as well: the row opens the detail with the
@@ -122,8 +144,8 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
   // The scope moves first, so the drill-down carries a platform of its own
   // and not the default the reader never picked.
   await page
-    .getByRole("group", { name: "Platform" })
-    .getByRole("button", { name: "Claude" })
+    .getByRole("group", { name: PLATFORM_GROUP })
+    .getByRole("button", { name: CLAUDE })
     .click();
   await expect(page).toHaveURL("/?platform=claude");
 
@@ -147,10 +169,10 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
   // The sources behind the answer: the body carries a marker for each
   // citation, and the marker points at the entry the panel lists.
   const marker = page.getByRole("link", {
-    name: "[1] A Buyer's Guide to AI Visibility Platforms",
+    name: `[1] ${BUYERS_GUIDE}`,
   });
   const source = page.getByRole("link", {
-    name: "A Buyer's Guide to AI Visibility Platforms (opens in a new tab)",
+    name: `${BUYERS_GUIDE} (opens in a new tab)`,
   });
 
   await expect(marker).toBeVisible();
@@ -196,7 +218,7 @@ test("An unknown platform param falls back to the default platform", async ({
   // The scope control agrees with the scope the table reads.
   await expect(
     page
-      .getByRole("group", { name: "Platform" })
+      .getByRole("group", { name: PLATFORM_GROUP })
       .getByRole("button", { name: "ChatGPT" }),
   ).toHaveAttribute("aria-pressed", "true");
 });
@@ -207,7 +229,9 @@ test("The overview holds at a phone viewport", async ({ page }) => {
 
   // Below the `sm` breakpoint the table gives way to cards, so the same
   // rows are still reachable on a phone.
-  await expect(page.getByRole("table", { includeHidden: true })).toBeHidden();
+  const table = page.getByRole("table", { includeHidden: true });
+  await expect(table).toHaveCount(1);
+  await expect(table).toBeHidden();
   await expect(page.getByRole("link", { name: FIRST_PROMPT_TEXT })).toBeVisible();
 
   // The flow has to work from ~390px to desktop without scrolling
