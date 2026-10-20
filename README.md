@@ -17,6 +17,11 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 `text-muted-foreground`, `border-border`, `bg-primary`), never through raw
 colors.
 
+The base components live in `src/components/ui/`: card, badge, button, table
+primitives, skeleton, and the segmented control. Only the shell's "Simulated
+data" badge uses one today — the dashboard surfaces arrive with their own
+tickets.
+
 ## Requirements
 
 Node.js >= 20.9.
@@ -52,7 +57,7 @@ npx shadcn add <component>
 
 The CLI reads `components.json`; components land in `src/components/ui/`. It
 writes its own defaults, which the design system overrides: strip the
-`focus-visible:ring-*` utilities (focus is drawn once, by the global outline in
-`src/app/globals.css`) and replace `bg-accent` chrome with `bg-secondary` or
-`bg-muted` (`--accent` is the brand color). See
+`focus-visible:ring-*` and `outline-none` utilities (focus is drawn once, by
+the global outline in `src/app/globals.css`) and replace `bg-accent` chrome
+with `bg-secondary` or `bg-muted` (`--accent` is the brand color). See
 [`docs/design-system.md`](docs/design-system.md).

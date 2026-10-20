@@ -37,9 +37,9 @@ Everything else derives from these two, so a brand change is a one-line change.
 | `--card-foreground` | `var(--foreground)` | text on cards |
 | `--popover` | `#101013` | overlays |
 | `--popover-foreground` | `var(--foreground)` | text on overlays |
-| `--muted` | `#121214` | quiet surface: selected chrome, table header fills |
+| `--muted` | `#121214` | quiet surface: hover fill, table header fills, card footers, skeletons |
 | `--muted-foreground` | `#9A9AA3` | secondary text and labels (7.30:1 on `--background`) |
-| `--secondary` | `#17171A` | hover surface |
+| `--secondary` | `#17171A` | secondary variant fill; selected chrome |
 | `--secondary-foreground` | `#E6E6E9` | text on secondary |
 
 ### Brand, lines, and focus
@@ -129,15 +129,27 @@ Numbers must align in columns.
   outline with a 2px offset. Components do not add their own focus rings or
   focus-tinted borders — the shadcn CLI writes `focus-visible:ring-*` into every
   component it generates, and those utilities are stripped when a component
-  lands.
-- **Hover** is a quiet surface shift: chrome moves to `--secondary` /
-  `--muted`, and a filled variant shifts its own fill (`bg-primary/80` for a
-  brand fill, `bg-destructive/20` for a destructive one). Hover never reaches
-  for the brand accent.
-- **Selected** chrome uses `bg-secondary` plus `text-foreground` and a hairline
-  border. The accent stays out of chrome.
-- **Disabled** reduces opacity and drops the pointer affordance; the label
-  still has to meet contrast.
+  lands. The CLI also writes `outline-none`, and that utility is stripped too:
+  it sits in the utilities layer and would kill the base-layer outline, so a
+  component that suppresses the outline suppresses the only focus affordance
+  in the app.
+- **Hover** is a quiet surface shift: chrome moves to `--muted`, and a filled
+  variant shifts its own fill (`bg-primary/80` for a brand fill,
+  `bg-destructive/20` for a destructive one). Hover never reaches for the
+  brand accent. `--secondary` is the lightest quiet surface in the ramp, so a
+  control that already rests on it mixes 5% of the foreground into its own
+  fill on hover instead of dimming it — dimming a near-black fill reads as a
+  press, not a hover.
+- **Selected** chrome uses `bg-secondary` plus `text-foreground`, on the
+  hairline it already carries — a table row's divider, a segment's track. The
+  accent stays out of chrome. A hover rule must not reach the selected
+  surface: scope the hover to the unselected state
+  (`hover:not-aria-pressed:…`) instead of relying on the cascade, where a
+  hover selector outranks the selected one.
+- **Disabled** reduces opacity (`opacity-50`) and drops the pointer
+  affordance. The label token still has to clear AA before the dimming —
+  inactive controls are exempt from the contrast requirement (WCAG 1.4.3).
+  A native control uses `disabled:`; anything else uses `aria-disabled:`.
 - **Invalid** is a state, not a focus state: a `--destructive` border plus a
   3px `--destructive` ring at 40% opacity.
 - **Selection** uses `--selection` — the accent at 30% — with `--foreground`
@@ -153,7 +165,10 @@ Numbers must align in columns.
   inside compact rows.
 - Dividers: `border-border`. Shadows only for focus and overlays.
 - Radii come from `--radius`: `rounded-lg` for panels, `rounded-md` for
-  controls, `rounded-4xl` for pills.
+  controls, `rounded-4xl` for pills. A control nested inside another control —
+  a segment inside a segmented control's track — takes `rounded-sm` on its
+  outer corners, the outer radius minus the inset, so the inner curve follows
+  the outer one.
 
 ## Responsive conventions
 
@@ -176,15 +191,43 @@ preference.
 
 | Component | Path | States |
 |-----------|------|--------|
-| Badge | `src/components/ui/badge.tsx` | default, secondary, outline, ghost, destructive, link; hover, invalid |
-| Card | planned | default |
-| Button | planned | default, hover, focus-visible, disabled, outline, ghost |
-| Table primitives | planned | default; hover only when a row sets `data-interactive` |
-| Skeleton | planned | default |
-| Segmented control | planned | default, hover, focus-visible, selected, disabled |
+| Badge | `src/components/ui/badge.tsx` | default, secondary, outline, ghost, destructive, link; hover (link rendering), invalid, disabled |
+| Button | `src/components/ui/button.tsx` | default, outline, secondary, ghost, destructive, link; hover, focus-visible, disabled, invalid |
+| Card | `src/components/ui/card.tsx` | default; hover when the card sets `data-interactive`; disabled when the card sets `aria-disabled` |
+| Table primitives | `src/components/ui/table.tsx` | default; hover when a row sets `data-interactive`; selected when a row sets `data-state="selected"`; disabled when a row sets `aria-disabled` |
+| Skeleton | `src/components/ui/skeleton.tsx` | default — inert, it has no interactive states |
+| Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled |
 
-"Planned" components are built by the base-component ticket, against this
-document.
+The vocabulary is shared; each component implements the states in its
+inventory row.
+
+| State | How it is expressed |
+|-------|---------------------|
+| default | the variant's own surface and text tokens |
+| hover | a quiet surface shift, never the brand accent |
+| focus-visible | the global outline — a component never draws one and never suppresses one |
+| disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
+| invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
+| selected | `bg-secondary` plus `text-foreground`, on the hairline the element already carries |
+
+The components are generated with the shadcn CLI and restyled against this
+document: the CLI's `focus-visible:ring-*` and `outline-none` utilities are
+stripped, `bg-accent` chrome becomes `bg-secondary` or `bg-muted`, and the
+`dark:` duplicates go — the app is dark-only, so the `dark:` variant is the
+only one that ever applies.
+
+The button's variants are `default`, `outline`, `secondary`, `ghost`,
+`destructive` and `link`, on four sizes: `default` (32px), `sm` (28px), `lg`
+(36px) and `icon` (32px square). The badge is a `<span>`, so it is not
+interactive: its hover belongs to the link rendering (`render={<a />}`), and
+it dims through `aria-disabled`. The card is a panel, not a control: it adds
+no focus ring of its own, and its padding rhythm lives in one CSS variable
+(`--card-spacing`) so a denser card is a class, not a variant. The segmented
+control holds no domain state: the group is single-select and takes its
+pressed values as an array through `value`, reporting them through
+`onValueChange` — the way Base UI's toggle group models them — and a segment
+expresses its selection as `aria-pressed`. Which platform a segment stands
+for belongs to the ticket that wires the data.
 
 ## Accessibility rules
 
