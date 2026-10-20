@@ -4,77 +4,70 @@
 
 /*
  * Dark is the only mode this app ships: the `dark` class is set on <html>.
- * The semantic token contract for these variables lands with LUC-7.
+ * The token values live on `:root`, so there is no light palette to switch to.
+ *
+ * Every surface, text, border, and focus color in the app resolves through
+ * these tokens — never a raw hex at a call site. The contract is documented in
+ * docs/design-system.md, which is the source of truth for the visual language.
  */
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
+  /* Source tones: the two colors everything else derives from. */
+  --brand: #376cff; /* Profound Blue */
+  --ink: #050505; /* the darkest tone: page base, and text on brand fills */
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Surfaces: a black base with near-black panels. */
+  --background: var(--ink);
+  --foreground: #f4f4f5;
+  --card: #0b0b0d;
+  --card-foreground: var(--foreground);
+  --popover: #101013;
+  --popover-foreground: var(--foreground);
+
+  /* Brand: Profound Blue — Northstar data and primary actions only.
+   * Hover and selected chrome use --secondary / --muted, never bg-accent:
+   * shadcn's default accent recipe would paint the brand blue. */
+  --primary: var(--brand);
+  --primary-foreground: var(--ink);
+  --accent: var(--brand);
+  --accent-foreground: var(--ink);
+
+  /* Quiet surfaces: hover and selected chrome, never the brand accent. */
+  --secondary: #17171a;
+  --secondary-foreground: #e6e6e9;
+  --muted: #121214;
+  --muted-foreground: #9a9aa3;
+
+  --destructive: #ff6464;
+  --destructive-foreground: #1a0505;
+
+  /* Hairlines and focus. --border divides; --input bounds a control. */
+  --border: #232327;
+  --input: #61616a;
+  --ring: #7395ff;
+
+  /* Accent tint for text selection, derived from the brand tone. */
+  --selection: color-mix(in oklab, var(--brand) 30%, transparent);
+
+  /* Series: chart-1 is Northstar, chart-2..5 are the competitors.
+   * Every step clears 3:1 against --card. */
+  --chart-1: var(--brand);
+  --chart-2: #a1a1aa;
+  --chart-3: #8b8b95;
+  --chart-4: #75757f;
+  --chart-5: #62626c;
+
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--secondary-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  --radius: 0.625rem;
 }
 
 @theme inline {
@@ -96,6 +89,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -128,5 +122,17 @@
   html {
     @apply font-sans;
     color-scheme: dark;
+  }
+
+  /* Focus is always visible: a 2px ring offset from the surface. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Accent-tinted selection: the one sanctioned use of the accent outside data. */
+  ::selection {
+    background-color: var(--selection);
+    color: var(--foreground);
   }
 }
