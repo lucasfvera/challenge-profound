@@ -14,7 +14,8 @@ theme switcher: the token values live on `:root`, and the `dark` class stays on
 
 A black base with a single Profound Blue accent, hairline borders, dense
 tabular data, and restrained motion. The accent means **Northstar** — it is
-never decorative.
+never decorative. The one other colour in the app is the chart's series ramp:
+every tracked brand wears a hue of its own there, and nowhere else.
 
 ## Color tokens
 
@@ -22,12 +23,14 @@ never decorative.
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--brand` | `#376CFF` | Profound Blue; the only brand color in the app |
+| `--brand` | `#376CFF` | Profound Blue; the app's brand tone, and Northstar's series colour |
 | `--ink` | `#050505` | the darkest tone: page base, and text on brand fills |
 
-Everything else derives from these two, so a brand change is a one-line change.
-The two status tones — `--destructive` and `--positive` — are the exception:
-a status colour says what happened, so it is a literal and not a derivation.
+Every surface and text tone derives from these two, so a brand change is a
+one-line change. Two things are the exception: the series ramp, whose
+competitor hues are their own and where only `--chart-1` follows the brand, and
+the two status tones — `--destructive` and `--positive` — which say what
+happened, so they are literals and not derivations.
 
 ### Surfaces and text
 
@@ -66,11 +69,16 @@ a status colour says what happened, so it is a literal and not a derivation.
 
 | Token | Value | Use |
 |-------|-------|-----|
-| `--chart-1` | `var(--brand)` | Northstar |
-| `--chart-2` | `#A1A1AA` | competitor 1 (7.67:1 on `--card`) |
-| `--chart-3` | `#8B8B95` | competitor 2 (5.83:1 on `--card`) |
-| `--chart-4` | `#75757F` | competitor 3 (4.31:1 on `--card`) |
-| `--chart-5` | `#62626C` | competitor 4, unused today (3.26:1 on `--card`) |
+| `--chart-1` | `var(--brand)` | Northstar (4.45:1 on `--card`) |
+| `--chart-2` | `#D2963C` | competitor 1 — amber (7.65:1 on `--card`) |
+| `--chart-3` | `#3AAE9E` | competitor 2 — teal (7.24:1 on `--card`) |
+| `--chart-4` | `#B96FC4` | competitor 3 — orchid (5.74:1 on `--card`) |
+| `--chart-5` | `#C96685` | competitor 4 — rose, unused today (5.36:1 on `--card`) |
+
+Every brand wears a colour of its own, so the lines are told apart by colour.
+The competitor hues are less saturated than the brand's, so they read as rivals
+rather than as decoration, and the series separate by line treatment as well,
+so colour is never the only signal.
 
 The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
 shadcn's sidebar primitives stay on-contract.
@@ -85,12 +93,13 @@ shadcn's sidebar primitives stay on-contract.
   recipe would paint the brand blue, so it is not used for chrome states.
 - Never put `--foreground` on `--primary` (4.02:1 — below AA). A brand fill
   always carries `--primary-foreground` or `--accent-foreground`.
-- Every series colour clears 3:1 against `--card`; competitors are separable
-  by lightness and by line treatment, not by hue.
+- Every series colour clears 3:1 against `--card`; every brand wears a colour
+  of its own, and the series separate by line treatment as well, so no two
+  series are told apart by hue alone.
 - The chart ramp is assigned per brand — Northstar takes `--chart-1`, and the
-  competitors take `--chart-2` onwards, one step of the ramp per brand. A
-  brand keeps its colour and its line pattern when the Platform changes, so
-  the same brand is the same series in every view.
+  competitors take `--chart-2` onwards, one token of the ramp per brand, in
+  order. A brand keeps its colour and its line pattern when the Platform
+  changes, so the same brand is the same series in every view.
 
 ## Typography
 
@@ -330,14 +339,20 @@ description names the Platform and the tracked window — drawn with Recharts
 and the chart ramp. It composes the base components; it adds no component and
 no token.
 
-- Northstar wears `--chart-1` and a solid, heavier line. The competitors take
-  the neutral ramp and separate by line pattern — dashed, dotted, dash-dot —
-  so no two series are told apart by hue alone.
+- Northstar wears `--chart-1` and a solid, heavier line. The competitors wear
+  a colour of their own — amber, teal, orchid — and separate by line pattern
+  as well: a long dash, a fine dot, and a dash-dot, so no two series are told
+  apart by hue alone.
 - The legend is a real control, not a static key: every series is a toggle
   carrying `aria-pressed`, and a hidden series leaves the plot and the
   tooltip as well. The choice survives a change of Platform. The toggles are
   the base button in its selected and its quiet rendering, so the legend
   holds no chrome of its own.
+- The reference each series wears in the legend and in the tooltip is a
+  sample of the line it names: the series' own stroke width and the series'
+  own dash, and at least as wide as the longest pattern's cycle, so the whole
+  treatment stays inside the sample. A reference too short to carry the dash
+  is a reference that cannot name the line.
 - The tooltip is a custom component, never Recharts' default chrome: the
   hovered day as its heading, then one row per visible series with its exact
   tracked score, in the legend's order. The scores are the tracked ones, so
@@ -351,16 +366,21 @@ no token.
 **The visibility chart** (`src/components/overview/visibility-chart.tsx`) is a
 card as well, and it draws the series the design system already fixed: the
 measured brand takes `--chart-1` — the brand accent — on a solid, heavier
-line, and the competitors take the neutral ramp from `--chart-2` (`--chart-5`
-is the ramp's reserved fourth step) on a line pattern of their own, so the
-series are told apart by lightness and by treatment rather than by hue. The
-colours are CSS custom properties, so no raw colour reaches the DOM.
+line, and the competitors take the ramp from `--chart-2` (`--chart-5` is the
+ramp's reserved fourth step), each in a colour of its own and on a line
+pattern of its own, so the series are told apart by colour and by treatment
+rather than by hue alone. The colours are CSS custom properties, so no raw
+colour reaches the DOM.
 
 The chart's legend is a control, not a key: a group of toggle buttons named
 `Series`, each carrying `aria-pressed`, so a hidden series is readable
 without colour. A hidden series is hidden from the plot and from the tooltip
 as well, and the legend keeps its state when the Platform changes, so the
-reader's reading of the chart survives a re-scope.
+reader's reading of the chart survives a re-scope. Each series wears a
+reference in the legend and in the tooltip: a sample of the line it names,
+drawn with that line's own stroke width and dash, and wide enough to carry
+the longest pattern's cycle — a sample that cannot show the treatment cannot
+name the line.
 
 The tooltip is a custom one: the tracked day as its heading, then one row
 per visible series with its exact score to one decimal, in the legend's
@@ -497,7 +517,7 @@ interactive during the wait.
 - Brand fills carry `--primary-foreground` / `--accent-foreground`.
 - Colour is never the only signal: a movement carries the mark that points it
   and the words beside it, mentions carry brand labels, chart series differ by
-  lightness and line treatment.
+  colour, lightness and line treatment.
 - A popover's trigger carries an accessible name that says what it explains,
   so the icon is not the only clue, and the popup is a named dialog with a
   description, so a screen reader reads it.
@@ -516,7 +536,8 @@ interactive during the wait.
 ## Data semantics
 
 - Northstar uses `--accent` and `--chart-1`.
-- Competitors use the neutral chart ramp plus a distinct line treatment.
+- Competitors use the chart ramp — a colour of their own — plus a distinct
+  line treatment.
 - Missing or undefined metrics render as an em dash (`—`), never `NaN`.
 - A movement with no earlier period to compare against renders as an em dash
   too, and says so to a screen reader.

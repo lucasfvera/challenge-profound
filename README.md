@@ -199,12 +199,12 @@ Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.
-Northstar's line is the brand accent; the competitors take the neutral ramp
-and a line pattern of their own, so the series are told apart by lightness
-and by treatment rather than by hue. The legend is a set of toggles that
-carry their state in `aria-pressed`, and the tooltip names the tracked day
-and the exact score of every visible series on it. A Platform with no tracked
-window draws the em dash instead of an empty plot.
+Northstar's line is the brand accent; every competitor wears a colour of its
+own — amber, teal, orchid — and a line pattern of its own, so the lines are
+told apart by colour and by treatment rather than by hue alone. The legend is
+a set of toggles that carry their state in `aria-pressed`, and the tooltip
+names the tracked day and the exact score of every visible series on it. A
+Platform with no tracked window draws the em dash instead of an empty plot.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the
@@ -241,8 +241,8 @@ The CLI reads `components.json`; components land in `src/components/ui/`. It
 writes its own defaults, which the design system overrides: strip the
 `focus-visible:ring-*` and `outline-none` utilities (focus is drawn once, by
 the global outline in `src/app/globals.css`), replace `bg-accent` chrome
-with `bg-secondary` or `bg-muted` (`--accent` is the brand color), and
-restyle an overlay: the popover's `ring-foreground/10` becomes the
-`--border` hairline, its fixed `w-72` panel becomes a popup that fits its
-copy, and its slide-and-zoom becomes a fade. See
+with `bg-secondary` or `bg-muted` (`--accent` is the brand tone, reserved for
+Northstar's data), and restyle an overlay: the popover's `ring-foreground/10`
+becomes the `--border` hairline, its fixed `w-72` panel becomes a popup that
+fits its copy, and its slide-and-zoom becomes a fade. See
 [`docs/design-system.md`](docs/design-system.md).
