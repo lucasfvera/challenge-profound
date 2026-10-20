@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   averagePosition,
   averageVisibilityScore,
+  chartData,
   platformMetrics,
   seriesPoints,
   shareOfVoice,
@@ -11,7 +12,7 @@ import {
   visibilityScore,
   visibilityTrend,
 } from "@/lib/snapshot";
-import type { Snapshot } from "@/lib/snapshot";
+import type { Brand, Snapshot } from "@/lib/snapshot";
 
 /** A Snapshot whose only Answer names no tracked brand. */
 const withoutMentions: Snapshot = {
@@ -167,5 +168,112 @@ describe("the derivation layer", () => {
     expect(
       visibilityTrend([{ date: "2026-09-01", score: 40 }]),
     ).toBeNull();
+  });
+});
+
+describe("the chart's data", () => {
+  it("draws the measured brand first and the competitors after it", () => {
+    const expected: Brand[] = [
+      { id: "northstar", name: "Northstar", kind: "subject" },
+      { id: "lumen", name: "Lumen", kind: "competitor" },
+      { id: "vantage", name: "Vantage", kind: "competitor" },
+      { id: "arcadia", name: "Arcadia", kind: "competitor" },
+    ];
+
+    const { series } = chartData(snapshot, "chatgpt");
+
+    expect(series).toEqual(expected);
+  });
+
+  it("drops a brand the platform does not track", () => {
+    const withoutArcadia: Snapshot = {
+      ...snapshot,
+      series: snapshot.series.filter(
+        (series) =>
+          !(series.brandId === "arcadia" && series.platformId === "chatgpt"),
+      ),
+    };
+
+    const chatgpt = chartData(withoutArcadia, "chatgpt");
+    const claude = chartData(withoutArcadia, "claude");
+
+    expect(chatgpt.series.map((brand) => brand.id)).toEqual([
+      "northstar",
+      "lumen",
+      "vantage",
+    ]);
+    expect(claude.series.map((brand) => brand.id)).toContain("arcadia");
+  });
+
+  it("draws one row per tracked day", () => {
+    const { rows } = chartData(snapshot, "chatgpt");
+
+    expect(rows).toHaveLength(30);
+    expect(rows[0].date).toBe("2026-09-01");
+    expect(rows[29].date).toBe("2026-09-30");
+  });
+
+  it("draws the tracked days in date order", () => {
+    // Northstar starts tracking on the sixth day, so the days arrive out of
+    // order unless the rows are sorted.
+    const lateSubject: Snapshot = {
+      ...snapshot,
+      series: snapshot.series.map((series) =>
+        series.brandId === "northstar" && series.platformId === "chatgpt"
+          ? { ...series, points: series.points.slice(5) }
+          : series,
+      ),
+    };
+
+    const { rows } = chartData(lateSubject, "chatgpt");
+    const dates = rows.map((row) => row.date);
+
+    expect(dates).toHaveLength(30);
+    expect(dates).toEqual([...dates].sort());
+    expect(dates[0]).toBe("2026-09-01");
+    expect(dates[29]).toBe("2026-09-30");
+  });
+
+  it("carries the tracked score of every brand on a day verbatim", () => {
+    const { rows } = chartData(snapshot, "chatgpt");
+
+    expect(rows[0].scores).toEqual({
+      northstar: 46.7,
+      lumen: 53.3,
+      vantage: 26.7,
+      arcadia: 26.7,
+    });
+  });
+
+  it("leaves out a brand that was not tracked on a day", () => {
+    const partlyTracked: Snapshot = {
+      ...snapshot,
+      series: snapshot.series.map((series) =>
+        series.brandId === "arcadia" && series.platformId === "chatgpt"
+          ? { ...series, points: series.points.slice(1) }
+          : series,
+      ),
+    };
+
+    const { rows } = chartData(partlyTracked, "chatgpt");
+
+    expect(rows[0].scores).not.toHaveProperty("arcadia");
+    expect(rows[0].scores.northstar).toBe(46.7);
+    expect(rows[1].scores.arcadia).toBe(20);
+    expect(rows).toHaveLength(30);
+  });
+
+  it("draws nothing for a platform with no tracked window", () => {
+    const untracked: Snapshot = {
+      ...snapshot,
+      series: snapshot.series.filter(
+        (series) => series.platformId !== "claude",
+      ),
+    };
+
+    const { series, rows } = chartData(untracked, "claude");
+
+    expect(series).toEqual([]);
+    expect(rows).toEqual([]);
   });
 });
