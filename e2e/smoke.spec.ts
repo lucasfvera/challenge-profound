@@ -68,6 +68,9 @@ const SERIES_GROUP = "Series";
 /** The podium, as the app names its list. */
 const STANDINGS_LIST = "Brand standings";
 
+/** The conversation, as the prompt detail route names its list. */
+const CONVERSATION_LIST = "Conversation";
+
 /** The toggle that takes the hue off the competitors, as it names itself. */
 const GREYSCALE_MODE = "Greyscale";
 
@@ -549,8 +552,13 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
     .click();
 
   await expect(page).toHaveURL("/prompts/p-01?platform=claude");
+
+  // The Prompt is a message in the conversation, not the page's title: the
+  // route draws the exchange, and the question is the first message in it.
   await expect(
-    page.getByRole("heading", { name: FIRST_PROMPT_TEXT }),
+    page
+      .getByRole("list", { name: CONVERSATION_LIST })
+      .getByText(FIRST_PROMPT_TEXT),
   ).toBeVisible();
 
   // The Mention of the brand being measured wears the brand accent. The

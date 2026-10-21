@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AnswerPanel } from "@/components/prompts/answer-panel";
-import { CitationsPanel } from "@/components/prompts/citations-panel";
 import { PromptDetail } from "@/components/prompts/prompt-detail";
+import { PromptTranscript } from "@/components/prompts/prompt-transcript";
 import { buttonVariants } from "@/components/ui/button";
 import {
   overviewHref,
@@ -16,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * The prompt detail route: one tracked Prompt, the Answer the selected
- * Platform gave for it, and the sources behind that Answer.
+ * Platform gave for it, and the Citations it used.
  *
  * The route renders on the server from the Snapshot. The Prompt comes from
  * the path and the Platform from the `platform` search param, so a shared
@@ -26,6 +25,10 @@ import { cn } from "@/lib/utils";
  * The route carries its way back to the overview, scoped to the Platform it
  * is showing: the drill-down out of the table is one half of the flow, and
  * on a phone — where there is no browser chrome — the way back is the other.
+ *
+ * The page names what it holds before the exchange starts, so it reads on its
+ * own: the heading names the two halves of a tracked Prompt and its Answer,
+ * and the exchange below says which Platform answered.
  */
 export default async function PromptPage({
   params,
@@ -45,7 +48,7 @@ export default async function PromptPage({
   if (!answer) notFound();
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       {/* The way back is a link, so it is a link and not a button: a control
           that navigates has to say so. The button's link variant gives it the
           app's own link styling, and the variant's own padding is dropped so
@@ -56,16 +59,19 @@ export default async function PromptPage({
       >
         Back to the overview
       </Link>
-      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-        {prompt.category}
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-        {prompt.text}
+      <h1 className="mt-6 text-2xl font-semibold tracking-tight">
+        Prompt and Answer
       </h1>
+      <p className="mt-2 max-w-prose text-sm leading-6 text-muted-foreground">
+        One tracked Prompt sent to a Platform, and the Answer it gave.
+      </p>
 
       <PromptDetail platform={platform} asOf={snapshot.asOf}>
-        <AnswerPanel answer={answer} brands={snapshot.brands} />
-        <CitationsPanel citations={answer.citations} />
+        <PromptTranscript
+          prompt={prompt}
+          answer={answer}
+          brands={snapshot.brands}
+        />
       </PromptDetail>
     </main>
   );
