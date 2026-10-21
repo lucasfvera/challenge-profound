@@ -31,6 +31,13 @@ import type {
  * scope is the one that shows a downward movement — the case the dashboard
  * has to be able to show, and the one a reader only meets by switching
  * Platform.
+ *
+ * Fourteen of the tracked Prompts are search-style questions of a few words.
+ * One — p-04 — is a real user's sentence, and it is there on purpose: the
+ * prompt detail route draws a Prompt as a message, and the case of a Prompt
+ * that runs past a heading is only real if the Snapshot holds one. The
+ * tracked prompts table shows the same text, so the long case is in the
+ * overview's first screen too.
  */
 
 const BRANDS: Brand[] = [
@@ -58,7 +65,10 @@ const PROMPTS: Prompt[] = [
   },
   {
     id: "p-04",
-    text: "which AI platforms should I track for search visibility",
+    // The long Prompt: a real user writes sentences, and the tracked
+    // Prompts are otherwise search-style questions of a few words. The
+    // Answers below answer this question — which Platforms to track.
+    text: "We are a mid-market B2B software company with a small marketing team, and we can only afford to track a handful of prompts across a few assistants each month. Which AI platforms should we track for search visibility first?",
     category: "discovery",
   },
   {

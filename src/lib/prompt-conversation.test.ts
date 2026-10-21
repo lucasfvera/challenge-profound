@@ -1,47 +1,34 @@
 import { describe, expect, it } from "vitest";
 import { conversation } from "@/lib/prompt-conversation";
-import type { Answer, Citation, Prompt } from "@/lib/snapshot";
+import { findAnswer, findPrompt } from "@/lib/prompt-detail";
 
-/** The Prompt the exchange below is built from. */
-const PROMPT: Prompt = {
-  id: "p-01",
-  text: "best AI visibility analytics tools",
-  category: "comparison",
-};
-
-/** The source the Answer below cites. */
-const CITATION: Citation = {
-  id: "c-03",
-  title: "A Buyer's Guide to AI Visibility Platforms",
-  url: "https://categorybriefing.example.com/buyers-guide-ai-visibility",
-  publisher: "Category Briefing",
-};
+/** The tracked Prompt the exchange below is built from. */
+const PROMPT = findPrompt("p-01");
+if (!PROMPT) throw new Error("missing the tracked prompt p-01");
 
 /** The Answer the ChatGPT Platform gave for that Prompt. */
-const ANSWER: Answer = {
-  promptId: "p-01",
-  platformId: "chatgpt",
-  text: "Northstar covers all four assistants on a shared prompt set [1].",
-  citations: [CITATION],
-};
+const ANSWER = findAnswer("p-01", "chatgpt");
+if (!ANSWER) throw new Error("missing the ChatGPT answer for p-01");
 
 /** The Answer the Perplexity Platform gave for that Prompt. */
-const PERPLEXITY_ANSWER: Answer = {
-  ...ANSWER,
-  platformId: "perplexity",
-};
+const PERPLEXITY_ANSWER = findAnswer("p-01", "perplexity");
+if (!PERPLEXITY_ANSWER) {
+  throw new Error("missing the Perplexity answer for p-01");
+}
 
 /**
- * A question a user asked in their own words, and a long one.
+ * The Snapshot's long Prompt, and the Answer the ChatGPT Platform gave for
+ * it.
  *
  * A Prompt is what a user asked, in whatever words they used: the contract
  * has no way of shortening it, so a long one arrives whole and the surfaces
  * wrap it.
  */
-const LONG_PROMPT: Prompt = {
-  ...PROMPT,
-  text: "We are a mid-market B2B software company with a small marketing team, and we can only afford to track a handful of prompts across a few assistants each month. Which AI platforms should we track for search visibility first, and how many prompts is enough to make the answers worth reading?",
-};
+const LONG_PROMPT = findPrompt("p-04");
+if (!LONG_PROMPT) throw new Error("missing the tracked prompt p-04");
+
+const LONG_ANSWER = findAnswer("p-04", "chatgpt");
+if (!LONG_ANSWER) throw new Error("missing the ChatGPT answer for p-04");
 
 describe("the conversation contract", () => {
   it("puts the question before the answer", () => {
@@ -87,7 +74,7 @@ describe("the conversation contract", () => {
   });
 
   it("carries a long prompt whole", () => {
-    const messages = conversation(LONG_PROMPT, ANSWER);
+    const messages = conversation(LONG_PROMPT, LONG_ANSWER);
 
     expect(messages[0]).toMatchObject({ prompt: { text: LONG_PROMPT.text } });
   });
