@@ -60,9 +60,10 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
         <CardTitle>Tracked prompts</CardTitle>
         <CardDescription>
           Every tracked Prompt, with Northstar&apos;s Mentions on each
-          Platform. The number beside a Mention is the position Northstar was
-          named at — 1 means it was named first. The rows are ordered by
-          Northstar&apos;s strength on the selected Platform.
+          Platform. The number on a Mention is the position Northstar was
+          named at — 1 means it was named first, and it wears a mark of its
+          own. The rows are ordered by Northstar&apos;s strength on the
+          selected Platform.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -287,13 +288,14 @@ function PlatformName({
  * The Mention state of one Answer.
  *
  * A Mention wears the brand accent as a fill — the accent is Northstar's
- * data — and carries the position Northstar was named at. A Prompt the
- * Platform answered without a Mention wears a hollow ring, and a value the
- * Snapshot cannot report shows the em dash the design system reserves for
- * it.
+ * data — and carries the position Northstar was named at. The position that
+ * named the brand first wears a mark of its own, so the Platform that serves
+ * the brand best reads at a glance. A Prompt the Platform answered without a
+ * Mention wears a hollow ring, and a value the Snapshot cannot report shows
+ * the em dash the design system reserves for it.
  *
- * The three marks are three shapes, so the state never rests on colour
- * alone, and each one carries the label a screen reader reads.
+ * The marks are shapes as well as colours, so the state never rests on
+ * colour alone, and each one carries the label a screen reader reads.
  */
 function MentionIndicator({
   platform,
@@ -307,14 +309,13 @@ function MentionIndicator({
   if (state.kind === "mentioned") {
     return (
       <>
-        <span aria-hidden="true" className="inline-flex items-center gap-1.5">
-          <span className="size-2.5 rounded-full bg-accent" />
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {state.position}
-          </span>
-        </span>
+        {state.position === FIRST_POSITION ? (
+          <FirstPositionMark />
+        ) : (
+          <PositionMark position={state.position} />
+        )}
         <span className="sr-only">
-          {`Mentioned on ${platform.name}, at position ${state.position}.`}
+          {mentionedLabel(state, platform)}
         </span>
       </>
     );
@@ -339,16 +340,100 @@ function MentionIndicator({
       >
         —
       </span>
-      <span className="sr-only">{mentionLabel(state, platform)}</span>
+      <span className="sr-only">{noDataLabel(state, platform)}</span>
     </>
   );
+}
+
+/**
+ * The position that names the brand first.
+ *
+ * The position is the ordinal of the brand's first Mention among the
+ * Answer's Mentions, and `firstMentionPosition` in the derivation layer
+ * produces it; 1 is the position that names the brand before any other
+ * brand. It is the one position the table gives a mark of its own, so it is
+ * named once here and both the mark and the label read it.
+ */
+const FIRST_POSITION = 1;
+
+/**
+ * The mark of a Mention that named the brand first.
+ *
+ * The first position wears the brand fill and carries the number inside it,
+ * where every other position wears a dot with the number beside it. The two
+ * are told apart by their shape, not only by their colour, so a row that
+ * holds a first position and a later one never shows two cells styled the
+ * same way — the Platform that named the brand before the others reads at a
+ * glance.
+ *
+ * The fill is the brand accent: the accent is Northstar's data, and the
+ * first position is Northstar's data, the same reason the answer panel
+ * fills a Mention of the brand with it.
+ */
+function FirstPositionMark() {
+  return (
+    <span
+      aria-hidden="true"
+      // The hook names the element that renders the position number, so the
+      // smoke suite reads the two numbers the way a reader reads them.
+      data-mention-position="first"
+      className="inline-flex size-5 items-center justify-center rounded-full bg-accent text-xs font-semibold tabular-nums text-accent-foreground"
+    >
+      {FIRST_POSITION}
+    </span>
+  );
+}
+
+/**
+ * The mark of a Mention that named the brand after another brand.
+ *
+ * The dot is the brand accent — the accent is Northstar's data — and the
+ * position wears the muted foreground beside it.
+ */
+function PositionMark({
+  position,
+}: {
+  /** The position the brand was named at. */
+  position: number;
+}) {
+  return (
+    <span aria-hidden="true" className="inline-flex items-center gap-1.5">
+      <span className="size-2.5 rounded-full bg-accent" />
+      <span
+        // The hook names the element that renders the position number, the
+        // way it names the first position's circle.
+        data-mention-position="later"
+        className="text-xs tabular-nums text-muted-foreground"
+      >
+        {position}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * The label a screen reader reads for a cell the brand was mentioned in.
+ *
+ * The first position says so in words: the number alone does not tell a
+ * reader that the brand was named before the others, and the mark the cell
+ * wears is not the only signal the cell is allowed to rest on.
+ */
+function mentionedLabel(
+  state: Extract<MentionState, { kind: "mentioned" }>,
+  platform: Platform,
+): string {
+  if (state.position === FIRST_POSITION) {
+    return `Mentioned on ${platform.name}, at position ${FIRST_POSITION}. The brand was named first.`;
+  }
+
+  return `Mentioned on ${platform.name}, at position ${state.position}.`;
 }
 
 /**
  * The label a screen reader reads for a cell the Snapshot cannot report a
  * Mention for.
  */
-function mentionLabel(
+function noDataLabel(
   state: Extract<MentionState, { kind: "no-data" }>,
   platform: Platform,
 ): string {

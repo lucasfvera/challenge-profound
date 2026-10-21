@@ -38,4 +38,23 @@ describe("the prompt table", () => {
 
     expect(opened).toHaveBeenCalledTimes(2);
   });
+
+  it("names the position that named the brand first", () => {
+    render(<PromptTable platformId="chatgpt" />);
+
+    const table = screen.getByRole("table");
+
+    // The mark a cell wears is a drawing, and the number alone does not say
+    // the brand was named before the others: the label a screen reader reads
+    // says it, so the difference is in the words and not only in the mark.
+    const first = within(table).queryAllByRole("cell", {
+      name: /at position 1\. The brand was named first\./,
+    });
+    const later = within(table).queryAllByRole("cell", {
+      name: /at position (?:[2-9]|\d{2,})\./,
+    });
+
+    expect(first.length).toBeGreaterThan(0);
+    expect(later.length).toBeGreaterThan(0);
+  });
 });

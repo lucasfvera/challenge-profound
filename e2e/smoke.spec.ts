@@ -24,17 +24,19 @@ import type { Locator, Page } from "@playwright/test";
  * series' token into a colour, and a unit test would have to assert the class
  * or the token instead of the affordance.
  *
- * Four kinds of surface are read another way, and all four are named in the
+ * Five kinds of surface are read another way, and all five are named in the
  * open: the cards — the metric cards and the chart's card — which the card
  * primitive gives no role and no name, so the suite takes them through the
  * primitive's own `data-slot` hook; the badge, which is a span with no name
  * of its own, so the suite reads the text it shows; the chart's series
  * references, which are decorative drawings inside named toggles, so the
- * suite takes them through the markup they are drawn in; and the chart's
+ * suite takes them through the markup they are drawn in; the chart's
  * plotted lines, which are drawings with no name at all, so the suite takes
- * them through the charting library's own mark for a series line. A CSS
- * class is never asserted: a class is a way in, and the library's own is the
- * only one the chart's markup offers.
+ * them through the charting library's own mark for a series line; and the
+ * table's Mention marks, which are drawings inside cells that carry a label
+ * of their own, so the suite takes them through the app's own hook for the
+ * element that renders a position. A CSS class is never asserted: a class is
+ * a way in, and the library's own is the only one the chart's markup offers.
  */
 
 /** The Visibility Score, as the KPI row names its card. */
@@ -72,6 +74,9 @@ const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
 
 /** The hook the card primitive leaves for the suite to take a card by. */
 const CARD_SLOT = "[data-slot='card']";
+
+/** The hook the table's Mention marks are drawn with. */
+const MENTION_POSITION = "data-mention-position";
 
 /**
  * The saturation a series colour has to reach to be a hue.
@@ -184,6 +189,20 @@ function plottedLines(page: Page) {
   return page
     .getByRole("img", { name: /Visibility Score of/ })
     .locator("path.recharts-line-curve");
+}
+
+/**
+ * The element that renders a position in the table's Mention cells.
+ *
+ * A mark is a drawing with no name of its own — the cell carries the label a
+ * screen reader reads — so the suite takes it through the hook it is drawn
+ * with, the way it takes the chart's series references through the markup
+ * they are drawn in. The hook names the element that renders the position
+ * number: the circle that carries the first position's number, and the
+ * number itself for a later position.
+ */
+function mentionMark(scope: Page | Locator, position: "first" | "later") {
+  return scope.locator(`[${MENTION_POSITION}="${position}"]`);
 }
 
 /**
@@ -370,6 +389,45 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
   await expect(
     table.getByRole("link", { name: FIRST_PROMPT_TEXT }),
   ).toHaveAttribute("href", "/prompts/p-01?platform=claude");
+});
+
+test("The table tells the platform that named the brand first from the ones that did not", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const table = page.getByRole("table");
+
+  // The row that holds both marks is the one the reader has to tell apart,
+  // so the suite takes that row rather than a row it expects to hold one.
+  const mixed = table
+    .getByRole("row")
+    .filter({ has: mentionMark(page, "first") })
+    .filter({ has: mentionMark(page, "later") });
+
+  await expect(mixed.first()).toBeVisible();
+
+  const first = mentionMark(mixed.first(), "first");
+  const later = mentionMark(mixed.first(), "later");
+
+  // The first position wears the brand fill: the accent is Northstar's
+  // data, and the first position is Northstar's data.
+  await expect(first.first()).toHaveCSS(
+    "background-color",
+    await tokenColor(page, "--accent"),
+  );
+
+  // And the two numbers are not styled the same way, which is the whole
+  // point: a row that holds a 1 and a 2 must not hold two cells that read
+  // alike.
+  const firstColour = await first
+    .first()
+    .evaluate((mark) => getComputedStyle(mark).color);
+  const laterColour = await later
+    .first()
+    .evaluate((mark) => getComputedStyle(mark).color);
+
+  expect(firstColour).not.toBe(laterColour);
 });
 
 test("The clickable filters say they are clickable", async ({ page }) => {

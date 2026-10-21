@@ -164,23 +164,26 @@ build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: eleven end-to-end tests that prove the demo
+The smoke suite is the third seam: twelve end-to-end tests that prove the demo
 story — the metric cards and the chart render, the chart tells its series
 apart by colour, the chart draws each series' reference at the scale of the
 line it names, the chart can take the hue off the competitors, the platform
-switch rewrites the URL and moves the table's scope, the clickable filters say
-they are clickable, the movements say which way they went, a prompt row opens
-the detail with the highlighted mentions and the citations, an unknown prompt
-id answers 404, the overview holds at 390px, and an unknown platform param
-falls back to the default with the table still rendered. It reads the app the way a
-reader does — by role and accessible name, and by the text a reader sees
-where the surface carries no name — with three kinds of surface reached
-another way: the cards, which the card primitive gives no role and no name,
-so the suite takes them through the primitive's `data-slot` attribute; the
-badge, which is a span with no name of its own, so the suite reads the text
-it shows; and the chart's series references, which are decorative drawings
-inside named toggles, so the suite takes them through the markup they are
-drawn in.
+switch rewrites the URL and moves the table's scope, the table tells the
+platform that named the brand first from the ones that did not, the clickable
+filters say they are clickable, the movements say which way they went, a
+prompt row opens the detail with the highlighted mentions and the citations,
+an unknown prompt id answers 404, the overview holds at 390px, and an unknown
+platform param falls back to the default with the table still rendered. It
+reads the app the way a reader does — by role and accessible name, and by the
+text a reader sees where the surface carries no name — with five kinds of
+surface reached another way: the cards, which the card primitive gives no
+role and no name, so the suite takes them through the primitive's `data-slot`
+attribute; the badge, which is a span with no name of its own, so the suite
+reads the text it shows; the chart's series references and plotted lines,
+which are decorative drawings, so the suite takes them through the markup
+they are drawn in; and the table's Mention marks, which are drawings inside
+cells that carry a label of their own, so the suite takes them through the
+app's own hook for the element that renders a position.
 
 ## What the app renders today
 
@@ -219,14 +222,15 @@ the em dash instead of an empty plot.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the
-position Northstar was named at beside each Mention. It is scoped by the same
-Platform as the KPI cards, and its rows are ordered by Northstar's strength on
-that Platform, so the table and the cards above it always read the same scope.
-Below the `sm` breakpoint the table gives way to cards. Every row is a link
-into the prompt detail route: a click anywhere on the row opens the Prompt's
-detail, Enter and Space open it from the keyboard, and the link carries the
-Platform the table is scoped to, so the detail route answers with the same
-Platform.
+position Northstar was named at on each Mention — beside the mark, or inside
+it where the brand was named first, so the Platform that named the brand
+before the others reads at a glance. It is scoped by the same Platform as the
+KPI cards, and its rows are ordered by Northstar's strength on that Platform,
+so the table and the cards above it always read the same scope. Below the `sm`
+breakpoint the table gives way to cards. Every row is a link into the prompt
+detail route: a click anywhere on the row opens the Prompt's detail, Enter and
+Space open it from the keyboard, and the link carries the Platform the table
+is scoped to, so the detail route answers with the same Platform.
 
 The prompt detail route — `/prompts/<prompt-id>`, for example
 `/prompts/p-01` — is the evidence view. It renders on the server from the

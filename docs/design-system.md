@@ -426,20 +426,33 @@ container, so the chart cannot be rendered on the server.
 **The prompt table** (`src/components/prompts/prompt-table.tsx`) is the
 read-only view of the tracked Prompts: one row per Prompt, the Prompt's
 category in the secondary badge (`--secondary`), and a column per Platform
-carrying the brand's Mention state on that Platform. The state has three
-marks, and the em dash covers the two states the Snapshot cannot report:
+carrying the brand's Mention state on that Platform. Each state wears a mark
+of its own, and the em dash covers the two states the Snapshot cannot report:
 
 | Mention state | Mark | Label a screen reader reads |
 |---------------|------|------------------------------|
-| mentioned | the brand accent as a fill (`--accent`), with the position the brand was named at | "Mentioned on ChatGPT, at position 1" |
+| mentioned first (position 1) | the brand accent as a fill (`--accent`) with the number inside it | "Mentioned on ChatGPT, at position 1. The brand was named first." |
+| mentioned (position 2 or later) | the brand accent as a dot, with the position in the muted foreground beside it | "Mentioned on ChatGPT, at position 3" |
 | not mentioned | a hollow ring in `--muted-foreground` | "Not mentioned on ChatGPT" |
 | the Platform gave no Answer | the em dash in `--muted-foreground` | "No answer on ChatGPT" |
 | the Snapshot measures no brand | the em dash in `--muted-foreground` | "No brand to measure on ChatGPT" |
 
 The em dash is this document's mark for a value the Snapshot cannot report,
-and the ring says the Answer exists and does not name the brand. The three
-marks are three shapes, so the state never rests on colour alone, and every
-cell carries the label a screen reader reads.
+and the ring says the Answer exists and does not name the brand. Every mark
+is a shape as well as a colour, so the state never rests on colour alone, and
+every cell carries the label a screen reader reads.
+
+**The first position wears a mark of its own.** A Mention at position 1 is
+drawn as the brand fill with the number inside it, where every later position
+is drawn as a dot with the number in the muted foreground beside it. The two
+are told apart by their shape and by the number's own colour, so a row that
+holds a 1 and a 2 never shows two cells styled the same way — the Platform
+that named the brand before the others reads at a glance. The fill is the
+brand accent, because the accent is Northstar's data and the first position
+is Northstar's data; the number on it wears `--accent-foreground`, the pair
+this document fixes at 4.61:1. The words carry it too: the label a screen
+reader reads says the brand was named first, so the difference is in the
+accessibility tree and not only in the picture.
 
 The table is scoped by the Platform the overview's scope holds: the selected
 Platform's column sits on the selected chrome (`--secondary`) and its head
