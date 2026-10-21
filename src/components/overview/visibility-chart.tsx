@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -24,13 +25,30 @@ import { chartData, snapshot } from "@/lib/snapshot";
 import type { Brand, BrandId, ChartRow, PlatformId } from "@/lib/snapshot";
 
 /**
+ * A chart colour token.
+ *
+ * The series colours are CSS custom properties, so no raw colour reaches the
+ * DOM. The type makes that rule checkable rather than a convention: a hex
+ * at a call site does not compile.
+ */
+type ChartToken = `var(--chart-${string})`;
+
+/**
  * How one series is drawn: its colour token, its line pattern, its weight.
  *
  * The colour is a CSS custom property, so no raw colour reaches the DOM.
  */
 interface Treatment {
-  /** The chart colour token of the series. */
-  color: string;
+  /** The chart colour token of the series, in the colour mode. */
+  color: ChartToken;
+  /**
+   * The chart colour token of the series in the greyscale mode.
+   *
+   * The brand's is its own colour: the mode takes the hue off the competitors
+   * only, so the brand's line is the one hue left on the plot, and that is
+   * what makes the mode worth switching on.
+   */
+  grey: ChartToken;
   /** The line pattern of the series; `undefined` draws a solid line. */
   dash?: string;
   /** The stroke width of the series. */
@@ -55,12 +73,35 @@ interface Treatment {
  * be at two pixels: a long dash, a fine dot, and a dash-dot. The record is
  * exhaustive: a brand added to the Snapshot has no treatment until the ramp
  * grows one.
+ *
+ * Every treatment names the colour it wears in each mode, and the brand's
+ * greyscale colour is its own: the greyscale mode takes the hue off the
+ * competitors and leaves the brand alone.
  */
 const TREATMENTS: Record<BrandId, Treatment> = {
-  northstar: { color: "var(--chart-1)", width: 3.5 },
-  lumen: { color: "var(--chart-2)", dash: "10 6", width: 2 },
-  vantage: { color: "var(--chart-3)", dash: "1 6", width: 2 },
-  arcadia: { color: "var(--chart-4)", dash: "12 5 2 5", width: 2 },
+  northstar: {
+    color: "var(--chart-1)",
+    grey: "var(--chart-1)",
+    width: 3.5,
+  },
+  lumen: {
+    color: "var(--chart-2)",
+    grey: "var(--chart-2-grey)",
+    dash: "10 6",
+    width: 2,
+  },
+  vantage: {
+    color: "var(--chart-3)",
+    grey: "var(--chart-3-grey)",
+    dash: "1 6",
+    width: 2,
+  },
+  arcadia: {
+    color: "var(--chart-4)",
+    grey: "var(--chart-4-grey)",
+    dash: "12 5 2 5",
+    width: 2,
+  },
 };
 
 /**
@@ -73,10 +114,17 @@ const PLATFORM_NAMES = new Map(
   snapshot.platforms.map((platform) => [platform.id, platform.name] as const),
 );
 
-/** One series of the chart: the brand it draws, and how it is drawn. */
-interface DrawnSeries {
+/**
+ * One series of the chart: the brand it draws, and how it is drawn.
+ *
+ * The drawing is the treatment with the colour the current mode wears: every
+ * other property of the treatment is carried over, so a treatment that grows
+ * a property cannot be half-copied here.
+ */
+interface DrawnSeries extends Omit<Treatment, "color" | "grey"> {
   brand: Brand;
-  treatment: Treatment;
+  /** The colour the series wears in the mode the reader chose. */
+  color: ChartToken;
 }
 
 /**
@@ -93,15 +141,27 @@ interface DrawnSeries {
  * hid a series keeps it hidden. The toggles are grouped into the brand the
  * reader is measuring and the competitors it is measured against, so the
  * brand is told from the rivals in words and not only by its colour.
+ *
+ * The greyscale mode takes the hue off the competitors and leaves the brand
+ * alone, so the brand's line is the one hue on the plot — the reader's way of
+ * asking for their own line and nothing else. The mode is a chart control,
+ * not a series toggle, so it sits in the card's action slot and the legend
+ * still holds nothing but the series.
  */
 export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
   const [hidden, setHidden] = useState<BrandId[]>([]);
+  const [greyscale, setGreyscale] = useState(false);
 
   const { series, rows } = chartData(snapshot, platformId);
-  const drawn = series.map((brand) => ({
-    brand,
-    treatment: TREATMENTS[brand.id],
-  }));
+  const drawn: DrawnSeries[] = series.map((brand) => {
+    const { color, grey, ...treatment } = TREATMENTS[brand.id];
+
+    return {
+      brand,
+      ...treatment,
+      color: greyscale ? grey : color,
+    };
+  });
   const visible = drawn.filter(({ brand }) => !hidden.includes(brand.id));
 
   function toggle(brandId: BrandId) {
@@ -122,6 +182,17 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
         <CardDescription>
           {platformName} · {formatPeriod(snapshot.period)}
         </CardDescription>
+        <CardAction>
+          <Button
+            type="button"
+            variant={greyscale ? "secondary" : "ghost"}
+            size="sm"
+            aria-pressed={greyscale}
+            onClick={() => setGreyscale((current) => !current)}
+          >
+            Greyscale competitors
+          </Button>
+        </CardAction>
       </CardHeader>
       <CardContent>
         {rows.length === 0 ? (
@@ -174,14 +245,14 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
                       />
                     )}
                   />
-                  {visible.map(({ brand, treatment }) => (
+                  {visible.map((series) => (
                     <Line
-                      key={brand.id}
+                      key={series.brand.id}
                       type="monotone"
-                      dataKey={(row: ChartRow) => row.scores[brand.id]}
-                      stroke={treatment.color}
-                      strokeWidth={treatment.width}
-                      strokeDasharray={treatment.dash}
+                      dataKey={(row: ChartRow) => row.scores[series.brand.id]}
+                      stroke={series.color}
+                      strokeWidth={series.width}
+                      strokeDasharray={series.dash}
                       strokeLinecap="round"
                       dot={false}
                       isAnimationActive={false}
@@ -308,7 +379,7 @@ function SeriesToggle({
       onClick={() => onToggle(series.brand.id)}
       className={shown ? "gap-2" : "gap-2 text-muted-foreground"}
     >
-      <SeriesMark treatment={series.treatment} />
+      <SeriesMark series={series} />
       {series.brand.name}
     </Button>
   );
@@ -344,18 +415,18 @@ function VisibilityTooltip({
         {formatDate(row.date)}
       </p>
       <ul className="mt-2 flex flex-col gap-1">
-        {drawn.map(({ brand, treatment }) => {
-          const score = row.scores[brand.id];
+        {drawn.map((series) => {
+          const score = row.scores[series.brand.id];
           if (score === undefined) return null;
 
           return (
             <li
-              key={brand.id}
+              key={series.brand.id}
               className="flex items-center justify-between gap-4 text-xs"
             >
               <span className="flex items-center gap-2">
-                <SeriesMark treatment={treatment} />
-                {brand.name}
+                <SeriesMark series={series} />
+                {series.brand.name}
               </span>
               <span className="tabular-nums">
                 {formatMetric(score, "percent")}
@@ -388,10 +459,10 @@ const REFERENCE_HEIGHT = 10;
  *
  * The sample is drawn with the series' own stroke width and its own dash, so
  * the reference in the legend and in the tooltip shows the treatment the plot
- * draws — only shorter. A reference too short to carry the dash cannot tell
- * two series apart.
+ * draws — only shorter, and in the colour the current mode wears. A reference
+ * too short to carry the dash cannot tell two series apart.
  */
-function SeriesMark({ treatment }: { treatment: Treatment }) {
+function SeriesMark({ series }: { series: DrawnSeries }) {
   return (
     <svg
       width={REFERENCE_WIDTH}
@@ -409,9 +480,9 @@ function SeriesMark({ treatment }: { treatment: Treatment }) {
         y1={REFERENCE_HEIGHT / 2}
         x2={REFERENCE_WIDTH}
         y2={REFERENCE_HEIGHT / 2}
-        stroke={treatment.color}
-        strokeWidth={treatment.width}
-        strokeDasharray={treatment.dash}
+        stroke={series.color}
+        strokeWidth={series.width}
+        strokeDasharray={series.dash}
         strokeLinecap="round"
       />
     </svg>

@@ -52,6 +52,22 @@ class MeasuredResizeObserver implements ResizeObserver {
 }
 
 /**
+ * A series' reference: the sample it draws, and the line it draws it with.
+ *
+ * The reference is a sample of the line it names, so the line is where the
+ * series' treatment is drawn.
+ */
+function referenceOf(button: HTMLElement) {
+  const reference = button.querySelector("svg");
+  if (!reference) throw new Error("the series reference drew no sample");
+
+  const line = reference.querySelector("line");
+  if (!line) throw new Error("the series reference drew no line");
+
+  return { reference, line };
+}
+
+/**
  * The size a series' reference is drawn at: the space its dash is drawn in,
  * how long the dash pattern takes, and the width of the line it samples.
  *
@@ -59,11 +75,7 @@ class MeasuredResizeObserver implements ResizeObserver {
  * the pattern cuts the dash that tells the series apart.
  */
 function referenceSample(button: HTMLElement) {
-  const reference = button.querySelector("svg");
-  if (!reference) throw new Error("the series reference drew no sample");
-
-  const line = reference.querySelector("line");
-  if (!line) throw new Error("the series reference drew no line");
+  const { reference, line } = referenceOf(button);
 
   // The space the dash is drawn in is the sample's own viewBox: the width
   // it declares is the width the pattern has to fit in.
@@ -96,6 +108,33 @@ function plottedWidths(container: HTMLElement) {
   return [...container.querySelectorAll("path.recharts-line-curve")].map(
     (line) => Number(line.getAttribute("stroke-width")),
   );
+}
+
+/**
+ * The colour a series' reference is drawn with.
+ *
+ * The reference draws its colour as a token, and the unit environment does
+ * not resolve a custom property, so the token is what the suite reads here.
+ * The smoke suite reads the colour the bundle resolves it to.
+ */
+function referenceStroke(button: HTMLElement) {
+  const { line } = referenceOf(button);
+  const stroke = line.getAttribute("stroke");
+  if (stroke === null) throw new Error("the series reference drew no stroke");
+
+  return stroke;
+}
+
+/**
+ * The colours the series of one group are drawn with.
+ *
+ * The group is read the way a reader reaches it: the brand's group and the
+ * competitors' group, each named by the label it shows.
+ */
+function groupStrokes(group: HTMLElement) {
+  return within(group)
+    .getAllByRole("button")
+    .map(referenceStroke);
 }
 
 describe("the chart", () => {
@@ -215,5 +254,51 @@ describe("the chart", () => {
       1,
     );
     expect(Math.max(...plotted)).toBe(brand.strokeWidth);
+  });
+
+  it("takes the hue off the competitors and leaves the brand alone", async () => {
+    vi.stubGlobal("ResizeObserver", MeasuredResizeObserver);
+
+    const user = userEvent.setup();
+
+    render(<VisibilityChart platformId="chatgpt" />);
+
+    const toggle = screen.getByRole("button", { name: "Greyscale competitors" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+
+    const legend = screen.getByRole("group", { name: "Series" });
+    const brand = within(legend).getByRole("group", { name: "Your brand" });
+    const competitors = within(legend).getByRole("group", {
+      name: "Competitors",
+    });
+
+    const brandBefore = groupStrokes(brand);
+    const competitorsBefore = groupStrokes(competitors);
+
+    await user.click(toggle);
+
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+
+    // The brand keeps its colour: the mode takes the hue off the competitors
+    // only, so the brand's line is the one hue left on the plot.
+    expect(groupStrokes(brand)).toEqual(brandBefore);
+
+    const competitorsAfter = groupStrokes(competitors);
+
+    for (const [index, stroke] of competitorsAfter.entries()) {
+      expect(stroke).not.toBe(competitorsBefore[index]);
+    }
+
+    // The rivals are still told apart: the greyscale ramp is a ramp of its
+    // own, so no two of them wear the same grey.
+    expect(new Set(competitorsAfter).size).toBe(competitorsAfter.length);
+
+    // And the mode is a toggle, not a one-way switch: the rivals wear their
+    // hue again when the reader switches it off.
+    await user.click(toggle);
+
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(groupStrokes(brand)).toEqual(brandBefore);
+    expect(groupStrokes(competitors)).toEqual(competitorsBefore);
   });
 });

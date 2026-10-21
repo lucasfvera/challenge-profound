@@ -78,6 +78,16 @@
   --chart-4: #b96fc4;
   --chart-5: #c96685;
 
+  /* The greyscale ramp: a ramp of its own, worn by the competitors when the
+   * reader takes the hue off them. The brand keeps --chart-1, so its line is
+   * the one hue left on the plot. The steps are told apart by their
+   * lightness and by their line pattern, never by a hue of their own, and
+   * each one clears 3:1 against --card. */
+  --chart-2-grey: #b4b4be;
+  --chart-3-grey: #9898a2;
+  --chart-4-grey: #7c7c86;
+  --chart-5-grey: #62626c;
+
   --sidebar: var(--card);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--brand);
@@ -108,6 +118,10 @@
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
+  --color-chart-4-grey: var(--chart-4-grey);
+  --color-chart-3-grey: var(--chart-3-grey);
+  --color-chart-2-grey: var(--chart-2-grey);
+  --color-chart-5-grey: var(--chart-5-grey);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);

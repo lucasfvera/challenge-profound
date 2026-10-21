@@ -15,7 +15,8 @@ theme switcher: the token values live on `:root`, and the `dark` class stays on
 A black base with a single Profound Blue accent, hairline borders, dense
 tabular data, and restrained motion. The accent means **Northstar** — it is
 never decorative. The one other colour in the app is the chart's series ramp:
-every tracked brand wears a hue of its own there, and nowhere else.
+every tracked brand wears a hue of its own there — the greyscale ramp is the
+one exception, and it is a mode of that ramp — and nowhere else.
 
 ## Color tokens
 
@@ -78,9 +79,24 @@ happened, so they are literals and not derivations.
 Every brand wears a colour of its own, so the lines are told apart by colour.
 The competitor hues are less saturated than the brand's, so they read as rivals
 rather than as decoration, and the series separate by line treatment as well,
-so colour is never the only signal. **Every series colour is a hue**: a grey
-cannot tell one series from another, so the neutral ramp of the surfaces is
-not a series colour.
+so colour is never the only signal. **Every series colour is a hue**: the
+neutral ramp of the surfaces is not a series colour. The greyscale ramp below
+is the one exception, and it earns it — it is a mode's own set of tokens, and
+its steps are told apart by their lightness and by their line pattern.
+
+The greyscale ramp is what the chart's greyscale mode wears: the reader takes
+the hue off the competitors, and the brand keeps `--chart-1`, so the brand's
+line is the one hue left on the plot. The greys are ten points of lightness
+apart, so the rivals are still told apart by their lightness and by their line
+pattern — never by a hue of their own, and never by one grey between them. The
+brand has no grey of its own: it is the hue the mode leaves.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--chart-2-grey` | `#B4B4BE` | competitor 1 without its hue (9.56:1 on `--card`) |
+| `--chart-3-grey` | `#9898A2` | competitor 2 without its hue (6.88:1 on `--card`) |
+| `--chart-4-grey` | `#7C7C86` | competitor 3 without its hue (4.76:1 on `--card`) |
+| `--chart-5-grey` | `#62626C` | competitor 4 without its hue, unused today (3.26:1 on `--card`) |
 
 The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
 shadcn's sidebar primitives stay on-contract.
@@ -106,6 +122,10 @@ shadcn's sidebar primitives stay on-contract.
   legend groups it under `Your brand` while the competitors sit under
   `Competitors`. The reader is told which line is the reader's own in words,
   and not only by the colour of that line.
+- The greyscale mode takes the hue off the competitors and leaves the brand
+  alone, so the brand's line is the one hue on the plot. It is a second set
+  of tokens, not a filter: the competitor hues stay in the ramp, and the
+  reader switches between the two.
 
 ## Typography
 
@@ -342,8 +362,9 @@ explanation to a screen reader.
 the overview's third surface: the Visibility Score over the tracked window,
 for the selected Platform. It is a card — the title names the metric, the
 description names the Platform and the tracked window — drawn with Recharts
-and the chart ramp. It composes the base components; it adds no component and
-no token.
+and the chart ramp. It composes the base components; it adds no component, and
+it wears the ramp — the colour ramp and the greyscale one — rather than a
+colour of its own.
 
 - Northstar wears `--chart-1` and a solid line that is heavier than any
   competitor wears: the line the reader is looking for is the heaviest one on
@@ -353,6 +374,14 @@ no token.
   own — amber, teal, orchid — and separate by line pattern as well: a long
   dash, a fine dot, and a dash-dot, so no two series are told apart by hue
   alone.
+- **The chart carries a greyscale mode.** The toggle is the button
+  `Greyscale competitors`, and it sits in the card's action slot, beside the
+  chart's title. It carries `aria-pressed`: a chart control, not a series
+  toggle, so the legend still holds nothing but the series. Switched on, the
+  competitors wear the greyscale ramp and the brand keeps `--chart-1`, so the
+  brand's line is the one hue on the plot — the reader's way of asking for
+  their own line and nothing else. The mode is a view choice: it survives a
+  change of Platform the way the legend's hidden series do.
 - The legend is a real control, not a static key: a group named `Series`
   holding a toggle per series, each carrying `aria-pressed`, and a hidden
   series leaves the plot and the tooltip as well. The choice survives a change
@@ -521,6 +550,8 @@ interactive during the wait.
   `border-border` rule colours dividers only. `--input` clears 3:1 against
   both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
+- The chart's greyscale mode carries its state in `aria-pressed` too, so the
+  reader knows the rivals have lost their hue without seeing it.
 - The chart's plot is an image with a description: it names the metric, the
   brands and the Platform, so a screen reader does not read the axis ticks as
   the chart's name. The legend is the chart's control.
@@ -530,6 +561,9 @@ interactive during the wait.
 - Northstar uses `--accent` and `--chart-1`.
 - Competitors use the chart ramp — a colour of their own — plus a distinct
   line treatment.
+- The greyscale mode wears the greyscale ramp on the competitors alone:
+  Northstar keeps `--chart-1` in both modes, so the brand's line is the one
+  hue on the plot.
 - Missing or undefined metrics render as an em dash (`—`), never `NaN`.
 - A movement with no earlier period to compare against renders as an em dash
   too, and says so to a screen reader.

@@ -55,6 +55,9 @@ const PLATFORM_GROUP = "Platform";
 /** The chart's legend, as the app names its group. */
 const SERIES_GROUP = "Series";
 
+/** The toggle that takes the hue off the competitors, as it names itself. */
+const GREYSCALE_COMPETITORS = "Greyscale competitors";
+
 /** The Claude platform, as the scope control names it. */
 const CLAUDE = "Claude";
 
@@ -166,6 +169,33 @@ function seriesReferences(page: Page) {
 }
 
 /**
+ * The chart's plotted series: the lines the plot draws.
+ *
+ * The lines are drawings with no name of their own, so the suite takes them
+ * through the markup they are drawn in — the same way it reads the reference
+ * each legend toggle wears.
+ */
+function plottedLines(page: Page) {
+  return page
+    .getByRole("img", { name: /Visibility Score of/ })
+    .locator("path.recharts-line-curve");
+}
+
+/**
+ * The colours a set of series is drawn with.
+ *
+ * The colour is read from the computed style, because the bundle carries the
+ * stylesheet that resolves the series' token into a colour — a unit test
+ * would have to assert the token instead, and the tokens were distinct
+ * before the colours were.
+ */
+async function seriesColours(lines: Locator) {
+  return lines.evaluateAll((marks) =>
+    marks.map((mark) => getComputedStyle(mark).stroke),
+  );
+}
+
+/**
  * The saturation of a colour, from 0 (a grey) to 1 (the most saturated
  * colour there is).
  *
@@ -230,9 +260,7 @@ test("The chart tells its series apart by colour", async ({ page }) => {
   // because the bundle carries the stylesheet that resolves the series'
   // token into a colour — a unit test would have to assert the token
   // instead, and the tokens were distinct before the colours were.
-  const colours = await seriesReferences(page).evaluateAll((marks) =>
-    marks.map((mark) => getComputedStyle(mark).stroke),
-  );
+  const colours = await seriesColours(seriesReferences(page));
 
   expect(colours).toHaveLength(4);
 
@@ -269,6 +297,41 @@ test("The chart draws each series' reference at the scale of the line it names",
   for (const sample of samples) {
     expect(sample.drawn).toBe(sample.declared);
   }
+});
+
+test("The chart can take the hue off the competitors", async ({ page }) => {
+  await page.goto("/");
+
+  const toggle = page.getByRole("button", { name: GREYSCALE_COMPETITORS });
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+
+  await toggle.click();
+
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+
+  // The plot is what the mode is about, so the colours are read from the
+  // lines the plot draws.
+  const colours = await seriesColours(plottedLines(page));
+
+  expect(colours).toHaveLength(4);
+
+  // The references come in the legend's order, and the legend puts the brand
+  // the reader is measuring first. The brand keeps its hue: it is the one
+  // line the reader is looking for...
+  expect(saturation(colours[0])).toBeGreaterThanOrEqual(SERIES_HUE_FLOOR);
+
+  // ... and the rivals lose theirs, so the plot carries a single hue.
+  for (const colour of colours.slice(1)) {
+    expect(saturation(colour)).toBeLessThan(SERIES_HUE_FLOOR);
+  }
+
+  // The rivals are still told apart: the greyscale ramp is a ramp of its
+  // own, so no two of them wear the same grey.
+  expect(new Set(colours.slice(1)).size).toBe(colours.length - 1);
+
+  // And the reference in the legend is a sample of the line it names, so it
+  // wears the same colour the plot draws.
+  expect(await seriesColours(seriesReferences(page))).toEqual(colours);
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({
