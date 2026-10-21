@@ -22,3 +22,19 @@ export function formatMetric(value: number, unit: MetricUnit): string {
 export function formatPercentTick(value: number): string {
   return `${value}%`;
 }
+
+/**
+ * A metric the Snapshot may not be able to answer, in the unit it is
+ * reported in: `66.7%`, or the em dash when there is no answer.
+ *
+ * The em dash is the design system's mark for a metric the data cannot
+ * report, and it is the one the whole app wears — so the rule lives here,
+ * next to the formatting it belongs to, and every surface that shows a
+ * metric reads the same mark.
+ */
+export function formatMetricValue(
+  value: number | null,
+  unit: MetricUnit,
+): string {
+  return value === null ? "—" : formatMetric(value, unit);
+}
