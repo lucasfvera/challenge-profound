@@ -52,8 +52,8 @@ class MeasuredResizeObserver implements ResizeObserver {
 }
 
 /**
- * The size of a series' reference: the space its dash is drawn in, and how
- * long the dash pattern takes.
+ * The size a series' reference is drawn at: the space its dash is drawn in,
+ * how long the dash pattern takes, and the width of the line it samples.
  *
  * The reference has to carry a whole dash pattern: a sample too short for
  * the pattern cuts the dash that tells the series apart.
@@ -62,21 +62,40 @@ function referenceSample(button: HTMLElement) {
   const reference = button.querySelector("svg");
   if (!reference) throw new Error("the series reference drew no sample");
 
+  const line = reference.querySelector("line");
+  if (!line) throw new Error("the series reference drew no line");
+
   // The space the dash is drawn in is the sample's own viewBox: the width
   // it declares is the width the pattern has to fit in.
   const space = reference.getAttribute("viewBox")?.split(" ").map(Number) ?? [];
   const width = space[2];
 
-  const dash = reference
-    .querySelector("line")
-    ?.getAttribute("stroke-dasharray");
+  const dash = line.getAttribute("stroke-dasharray");
   const cycle = (dash ?? "")
     .split(/[\s,]+/)
     .filter(Boolean)
     .map(Number)
     .reduce((sum, part) => sum + part, 0);
 
-  return { width, cycle };
+  const strokeWidth = line.getAttribute("stroke-width");
+  if (strokeWidth === null) {
+    throw new Error("the series reference drew no stroke width");
+  }
+
+  return { width, cycle, strokeWidth: Number(strokeWidth) };
+}
+
+/**
+ * The widths the plot's series are drawn with.
+ *
+ * The plot's lines are drawings with no name of their own, so the suite takes
+ * them through the markup they are drawn in — the same way it reads the
+ * reference each legend toggle wears.
+ */
+function plottedWidths(container: HTMLElement) {
+  return [...container.querySelectorAll("path.recharts-line-curve")].map(
+    (line) => Number(line.getAttribute("stroke-width")),
+  );
 }
 
 describe("the chart", () => {
@@ -136,5 +155,65 @@ describe("the chart", () => {
     // pattern: a sample too short for the pattern cuts the dash that tells
     // the series apart.
     expect(samples.filter(({ cycle, width }) => cycle > width)).toEqual([]);
+  });
+
+  it("groups the brand and the competitors in the legend", () => {
+    vi.stubGlobal("ResizeObserver", MeasuredResizeObserver);
+
+    render(<VisibilityChart platformId="chatgpt" />);
+
+    const legend = screen.getByRole("group", { name: "Series" });
+    const brand = within(legend).getByRole("group", { name: "Your brand" });
+    const competitors = within(legend).getByRole("group", {
+      name: "Competitors",
+    });
+
+    // The brand the reader is measuring is named in words, and so are the
+    // rivals: the distinction does not rest on the colour of a line.
+    expect(
+      within(brand)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Northstar"]);
+
+    expect(
+      within(competitors)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Lumen", "Vantage", "Arcadia"]);
+  });
+
+  it("draws the brand's line heavier than every competitor's", () => {
+    vi.stubGlobal("ResizeObserver", MeasuredResizeObserver);
+
+    const { container } = render(<VisibilityChart platformId="chatgpt" />);
+
+    const legend = screen.getByRole("group", { name: "Series" });
+    const brand = referenceSample(
+      within(legend).getByRole("button", { name: "Northstar" }),
+    );
+
+    // The rivals are the ones the legend groups as competitors, so the
+    // promise covers every competitor the Snapshot tracks and not a list of
+    // names that can drift away from it.
+    const competitors = within(
+      within(legend).getByRole("group", { name: "Competitors" }),
+    ).getAllByRole("button");
+
+    for (const competitor of competitors) {
+      expect(referenceSample(competitor).strokeWidth).toBeLessThan(
+        brand.strokeWidth,
+      );
+    }
+
+    // The plot draws the weight the reference wears: the brand's line is the
+    // heaviest one on it, and it is the only line that wears that weight.
+    const plotted = plottedWidths(container);
+
+    expect(plotted).toHaveLength(competitors.length + 1);
+    expect(plotted.filter((width) => width === brand.strokeWidth)).toHaveLength(
+      1,
+    );
+    expect(Math.max(...plotted)).toBe(brand.strokeWidth);
   });
 });

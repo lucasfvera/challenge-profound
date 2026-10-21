@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -44,17 +44,20 @@ interface Treatment {
  * colour and its line pattern when the reader changes Platform, so the same
  * brand is the same series in every view.
  *
- * The brand the Snapshot measures wears the brand accent and a solid, heavier
- * line. The competitors wear colours of their own — amber, teal, orchid — and
- * separate by line pattern as well, so the series are told apart by colour
- * and by treatment, never by hue alone — the rule the design system sets for
- * every chart series. The patterns are as distinct from each other as three
- * patterns can be at two pixels: a long dash, a fine dot, and a dash-dot. The
- * record is exhaustive: a brand added to the Snapshot has no treatment until
- * the ramp grows one.
+ * Northstar — the brand the Snapshot measures — wears the brand accent on a
+ * solid line that is heavier than any competitor wears: the line the reader
+ * is looking for is the heaviest one on the plot, and weight is the signal
+ * that survives a greyscale plot, a projector and a phone. The competitors
+ * wear colours of their own — amber, teal, orchid — and separate by line
+ * pattern as well, so the series are told apart by colour and by treatment,
+ * never by hue alone — the rule the design system sets for every chart
+ * series. The patterns are as distinct from each other as three patterns can
+ * be at two pixels: a long dash, a fine dot, and a dash-dot. The record is
+ * exhaustive: a brand added to the Snapshot has no treatment until the ramp
+ * grows one.
  */
 const TREATMENTS: Record<BrandId, Treatment> = {
-  northstar: { color: "var(--chart-1)", width: 2.5 },
+  northstar: { color: "var(--chart-1)", width: 3.5 },
   lumen: { color: "var(--chart-2)", dash: "10 6", width: 2 },
   vantage: { color: "var(--chart-3)", dash: "1 6", width: 2 },
   arcadia: { color: "var(--chart-4)", dash: "12 5 2 5", width: 2 },
@@ -87,7 +90,9 @@ interface DrawnSeries {
  * The legend is a real control. Every series is a toggle, and a hidden series
  * leaves the plot and the tooltip as well, so the reader compares only the
  * series they kept. The choice survives a change of Platform, so a reader who
- * hid a series keeps it hidden.
+ * hid a series keeps it hidden. The toggles are grouped into the brand the
+ * reader is measuring and the competitors it is measured against, so the
+ * brand is told from the rivals in words and not only by its colour.
  */
 export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
   const [hidden, setHidden] = useState<BrandId[]>([]);
@@ -193,11 +198,12 @@ export function VisibilityChart({ platformId }: { platformId: PlatformId }) {
 }
 
 /**
- * The legend: a toggle per series.
+ * The legend: a toggle per series, grouped into the brand the reader is
+ * measuring and the competitors it is measured against.
  *
- * The toggles are the base button in its selected and its quiet rendering, so
- * the legend holds no chrome of its own. Each toggle carries `aria-pressed`,
- * so the state of every series is readable without colour.
+ * The groups are named by the labels they show, so the brand is named in
+ * words — to a reader and to a screen reader — and not only by the colour of
+ * its line.
  */
 function SeriesLegend({
   drawn,
@@ -208,27 +214,103 @@ function SeriesLegend({
   hidden: BrandId[];
   onToggle: (brandId: BrandId) => void;
 }) {
-  return (
-    <div role="group" aria-label="Series" className="flex flex-wrap gap-1">
-      {drawn.map(({ brand, treatment }) => {
-        const shown = !hidden.includes(brand.id);
+  const brandSeries = drawn.filter(
+    ({ brand }) => brand.kind === "subject",
+  );
+  const competitorSeries = drawn.filter(
+    ({ brand }) => brand.kind === "competitor",
+  );
 
-        return (
-          <Button
-            key={brand.id}
-            type="button"
-            variant={shown ? "secondary" : "ghost"}
-            size="sm"
-            aria-pressed={shown}
-            onClick={() => onToggle(brand.id)}
-            className={shown ? "gap-2" : "gap-2 text-muted-foreground"}
-          >
-            <SeriesMark treatment={treatment} />
-            {brand.name}
-          </Button>
-        );
-      })}
+  return (
+    <div role="group" aria-label="Series" className="flex flex-col gap-2">
+      <SeriesGroup
+        label="Your brand"
+        drawn={brandSeries}
+        hidden={hidden}
+        onToggle={onToggle}
+      />
+      <SeriesGroup
+        label="Competitors"
+        drawn={competitorSeries}
+        hidden={hidden}
+        onToggle={onToggle}
+      />
     </div>
+  );
+}
+
+/**
+ * One group of series: the label that names it, and the toggles it holds.
+ *
+ * The group is named by the label it shows, so the words a reader reads are
+ * the words a screen reader reads, and the brand is told from the competitors
+ * without colour.
+ */
+function SeriesGroup({
+  label,
+  drawn,
+  hidden,
+  onToggle,
+}: {
+  label: string;
+  drawn: DrawnSeries[];
+  hidden: BrandId[];
+  onToggle: (brandId: BrandId) => void;
+}) {
+  const labelId = useId();
+
+  return (
+    <div
+      role="group"
+      aria-labelledby={labelId}
+      className="flex flex-wrap items-center gap-2"
+    >
+      <span
+        id={labelId}
+        className="text-xs font-medium uppercase tracking-widest text-muted-foreground"
+      >
+        {label}
+      </span>
+      {drawn.map((series) => (
+        <SeriesToggle
+          key={series.brand.id}
+          series={series}
+          shown={!hidden.includes(series.brand.id)}
+          onToggle={onToggle}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * One series' toggle: the reference it wears, and its name.
+ *
+ * The toggle is the base button in its selected and its quiet rendering, so
+ * the legend holds no chrome of its own. Each toggle carries `aria-pressed`,
+ * so the state of every series is readable without colour.
+ */
+function SeriesToggle({
+  series,
+  shown,
+  onToggle,
+}: {
+  series: DrawnSeries;
+  shown: boolean;
+  onToggle: (brandId: BrandId) => void;
+}) {
+  return (
+    <Button
+      type="button"
+      variant={shown ? "secondary" : "ghost"}
+      size="sm"
+      aria-pressed={shown}
+      onClick={() => onToggle(series.brand.id)}
+      className={shown ? "gap-2" : "gap-2 text-muted-foreground"}
+    >
+      <SeriesMark treatment={series.treatment} />
+      {series.brand.name}
+    </Button>
   );
 }
 
