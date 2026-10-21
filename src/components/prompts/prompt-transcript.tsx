@@ -17,7 +17,7 @@ export function PromptTranscript({
   answer,
   brands,
 }: {
-  /** The tracked Prompt the reader sent. */
+  /** The tracked Prompt the user sent. */
   prompt: Prompt;
   /** The Answer the Platform gave for it. */
   answer: Answer;
@@ -30,7 +30,7 @@ export function PromptTranscript({
     <PromptConversation>
       {messages.map((message) => (
         <li key={message.role}>
-          {message.role === "reader" ? (
+          {message.role === "user" ? (
             <PromptMessage label={message.label} prompt={message.prompt} />
           ) : (
             <AnswerMessage

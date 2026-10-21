@@ -5,7 +5,7 @@ import { findPrompt } from "@/lib/prompt-detail";
 import { snapshot } from "@/lib/snapshot";
 import type { Prompt } from "@/lib/snapshot";
 
-/** The name the reader's message carries. */
+/** The name the user's message carries. */
 const READER_SPEAKER = "A user asked";
 
 /** The tracked Prompt the message below carries. */
@@ -31,7 +31,7 @@ const PROMPT_WITH_A_LONG_WORD: Prompt = {
   category: "how-to",
 };
 
-describe("the reader's message", () => {
+describe("the user's message", () => {
   it("carries the whole prompt", () => {
     render(<PromptMessage label={READER_SPEAKER} prompt={PROMPT} />);
 
@@ -69,8 +69,8 @@ describe("the reader's message", () => {
     );
 
     // The whole Prompt is in the document: the message never shortens it.
-    // Whether the word is broken inside the column is a layout, and the
-    // layout is read in the bundle.
+    // Whether the word is broken inside the column is a layout, and no suite
+    // here reads a layout — the rule is the design system's.
     expect(
       screen.getByText(PROMPT_WITH_A_LONG_WORD.text),
     ).toBeInTheDocument();

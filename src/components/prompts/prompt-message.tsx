@@ -6,11 +6,11 @@ import type { Prompt } from "@/lib/snapshot";
 import { cn } from "@/lib/utils";
 
 /**
- * The reader's message: the Prompt a user sent to the Platform.
+ * The user's message: the Prompt a user sent to the Platform.
  *
  * The Prompt is a message and not a heading: it is what a user asked, in
  * whatever words they used, so it is drawn in the body role and it wraps. A
- * long Prompt is a long message — it keeps the line breaks the reader wrote,
+ * long Prompt is a long message — it keeps the line breaks the user wrote,
  * it is never cut short, and a word too long to fit is broken rather than
  * pushed past the column.
  *

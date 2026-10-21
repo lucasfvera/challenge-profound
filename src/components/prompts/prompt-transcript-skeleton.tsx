@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  * The conversation's loading skeleton: the placeholders that hold the
  * exchange while the Answer for the current URL is on its way.
  *
- * It stands in for the conversation's own content — the reader's message and
+ * It stands in for the conversation's own content — the user's message and
  * the Platform's reply with the Citations inside it, in the order they
  * happen — so the page does not jump when the Answer arrives. The skeleton
  * is inert, the way the base component is: it has no interactive states, only

@@ -35,6 +35,13 @@ brand gains ground on ChatGPT, Claude and Gemini, and loses it on Perplexity:
 Perplexity names it in four of the fifteen Answers it gave, and the movements
 the cards report go down with it.
 
+The tracked Prompts are search-style questions of a few words, with one
+exception: `p-04` is a real user's sentence. It is there so the prompt detail
+route's long case is real in the demo — a Prompt long enough to fill the
+column is a message that wraps, and the demo has to reach it. The metrics
+read the Answers and not the Prompt, so nothing moves when a Prompt's text
+changes.
+
 The tracked Platforms live in their own module
 (`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
 boundary can read them without pulling the whole fixture into the browser.
@@ -53,6 +60,13 @@ holds. The standings are a reading, not a second measurement — the subject's
 metrics on every Platform are read once, in the derivation layer — so the
 podium and the cards cannot disagree about a Platform.
 
+The prompt detail route reads the exchange through a contract of its own
+(`src/lib/prompt-conversation.ts`): the question first, the reply after it,
+and each message labelled with whoever is speaking. The Platform's label is
+read from the Answer it belongs to, so a reply can never be labelled with
+another Platform's name, and the contract never shortens a Prompt — a long one
+arrives whole and the surface wraps it.
+
 ## Design system
 
 The visual language lives in the semantic tokens of `src/app/globals.css` and is
@@ -68,7 +82,7 @@ platform scope control lives in `src/components/`, because the overview and
 the prompt detail route share it; the KPI cards, the visibility chart and the
 podium live
 in `src/components/overview/`, and the overview's prompt table and the prompt
-detail route's panels in `src/components/prompts/`. They compose the base
+detail route's conversation in `src/components/prompts/`. They compose the base
 components rather than adding to the inventory.
 
 ## Requirements
@@ -155,24 +169,24 @@ the image builds, and `npm run docker:run` proves it, with the app answering
 on <http://127.0.0.1:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
-the platform scope contract, the prompt detail contract, the prompt table
-contract, the prompt row contract, the platform standings contract, the
-component tests, and the app's date formatting. The component tests are the
-second seam, next to the pure one: they render the surfaces in a DOM and
-assert the interaction and accessibility contracts — the segmented control's
-keyboard and ARIA, the KPI card's delta formatting and its metric
-explanation, the answer panel's Mention highlights, the prompt row's
-activation, the chart's tooltip and legend and the reference each series
-wears, the podium's order and the pick it reports, and the citations
-panel's links. `npm run build` produces a production bundle; run it with
-`npm run start` to serve that bundle locally.
+the platform scope contract, the prompt detail contract, the conversation
+contract, the prompt table contract, the prompt row contract, the platform
+standings contract, the component tests, and the app's date formatting. The
+component tests are the second seam, next to the pure one: they render the
+surfaces in a DOM and assert the interaction and accessibility contracts —
+the segmented control's keyboard and ARIA, the KPI card's delta formatting
+and its metric explanation, the conversation's two messages and the Mentions
+they highlight, the prompt row's activation, the chart's tooltip and legend
+and the reference each series wears, the podium's order and the pick it
+reports, and the citations the reply lists. `npm run build` produces a
+production bundle; run it with `npm run start` to serve that bundle locally.
 
 `npm run test:e2e` runs the Playwright smoke suite against a **production
 build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: thirteen end-to-end tests that prove the
+The smoke suite is the third seam: sixteen end-to-end tests that prove the
 demo story — the metric cards and the chart render, the chart tells its series
 apart by colour, the chart draws each series' reference at the scale of the
 line it names, the chart can take the hue off the competitors, the platform
@@ -180,9 +194,11 @@ switch rewrites the URL and moves the table's scope, the podium scopes the
 view to the platform it picks, the table tells the platform that named the
 brand first from the ones that did not, the clickable filters say they are
 clickable, the movements say which way they went, a prompt row opens the
-detail with the highlighted mentions and the citations, an unknown prompt id
-answers 404, the overview holds at 390px, and an unknown platform param falls
-back to the default with the table still rendered. It
+detail with the highlighted mentions and the citations, the detail route reads
+as a conversation, the page's title names what the page holds, the detail route
+holds at 390px, an unknown prompt id answers 404, the overview holds at 390px,
+and an unknown platform param falls back to the default with the table still
+rendered. It
 reads the app the way a reader does — by role and accessible name, and by the
 text a reader sees where the surface carries no name — with five kinds of
 surface reached another way: the cards, which the card primitive gives no
@@ -254,11 +270,16 @@ Platform the table is scoped to, so the detail route answers with the same
 Platform.
 
 The prompt detail route — `/prompts/<prompt-id>`, for example
-`/prompts/p-01` — is the evidence view. It renders on the server from the
-Snapshot: the tracked question as the heading, the Answer the selected
-Platform gave for it, and the sources behind that Answer. Northstar's Mentions
-are picked out in the brand accent and the Competitors' Mentions in a dotted
-underline, each with a label a screen reader reads. The same `platform` search
+`/prompts/p-01` — is the evidence view, and it reads as a conversation. It
+renders on the server from the Snapshot: a user sent the tracked Prompt, the
+selected Platform gave the Answer, and each message carries the name of
+whoever is speaking. The Prompt is a message and not a title — it is what a
+user asked, in whatever words they used, so it is never cut short, and one
+long enough to fill the column wraps inside it instead. The
+Citations travel with the reply, the way a chat shows the sources under the
+answer that used them, and Northstar's Mentions are picked out in the brand
+accent and the Competitors' Mentions in a dotted underline, each with a label
+a screen reader reads. The same `platform` search
 param scopes the route, so a shared link carries both halves of the view, and
 a prompt id the Snapshot does not track — or a platform with no answer for it
 — is a 404. Switching the platform is a navigation, so a loading skeleton

@@ -23,14 +23,14 @@ import type { Answer, Prompt } from "@/lib/snapshot";
  * One message of the exchange.
  *
  * The two messages carry different payloads, and the union says so: the
- * reader's message carries the Prompt that was sent, and the Platform's
+ * user's message carries the Prompt that was sent, and the Platform's
  * message carries the Answer that came back. A surface therefore cannot read
- * the Answer off the reader's message, or the Prompt off the reply.
+ * the Answer off the user's message, or the Prompt off the reply.
  */
 export type ConversationMessage =
   | {
-      /** The reader sent the Prompt. */
-      role: "reader";
+      /** The user sent the Prompt. */
+      role: "user";
       /** The label the message carries: who is speaking, in words. */
       label: string;
       /** The Prompt that was sent. */
@@ -46,13 +46,13 @@ export type ConversationMessage =
     };
 
 /**
- * The label the reader's message carries.
+ * The label the user's message carries.
  *
  * A tracked Prompt is a question real users ask the assistants, so the
  * person who sent it is one of those users and not the reader of the
  * dashboard: the label names them as "a user" and not as "you".
  */
-const READER_LABEL = "A user asked";
+const USER_LABEL = "A user asked";
 
 /**
  * The exchange a Prompt and the Answer it got make, in order: the question
@@ -66,7 +66,7 @@ export function conversation(
   answer: Answer,
 ): ConversationMessage[] {
   return [
-    { role: "reader", label: READER_LABEL, prompt },
+    { role: "user", label: USER_LABEL, prompt },
     { role: "platform", label: platformLabel(answer), answer },
   ];
 }

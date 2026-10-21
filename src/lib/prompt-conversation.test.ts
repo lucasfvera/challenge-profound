@@ -35,7 +35,7 @@ describe("the conversation contract", () => {
     const messages = conversation(PROMPT, ANSWER);
 
     expect(messages.map((message) => message.role)).toEqual([
-      "reader",
+      "user",
       "platform",
     ]);
   });

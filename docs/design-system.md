@@ -215,7 +215,8 @@ Numbers must align in columns.
 ## Spacing and layout
 
 - Horizontal page padding: `px-4` (`sm:px-6`); vertical page padding `py-10`.
-- Content max width: `max-w-6xl`, centered.
+- Content max width: `max-w-6xl`, centered. The prompt detail route is
+  `max-w-3xl`, centered: a chat is a column.
 - Header row: `h-14` tall, its items separated by `gap-4`.
 - Vertical rhythm: `gap-6` (24px) between panels, `gap-2`..`gap-3` (8–12px)
   inside compact rows.
@@ -236,14 +237,17 @@ the rest arrive with their own tickets.
 |------------|-------|----------|
 | Base | `< 640px` | single column; KPI cards stack; the prompt table becomes cards; the chart keeps at least `h-60` of height with fewer labels |
 | `sm` | `≥ 640px` | KPI cards in a 3-column grid; table view returns |
-| `md` | `≥ 768px` | two-column detail layout (answer + citations) |
+| `md` | `≥ 768px` | the scope row's name and control share a line from here on; the prompt detail route's conversation stays one column at every width |
 | `lg` | `≥ 1024px` | full dashboard density |
 
 The whole flow has to work from ~390px to desktop without horizontal overflow.
 The end-to-end smoke suite holds that floor: it opens the overview at 390px
 and asserts that the prompt table is there but hidden, that a row is still
 reachable as a link, that the page does not scroll sideways, and that the
-podium's four bars keep the same width, so they stay comparable.
+podium's four bars keep the same width, so they stay comparable. It holds the
+same floor on the prompt detail route, with the Snapshot's long Prompt on
+screen: a Prompt long enough to fill the column is a message that wraps
+inside the column, never a page that scrolls sideways.
 
 ## Component inventory
 
@@ -555,6 +559,20 @@ comes from the path, the Platform from the `platform` search param, and a Prompt
 the Snapshot does not track — or a Platform with no Answer for it — is a
 404.
 
+**The route is a conversation.** The route draws the exchange rather than a
+page about a question: a user sent the Prompt, the Platform gave the Answer,
+and each message carries the name of whoever is speaking. The order and the
+speakers come from the conversation contract
+(`src/lib/prompt-conversation.ts`), so the exchange reads the same wherever it
+is drawn — and a reply can never be labelled with another Platform's name,
+because the label is read from the Answer it belongs to.
+
+**The page names what it holds.** The heading is `Prompt and Answer`, and the
+line under it says that the page holds one tracked Prompt sent to a Platform
+and the Answer it gave. The heading names no Platform: the scope is a
+navigation, and a heading that named the Platform would name the wrong one for
+the moment the server is answering.
+
 **The route's way back.** The route opens with a link back to the overview,
 scoped to the Platform the route is showing, so the reader comes back to the
 scope they drilled down from. It is a link and not a control that announces
@@ -562,9 +580,21 @@ itself as a button — a control that navigates has to say so — and it wears t
 Button's `link` variant with the default size's own padding dropped, so its
 text sits on the page's edge with the rest of the route.
 
-**The answer panel** (`src/components/prompts/answer-panel.tsx`) renders the
+**The user's message** (`src/components/prompts/prompt-message.tsx`) is the
+Prompt, in the user's own voice: the label `A user asked`, the Prompt's
+category beside it, and the Prompt's text in the body role.
+
+The Prompt is a message and not a heading. It is what a user asked, in
+whatever words they used, so it is never cut short, it keeps the line breaks
+the user wrote, and a word too long to fit is broken rather than pushed
+past the column. The bubble hugs its text and is capped at 85% of the
+column, so a short Prompt is a short bubble and a long one fills the column
+instead of running past it.
+
+**The Platform's message** (`src/components/prompts/answer-message.tsx`) is
+the Answer, in the Platform's voice: the label `{Platform} answered`, and the
 Answer's segments — the Snapshot's own segmentation, so the Mentions on the
-panel are the ones the KPI cards count. A Mention carries one of two
+message are the ones the KPI cards count. A Mention carries one of two
 treatments:
 
 | Mention | Treatment | Label a screen reader reads |
@@ -578,31 +608,39 @@ carries the accent foreground at 4.61:1. The two treatments differ by fill,
 text colour, and line treatment, so colour is never the only signal — and
 each one carries a hidden label that says what the treatment says.
 
+**The Citations travel with the reply.** The Answer's sources sit inside the
+Platform's message, the way a chat shows the sources under the answer that
+used them: they belong to that Answer, and a reader who scrolls the reply
+finds them beside it. The list is ordered, so the number in the body is the
+number in the list, and the list carries its own markers — a flex container
+would drop them. A source with a web address is an external link that opens in
+a new tab with `rel="noopener noreferrer"`, its accessible name is the title
+plus a hidden "opens in a new tab"; a source whose URL is not a web address is
+rendered as text rather than as a link. The list ends with the note that says
+where the sources come from: they are the fixture's fictional publications on
+reserved example domains.
+
 A Citation marker in the body (`[1]`) links to that Citation's entry in the
-citations panel. Its accessible name starts with the marker, so the name a
+message's own list. Its accessible name starts with the marker, so the name a
 screen reader reads contains the text on screen.
 
-**The citations panel** (`src/components/prompts/citations-panel.tsx`) lists
-the Answer's sources in the order of the markers, so the number in the body
-is the number in the list. The list is an ordered list with its own markers —
-a flex container would drop them. A source with a web address is an external link that opens
-in a new tab with `rel="noopener noreferrer"`, its accessible name is the
-title plus a hidden "opens in a new tab"; a source whose URL is not a web
-address is rendered as text rather than as a link. The panel ends with
-the note that says where the sources come from: they are the fixture's
-fictional publications on reserved example domains.
+**The two messages are told apart by more than colour.** The user's message
+sits on the right of the conversation and wears the quiet `--secondary`
+surface; the Platform's message sits on the left and fills the column on the
+`--card` surface. Each carries the name of whoever is speaking, so the page
+still reads in greyscale.
 
-**The route's layout and its loading UI.** Above the content, a scope row
-carries the selected Platform's name and the day the Snapshot's Answers
-belong to, with the scope control beside it. The answer and the citations
-sit side by side from `md` in a 3:2 grid and stack below it, in the shared
-layout (`src/components/prompts/prompt-detail-layout.tsx`). Switching the Platform
-is a navigation — the URL carries it and the server answers with that
-Platform's Answer — so the route shows one skeleton
-(`src/components/prompts/prompt-detail-skeleton.tsx`) while the answer is on
-its way. The skeleton stands in for the content inside that same layout, so
-the page does not jump when the content arrives. The scope control stays
-interactive during the wait.
+**The conversation's measure and its loading UI.** The conversation is one
+column, in the route's `max-w-3xl` measure: a chat is a column, and a
+two-column grid of an answer and its sources is a document. Above it, a scope
+row carries the selected Platform's name and the day the Snapshot's Answers
+belong to, with the scope control beside it. Switching the Platform is a
+navigation — the URL carries it and the server answers with that Platform's
+Answer — so the route shows one skeleton
+(`src/components/prompts/prompt-transcript-skeleton.tsx`) while the answer is
+on its way. The skeleton stands in for the conversation's own content — the
+user's message and the reply with its Citations — so the page does not jump
+when the content arrives. The scope control stays interactive during the wait.
 
 ## Accessibility rules
 
@@ -634,6 +672,9 @@ interactive during the wait.
   they hold and the metric the number is, so a percentage is never read
   without a name. A row carries its state in `aria-pressed`, the way the
   scope control's segments do.
+- The conversation's messages carry the name of whoever is speaking, so a
+  screen reader reads the exchange as an exchange: the question, then the
+  reply. The Prompt is a message and never a heading.
 
 ## Data semantics
 
