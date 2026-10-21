@@ -3,6 +3,7 @@ import "./globals.css";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { PRODUCT_NAME } from "@/lib/site";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: PRODUCT_NAME,
@@ -27,6 +28,7 @@ export default function RootLayout({
           </div>
         </header>
         <div className="flex flex-1 flex-col">{children}</div>
+        <SpeedInsights />
       </body>
     </html>
   );
