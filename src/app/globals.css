@@ -3,6 +3,14 @@
 @import "shadcn/tailwind.css";
 
 /*
+ * The documentation names Tailwind utilities as examples of what to strip or
+ * to use. It is not a class source: without this, the utilities the design
+ * system forbids would ship as live rules.
+ */
+@source not "../../docs";
+@source not "../../README.md";
+
+/*
  * Dark is the only mode this app ships: the `dark` class is set on <html>.
  * The token values live on `:root`, so there is no light palette to switch to.
  *
@@ -36,6 +44,10 @@
   /* Quiet surfaces: hover and selected chrome, never the brand accent. */
   --secondary: #17171a;
   --secondary-foreground: #e6e6e9;
+  /* Hover fill for a surface that already rests on --secondary: no token is
+   * lighter, so the fill is mixed with 5% of the foreground instead of
+   * dimmed, which would read as a press. */
+  --secondary-hover: color-mix(in oklab, var(--secondary), var(--foreground) 5%);
   --muted: #121214;
   --muted-foreground: #9a9aa3;
 
@@ -99,6 +111,7 @@
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
