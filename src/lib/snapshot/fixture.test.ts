@@ -26,8 +26,9 @@ describe("the Snapshot fixture", () => {
     // next longest tracked Prompt is 62 characters, so a bar of 120 keeps
     // the long case well clear of the search-style questions.
     const long = snapshot.prompts.find((prompt) => prompt.id === "p-04");
+    if (!long) throw new Error("missing the tracked prompt p-04");
 
-    expect(long?.text.length).toBeGreaterThan(120);
+    expect(long.text.length).toBeGreaterThan(120);
   });
 
   it("resolves every id it references", () => {

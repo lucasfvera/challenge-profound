@@ -267,7 +267,7 @@ function PromptLink({
   return (
     <Link
       href={promptDetailHref(prompt.id, platformId)}
-      className="underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
+      className="wrap-anywhere underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
       onKeyDown={activateRow}
     >
       {prompt.text}

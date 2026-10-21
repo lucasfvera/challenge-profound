@@ -16,7 +16,7 @@ import type { ReactNode } from "react";
  */
 
 /**
- * The reader's message's shell: a quiet bubble on the right of the
+ * The user's message's shell: a quiet bubble on the right of the
  * conversation.
  *
  * The bubble hugs its text and is capped at 85% of the column, so a short
@@ -24,7 +24,7 @@ import type { ReactNode } from "react";
  * past it. The skeleton wears the same shell, so the exchange keeps its shape
  * while the Answer is on its way.
  */
-export const READER_MESSAGE_SHELL =
+export const USER_MESSAGE_SHELL =
   "ml-auto w-fit max-w-[85%] gap-2 bg-secondary";
 
 /**
@@ -35,9 +35,20 @@ export const READER_MESSAGE_SHELL =
  */
 export const PLATFORM_MESSAGE_SHELL = "gap-2";
 
-export function PromptConversation({ children }: { children: ReactNode }) {
+/**
+ * The ordered list the exchange lives in.
+ *
+ * The list carries a name of its own, so a reader — and the smoke suite —
+ * reaches it by that name, and it is never confused with the Citations list
+ * inside the reply.
+ */
+export function PromptConversationShell({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
-    <ol aria-label="Conversation" className="mt-6 flex flex-col gap-4">
+    <ol aria-label="Conversation" className="mt-6 flex flex-col gap-6">
       {children}
     </ol>
   );

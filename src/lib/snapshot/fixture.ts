@@ -33,11 +33,12 @@ import type {
  * Platform.
  *
  * Fourteen of the tracked Prompts are search-style questions of a few words.
- * One — p-04 — is a real user's sentence, and it is there on purpose: the
- * prompt detail route draws a Prompt as a message, and the case of a Prompt
- * that runs past a heading is only real if the Snapshot holds one. The
- * tracked prompts table shows the same text, so the long case is in the
- * overview's first screen too.
+ * One — p-04 — is a real user's sentence, pasted link and all, and it is there
+ * on purpose: the prompt detail route draws a Prompt as a message, and the
+ * case of a Prompt long enough to fill the column — with a word too long to
+ * fit in it — is only real if the Snapshot holds one. The tracked prompts
+ * table shows the same text, so the long case is in the overview's first
+ * screen too.
  */
 
 const BRANDS: Brand[] = [
@@ -66,9 +67,10 @@ const PROMPTS: Prompt[] = [
   {
     id: "p-04",
     // The long Prompt: a real user writes sentences, and the tracked
-    // Prompts are otherwise search-style questions of a few words. The
-    // Answers below answer this question — which Platforms to track.
-    text: "We are a mid-market B2B software company with a small marketing team, and we can only afford to track a handful of prompts across a few assistants each month. Which AI platforms should we track for search visibility first?",
+    // Prompts are otherwise search-style questions of a few words. The link
+    // is the one they are working from, and it is a word too long to fit.
+    // The Answers below answer the question — which Platforms to track.
+    text: "We are a mid-market B2B software company with a small marketing team, and we can only afford to track a handful of prompts across a few assistants each month. Which AI platforms should we track for search visibility first? Our last visibility report is at https://northstar.example.com/reports/2026/q3/report_ai_visibility_northstar_2026_enterprise_team?utm_source=newsletter&utm_campaign=ai-visibility-check",
     category: "discovery",
   },
   {

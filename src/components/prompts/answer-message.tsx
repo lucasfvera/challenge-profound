@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PLATFORM_MESSAGE_SHELL } from "@/components/prompts/prompt-conversation";
+import { PLATFORM_MESSAGE_SHELL } from "@/components/prompts/prompt-conversation-shell";
 import { citationAnchorId, isSafeExternalUrl } from "@/lib/prompt-detail";
 import { segmentAnswer } from "@/lib/snapshot";
 import type { Answer, Brand, Citation } from "@/lib/snapshot";
@@ -21,8 +21,8 @@ import { cn } from "@/lib/utils";
  * treatments carry a hidden label, so a screen reader says which brand a
  * mention names and whether it is the brand being measured.
  *
- * The Citations live inside the message, the way a chat shows the sources
- * under the reply that used them: they belong to this Answer, and a reader
+ * The Citations live inside the message, the way a chat shows the sources of
+ * a reply under the reply itself: they belong to this Answer, and a reader
  * who scrolls the reply finds them beside it.
  */
 export function AnswerMessage({
@@ -41,7 +41,7 @@ export function AnswerMessage({
   const kindsById = new Map(brands.map((brand) => [brand.id, brand.kind]));
 
   return (
-    <Card className={cn(PLATFORM_MESSAGE_SHELL)}>
+    <Card className={PLATFORM_MESSAGE_SHELL}>
       <CardHeader>
         <CardTitle className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
           {label}
@@ -101,7 +101,7 @@ function Citations({ citations }: { citations: Citation[] }) {
           points at the entry with the same number. A flex container would
           blockify the items and drop the markers, so the spacing between
           them is a margin. */}
-      <ol className="mt-2 list-decimal space-y-3 pl-5">
+      <ol aria-label="Citations" className="mt-2 list-decimal space-y-3 pl-5">
         {citations.map((citation) => (
           <li
             key={citation.id}

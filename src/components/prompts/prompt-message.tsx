@@ -1,9 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { READER_MESSAGE_SHELL } from "@/components/prompts/prompt-conversation";
+import { USER_MESSAGE_SHELL } from "@/components/prompts/prompt-conversation-shell";
 import { CATEGORY_LABELS } from "@/lib/snapshot/categories";
 import type { Prompt } from "@/lib/snapshot";
-import { cn } from "@/lib/utils";
 
 /**
  * The user's message: the Prompt a user sent to the Platform.
@@ -28,7 +27,7 @@ export function PromptMessage({
   prompt: Prompt;
 }) {
   return (
-    <Card className={cn(READER_MESSAGE_SHELL)}>
+    <Card className={USER_MESSAGE_SHELL}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
           {label}

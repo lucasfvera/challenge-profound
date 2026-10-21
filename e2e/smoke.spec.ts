@@ -639,6 +639,8 @@ test("The detail route reads as a conversation", async ({ page }) => {
   const asked = await messages.nth(0).boundingBox();
   const answered = await messages.nth(1).boundingBox();
 
+  expect(asked).not.toBeNull();
+  expect(answered).not.toBeNull();
   expect(asked?.x).toBeGreaterThan(answered?.x ?? 0);
   expect(asked?.width).toBeLessThan(answered?.width ?? 0);
 });
@@ -669,9 +671,18 @@ test("The detail route holds at a phone viewport", async ({ page }) => {
 
   // The long Prompt is on the page and it takes more than one line: the
   // lines are a layout, so the bundle is the only place they can be read.
-  const question = conversation.locator(CARD_SLOT).first().locator("p");
+  const message = conversation.locator(CARD_SLOT).first();
+  const question = message.locator("p");
 
   expect(await textLines(question)).toBeGreaterThan(1);
+
+  // The message does not clip its text: the Prompt is never cut short, and
+  // a word too long to fit is broken rather than trimmed.
+  const clipped = await message.evaluate(
+    (element) => element.scrollWidth - element.clientWidth,
+  );
+
+  expect(clipped).toBeLessThanOrEqual(0);
 
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
 });

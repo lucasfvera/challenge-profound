@@ -237,7 +237,7 @@ the rest arrive with their own tickets.
 |------------|-------|----------|
 | Base | `< 640px` | single column; KPI cards stack; the prompt table becomes cards; the chart keeps at least `h-60` of height with fewer labels |
 | `sm` | `≥ 640px` | KPI cards in a 3-column grid; table view returns |
-| `md` | `≥ 768px` | the scope row's name and control share a line from here on; the prompt detail route's conversation stays one column at every width |
+| `md` | `≥ 768px` | the scope row's name and control share a line from here on |
 | `lg` | `≥ 1024px` | full dashboard density |
 
 The whole flow has to work from ~390px to desktop without horizontal overflow.
@@ -536,7 +536,9 @@ column's fill.
 Every row is a link into the prompt detail route. The link carries the
 Prompt's own text, so the row keeps one tab stop, and it carries a hidden
 " (prompt detail)" after it, so the name a screen reader reads says what
-the row opens. The link is stretched over the row — over the card below
+the row opens. The row carries the whole Prompt, so a Prompt long enough to
+fill the column takes a taller row — the table shows the question as it was
+asked, and never a shortened copy of it. The link is stretched over the row — over the card below
 `sm` — so a click anywhere on the row opens the Prompt's detail. The row
 and the card each carry `data-interactive`, and the primitive they are
 made of draws its own hover: the table primitives for the row, the Card
@@ -565,7 +567,10 @@ and each message carries the name of whoever is speaking. The order and the
 speakers come from the conversation contract
 (`src/lib/prompt-conversation.ts`), so the exchange reads the same wherever it
 is drawn — and a reply can never be labelled with another Platform's name,
-because the label is read from the Answer it belongs to.
+because the label is read from the Answer it belongs to. The transcript
+(`src/components/prompts/prompt-transcript.tsx`) draws the two messages, and
+the list they live in is the shell
+(`src/components/prompts/prompt-conversation-shell.tsx`).
 
 **The page names what it holds.** The heading is `Prompt and Answer`, and the
 line under it says that the page holds one tracked Prompt sent to a Platform
@@ -608,16 +613,17 @@ carries the accent foreground at 4.61:1. The two treatments differ by fill,
 text colour, and line treatment, so colour is never the only signal — and
 each one carries a hidden label that says what the treatment says.
 
-**The Citations travel with the reply.** The Answer's sources sit inside the
-Platform's message, the way a chat shows the sources under the answer that
-used them: they belong to that Answer, and a reader who scrolls the reply
+**The Citations travel with the reply.** The Answer's Citations sit inside the
+Platform's message, the way a chat shows the sources of a reply under the
+reply itself: they belong to that Answer, and a reader who scrolls the reply
 finds them beside it. The list is ordered, so the number in the body is the
 number in the list, and the list carries its own markers — a flex container
 would drop them. A source with a web address is an external link that opens in
 a new tab with `rel="noopener noreferrer"`, its accessible name is the title
 plus a hidden "opens in a new tab"; a source whose URL is not a web address is
-rendered as text rather than as a link. The list ends with the note that says
-where the sources come from: they are the fixture's fictional publications on
+rendered as text rather than as a link. The list is named `Citations`, so it is
+never confused with the conversation around it, and it ends with the note that
+says where they come from: they are the fixture's fictional publications on
 reserved example domains.
 
 A Citation marker in the body (`[1]`) links to that Citation's entry in the
@@ -632,9 +638,11 @@ still reads in greyscale.
 
 **The conversation's measure and its loading UI.** The conversation is one
 column, in the route's `max-w-3xl` measure: a chat is a column, and a
-two-column grid of an answer and its sources is a document. Above it, a scope
+two-column grid of an answer and its Citations is a document. Its messages
+sit `gap-6` apart, the rhythm the rest of the app uses. Above it, a scope
 row carries the selected Platform's name and the day the Snapshot's Answers
-belong to, with the scope control beside it. Switching the Platform is a
+belong to, with the scope control beside it: the two share a line wherever
+they fit, and wrap below that. Switching the Platform is a
 navigation — the URL carries it and the server answers with that Platform's
 Answer — so the route shows one skeleton
 (`src/components/prompts/prompt-transcript-skeleton.tsx`) while the answer is

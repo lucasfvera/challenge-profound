@@ -44,7 +44,10 @@ changes.
 
 The tracked Platforms live in their own module
 (`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
-boundary can read them without pulling the whole fixture into the browser.
+boundary can read them without pulling the whole fixture into the browser,
+and the Prompt categories' names live in one of their own
+(`src/lib/snapshot/categories.ts`) so the tracked prompts table and the
+prompt detail route's message spell a category the same way.
 
 The prompt table reads the Snapshot through its own contract
 (`src/lib/prompt-table.ts`): it derives every tracked Prompt's Mention state

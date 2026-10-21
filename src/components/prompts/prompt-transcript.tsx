@@ -1,5 +1,5 @@
 import { AnswerMessage } from "@/components/prompts/answer-message";
-import { PromptConversation } from "@/components/prompts/prompt-conversation";
+import { PromptConversationShell } from "@/components/prompts/prompt-conversation-shell";
 import { PromptMessage } from "@/components/prompts/prompt-message";
 import { conversation } from "@/lib/prompt-conversation";
 import type { Answer, Brand, Prompt } from "@/lib/snapshot";
@@ -27,7 +27,7 @@ export function PromptTranscript({
   const messages = conversation(prompt, answer);
 
   return (
-    <PromptConversation>
+    <PromptConversationShell>
       {messages.map((message) => (
         <li key={message.role}>
           {message.role === "user" ? (
@@ -41,6 +41,6 @@ export function PromptTranscript({
           )}
         </li>
       ))}
-    </PromptConversation>
+    </PromptConversationShell>
   );
 }

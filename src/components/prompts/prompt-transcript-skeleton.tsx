@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   PLATFORM_MESSAGE_SHELL,
-  PromptConversation,
-  READER_MESSAGE_SHELL,
-} from "@/components/prompts/prompt-conversation";
+  PromptConversationShell,
+  USER_MESSAGE_SHELL,
+} from "@/components/prompts/prompt-conversation-shell";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 /**
  * The conversation's loading skeleton: the placeholders that hold the
@@ -19,9 +18,9 @@ import { cn } from "@/lib/utils";
  */
 export function PromptTranscriptSkeleton() {
   return (
-    <PromptConversation>
+    <PromptConversationShell>
       <li>
-        <Card className={cn(READER_MESSAGE_SHELL)}>
+        <Card className={USER_MESSAGE_SHELL}>
           <CardHeader>
             <Skeleton className="h-3 w-28" />
           </CardHeader>
@@ -31,7 +30,7 @@ export function PromptTranscriptSkeleton() {
         </Card>
       </li>
       <li>
-        <Card className={cn(PLATFORM_MESSAGE_SHELL)}>
+        <Card className={PLATFORM_MESSAGE_SHELL}>
           <CardHeader>
             <Skeleton className="h-3 w-36" />
           </CardHeader>
@@ -52,6 +51,6 @@ export function PromptTranscriptSkeleton() {
           </CardContent>
         </Card>
       </li>
-    </PromptConversation>
+    </PromptConversationShell>
   );
 }
