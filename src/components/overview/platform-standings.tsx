@@ -110,7 +110,9 @@ function Standing({
       <span className="w-4 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
         {rank ?? "—"}
       </span>
-      <span className="w-24 shrink-0 truncate text-sm">{platform.name}</span>
+      <span className="w-24 shrink-0 truncate text-sm text-foreground">
+        {platform.name}
+      </span>
       <span
         aria-hidden="true"
         className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted"

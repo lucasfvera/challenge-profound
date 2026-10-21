@@ -242,7 +242,9 @@ the rest arrive with their own tickets.
 The whole flow has to work from ~390px to desktop without horizontal overflow.
 The end-to-end smoke suite holds that floor: it opens the overview at 390px
 and asserts that the prompt table is there but hidden, that a row is still
-reachable as a link, and that the page does not scroll sideways.
+reachable as a link, and that the page does not scroll sideways. The podium
+holds at that floor too: its rows stay one column, and the four bars keep the
+same width, so they stay comparable.
 
 ## Component inventory
 
@@ -321,7 +323,7 @@ app asks for restrained motion, so the popup fades.
 
 ## The overview's surfaces
 
-Four surfaces compose the base components; none adds to the inventory above.
+Five surfaces compose the base components; none adds to the inventory above.
 
 **The platform scope control** (`src/components/platform-scope.tsx`)
 is the segmented control bound to the Platforms the Snapshot tracks. The group
@@ -422,6 +424,39 @@ never draws it.
 
 The chart is a client component: the charting library measures its
 container, so the chart cannot be rendered on the server.
+
+**The platform standings** (`src/components/overview/platform-standings.tsx`)
+are the overview's podium: the Platforms ranked by how often they name the
+brand, so a reader can see where the brand already shows up well without
+switching Platform one at a time. The card sits between the visibility chart
+and the prompt table, and it composes the base components — the Card and the
+Button — so it adds nothing to the inventory.
+
+- The ranking is the **Visibility Score** of the brand the Snapshot measures,
+  read from the derivation layer, so the podium and the KPI card cannot
+  disagree about a Platform. The rows are best first.
+- The score is drawn twice: as a **bar** and as the **number** beside it. The
+  bar wears the brand accent (`--accent`) on a `--muted` track: the accent is
+  Northstar's data, and the Visibility Score is Northstar's data. The track
+  is a quiet surface, and the bar is a drawing — it carries no name of its
+  own, and the number beside it is the number.
+- The four bars are the same width, so the podium compares: the place, the
+  Platform's name and the score hold fixed widths, and the bar takes what is
+  left.
+- A row is a **control**, not a picture. It picks its Platform, and the pick
+  is the selection the platform scope control holds — one state with two
+  drivers, so the two cannot drift. A row carries `aria-pressed` the way the
+  scope control's segments do, and it wears the Button's two renderings: the
+  selected one for the row the view is scoped to — the `--secondary` fill with
+  the Platform's name in the foreground — and the quiet one for every other
+  row. Picking the Platform the view is already scoped to changes nothing, the
+  way the scope control's own segments do.
+- The list is named `Brand standings`, apart from the scope control's
+  `Platform`, so a reader — and the smoke suite — reaches it by a name of its
+  own.
+- A Platform the Snapshot cannot score wears the **em dash** and holds no
+  place: it is not ranked, and the zero it might have been would read as a
+  measurement.
 
 **The prompt table** (`src/components/prompts/prompt-table.tsx`) is the
 read-only view of the tracked Prompts: one row per Prompt, the Prompt's
@@ -592,6 +627,10 @@ interactive during the wait.
 - The chart's plot is an image with a description: it names the metric, the
   brands and the Platform, so a screen reader does not read the axis ticks as
   the chart's name. The legend and the mode switch are the chart's controls.
+- The podium's rows are named after the Platform they stand for, the place
+  they hold and the metric the number is, so a percentage is never read
+  without a name. A row carries its state in `aria-pressed`, the way the
+  scope control's segments do.
 
 ## Data semantics
 
