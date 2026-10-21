@@ -455,13 +455,15 @@ reader reads says the brand was named first, so the difference is in the
 accessibility tree and not only in the picture.
 
 **The table names the number it shows.** A key sits above the table and above
-the card list: the label `Position`, the metric's name, in the label role
+the card list: the label `Position`, naming the number the cells show — the
+ordinal the Average Position card averages — in the label role
 (`text-xs font-medium uppercase tracking-widest`); the sentence *the place
 Northstar was named in the Platform's answer*; and the two marks a position
 wears — the first position's circle, named *named first*, and the later
-position's dot with its number, named *named after another brand*. The later
-mark is drawn with a `2` as its sample. Everything the key says is in
-`--muted-foreground` at the Micro step (12/16).
+position's dot with its number, named *named after another brand*, which is
+what every position after the first means. The key draws the later mark with
+a `2`. Everything the key says is in `--muted-foreground` at the Micro step
+(12/16).
 
 The key is visible copy and not an overlay: the number is unclear to a
 reader who never goes looking for the explanation, and an overlay answers

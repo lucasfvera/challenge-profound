@@ -3,6 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PromptTable } from "@/components/prompts/prompt-table";
 
+/** The hook the marks that render a position number are drawn with. */
+const MENTION_POSITION = "data-mention-position";
+
 /**
  * The mark drawn beside a piece of the key's copy.
  *
@@ -11,7 +14,7 @@ import { PromptTable } from "@/components/prompts/prompt-table";
  * references.
  */
 function markBeside(copy: string) {
-  return screen.getByText(copy).querySelector("[data-mention-position]");
+  return screen.getByText(copy).querySelector(`[${MENTION_POSITION}]`);
 }
 
 describe("the prompt table", () => {
@@ -50,7 +53,7 @@ describe("the prompt table", () => {
     expect(opened).toHaveBeenCalledTimes(2);
   });
 
-  it("names the position that named the brand first", () => {
+  it("names the position the brand was named first at", () => {
     render(<PromptTable platformId="chatgpt" />);
 
     const table = screen.getByRole("table");
@@ -86,11 +89,11 @@ describe("the prompt table", () => {
     // A mark is a drawing with no name of its own, so it is read through
     // the markup it is drawn in.
     expect(markBeside("named first")).toHaveAttribute(
-      "data-mention-position",
+      MENTION_POSITION,
       "first",
     );
     expect(markBeside("named after another brand")).toHaveAttribute(
-      "data-mention-position",
+      MENTION_POSITION,
       "later",
     );
   });

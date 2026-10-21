@@ -327,11 +327,12 @@ function PlatformName({
  * The Mention state of one Answer.
  *
  * A Mention wears the brand accent as a fill — the accent is Northstar's
- * data — and carries the position Northstar was named at. The position that
- * named the brand first wears a mark of its own, so the Platform that serves
- * the brand best reads at a glance. A Prompt the Platform answered without a
- * Mention wears a hollow ring, and a value the Snapshot cannot report shows
- * the em dash the design system reserves for it.
+ * data — and carries the position Northstar was named at. The position the
+ * brand was named first at wears a mark of its own, so the Platform that
+ * named the brand before the others reads at a glance. A Prompt the
+ * Platform answered without a Mention wears a hollow ring, and a value the
+ * Snapshot cannot report shows the em dash the design system reserves for
+ * it.
  *
  * The marks are shapes as well as colours, so the state never rests on
  * colour alone, and each one carries the label a screen reader reads.
@@ -385,11 +386,11 @@ function MentionIndicator({
 }
 
 /**
- * The position that names the brand first.
+ * The position the brand is named first at.
  *
  * The position is the ordinal of the brand's first Mention among the
  * Answer's Mentions, and `firstMentionPosition` in the derivation layer
- * produces it; 1 is the position that names the brand before any other
+ * produces it; 1 is the position the brand is named at before any other
  * brand. It is the one position the table gives a mark of its own, so it is
  * named once here and both the mark and the label read it.
  */
@@ -404,7 +405,7 @@ const FIRST_POSITION = 1;
 const LATER_POSITION = FIRST_POSITION + 1;
 
 /**
- * The mark of a Mention that named the brand first.
+ * The mark of a Mention at the position the brand was named first at.
  *
  * The first position wears the brand fill and carries the number inside it,
  * where every other position wears a dot with the number beside it. The two

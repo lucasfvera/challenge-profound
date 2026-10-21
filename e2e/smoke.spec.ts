@@ -18,10 +18,12 @@ import type { Locator, Page } from "@playwright/test";
  * with a caption, and a row's link is named after the Prompt it opens. A
  * surface that carries no name is read through the text a reader sees.
  *
- * The cursor, the movement's colour and the series' colours are read here and
+ * The cursor, the movement's colour, the series' colours and the table's
+ * Mention marks are read here and
  * not in the component suite: the bundle carries the stylesheet that turns
- * the pointer utility into a cursor and that resolves a movement's and a
- * series' token into a colour, and a unit test would have to assert the class
+ * the pointer utility into a cursor, that resolves a movement's and a
+ * series' token into a colour, and that resolves the brand fill the first
+ * position wears, while a unit test would have to assert the class
  * or the token instead of the affordance.
  *
  * Five kinds of surface are read another way, and all five are named in the
@@ -33,10 +35,10 @@ import type { Locator, Page } from "@playwright/test";
  * suite takes them through the markup they are drawn in; the chart's
  * plotted lines, which are drawings with no name at all, so the suite takes
  * them through the charting library's own mark for a series line; and the
- * table's Mention marks, which are drawings inside cells that carry a label
- * of their own, so the suite takes them through the app's own hook for the
- * element that renders a position. A CSS class is never asserted: a class is
- * a way in, and the library's own is the only one the chart's markup offers.
+ * table's Mention marks, which are drawings with no name of their own, so
+ * the suite takes them through the app's own hook for the element that
+ * renders a position. A CSS class is never asserted: a class is a way in,
+ * and the library's own is the only one the chart's markup offers.
  */
 
 /** The Visibility Score, as the KPI row names its card. */
