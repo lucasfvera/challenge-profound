@@ -16,7 +16,7 @@ import { snapshot } from "@/lib/snapshot";
 import type { Platform, PlatformId } from "@/lib/snapshot";
 
 /**
- * The platform standings: the podium of the Platforms, ranked by how often
+ * The platform standings: the podium of the Platforms, ordered by how often
  * they name the brand.
  *
  * The overview reports everything for one Platform at a time, so nothing on
@@ -55,7 +55,11 @@ export function PlatformStandings({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ol aria-label="Brand standings" className="flex flex-col gap-2">
+        {/* The list is unordered on purpose: the order of the rows is the
+            order of the standings, but two Platforms that score the same
+            share a place, so a row's place is not the position the list
+            announces. The place is in the row. */}
+        <ul aria-label="Brand standings" className="flex flex-col gap-2">
           {standings.map((standing) => (
             <li key={standing.platform.id}>
               <Standing
@@ -65,7 +69,7 @@ export function PlatformStandings({
               />
             </li>
           ))}
-        </ol>
+        </ul>
       </CardContent>
     </Card>
   );
@@ -92,7 +96,7 @@ function Standing({
   /** The Platform the reader picked. */
   onSelect: (platform: Platform) => void;
 }) {
-  const { platform, rank, visibilityScore } = standing;
+  const { platform, place, visibilityScore } = standing;
 
   return (
     <Button
@@ -108,13 +112,17 @@ function Standing({
       className="h-auto w-full shrink-0 justify-start gap-3 px-3 py-2"
     >
       <span className="w-4 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
-        {rank ?? "—"}
+        {place ?? "—"}
       </span>
       <span className="w-24 shrink-0 truncate text-sm text-foreground">
         {platform.name}
       </span>
       <span
         aria-hidden="true"
+        // The hook names the bar's track, so the smoke suite can hold that
+        // the four bars keep the same width — the podium compares only if
+        // they do.
+        data-standing-bar
         className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted"
       >
         {visibilityScore !== null && (
@@ -140,14 +148,14 @@ function Standing({
  * system reserves the em dash for it.
  */
 function standingName(standing: PlatformStanding): string {
-  const { platform, rank, visibilityScore } = standing;
+  const { platform, place, visibilityScore } = standing;
 
-  const place = rank === null ? "unranked" : `rank ${rank}`;
+  const held = place === null ? "no place" : `place ${place}`;
 
   const score =
     visibilityScore === null
       ? `no ${KPIS.visibilityScore.label}`
       : `${formatMetric(visibilityScore, KPIS.visibilityScore.unit)} ${KPIS.visibilityScore.label}`;
 
-  return `${platform.name}, ${place}, ${score}`;
+  return `${platform.name}, ${held}, ${score}`;
 }

@@ -1,24 +1,24 @@
-import { platformMetrics, subjectBrand } from "@/lib/snapshot";
+import { subjectPlatformMetrics } from "@/lib/snapshot";
 import { platformById } from "@/lib/snapshot/platforms";
 import type { Platform, Snapshot } from "@/lib/snapshot";
 
 /**
  * The platform standings contract: the podium's read of the Snapshot.
  *
- * The standings rank the Platforms by how often the brand the Snapshot
+ * The standings order the Platforms by how often the brand the Snapshot
  * measures shows up in their Answers — the Visibility Score, the same number
  * the KPI card reports for the Platform the view is scoped to. The podium and
  * the card therefore cannot disagree about a Platform: both read the same
  * derivation, and neither measures anything on its own.
  *
- * The ranking is a reading, not a second measurement. A Platform the Snapshot
- * cannot score is not ranked at all, so the podium never shows a zero where
+ * The order is a reading, not a second measurement. A Platform the Snapshot
+ * cannot score is not placed at all, so the podium never shows a zero where
  * the data has no answer.
  */
 
 /**
  * One Platform's standing: how often the brand shows up in its Answers, and
- * the place that puts it in the ranking.
+ * the place that puts it in the standings.
  */
 export interface PlatformStanding {
   /** The Platform the standing belongs to. */
@@ -33,11 +33,11 @@ export interface PlatformStanding {
    */
   visibilityScore: number | null;
   /**
-   * The place the Platform holds in the ranking, 1 being the best.
+   * The place the Platform holds in the standings, 1 being the best.
    *
-   * `null` when the Platform has no score to rank by.
+   * `null` when the Platform has no score to be placed by.
    */
-  rank: number | null;
+  place: number | null;
 }
 
 /**
@@ -47,40 +47,33 @@ export interface PlatformStanding {
  * same keep the Snapshot's Platform order, so the podium reads the same on
  * every render and needs nothing from the reader to be ordered.
  *
- * A Platform the Snapshot cannot score sorts last and is not ranked: the
+ * A Platform the Snapshot cannot score sorts last and is not placed: the
  * design system shows the em dash for a metric the data cannot answer, and
  * a zero here would read as a measurement.
  */
 export function platformStandings(snapshot: Snapshot): PlatformStanding[] {
-  const brand = subjectBrand(snapshot);
-  const metrics = platformMetrics(snapshot);
-
-  const standings: PlatformStanding[] = metrics.map((entry) => {
-    const subject = entry.brands.find(
-      (candidate) => candidate.brandId === brand?.id,
-    );
-
-    return {
+  const standings: PlatformStanding[] = subjectPlatformMetrics(snapshot).map(
+    (entry) => ({
       platform: platformById(entry.platformId),
-      visibilityScore: subject?.visibilityScore ?? null,
-      rank: null,
-    };
-  });
+      visibilityScore: entry.visibilityScore,
+      place: null,
+    }),
+  );
 
-  return rankStandings(standings);
+  return withPlaces(standings);
 }
 
 /**
- * The standings in ranking order, each with the place it holds.
+ * The standings in order, each with the place it holds.
  *
  * Equal scores share the place, and the place after them skips the ones they
  * took: 1, 1, 3. The number beside a row is therefore the place the row
  * holds and not its index in the list.
  */
-function rankStandings(standings: PlatformStanding[]): PlatformStanding[] {
+function withPlaces(standings: PlatformStanding[]): PlatformStanding[] {
   const ordered = [...standings].sort(byScore);
 
-  let rank = 0;
+  let place = 0;
   let previous: PlatformStanding | undefined;
 
   return ordered.map((standing, index) => {
@@ -88,15 +81,15 @@ function rankStandings(standings: PlatformStanding[]): PlatformStanding[] {
 
     // A Platform with no score has no place: it sorts last and the design
     // system shows the em dash for it.
-    if (score === null) return { ...standing, rank: null };
+    if (score === null) return { ...standing, place: null };
 
     const tied = previous?.visibilityScore === score;
-    if (!tied) rank = index + 1;
+    if (!tied) place = index + 1;
 
-    const ranked = { ...standing, rank };
-    previous = ranked;
+    const placed = { ...standing, place };
+    previous = placed;
 
-    return ranked;
+    return placed;
   });
 }
 

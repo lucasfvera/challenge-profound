@@ -126,10 +126,23 @@ function platformSegment(page: Page, platform: string) {
  *
  * The podium is a list of rows, and each row is a button named after the
  * Platform, the place it holds and the score it reaches, so the suite
- * reaches a row the way a reader does: by the name it carries.
+ * reaches a row the way a reader does: by the name it carries. The name
+ * starts with the Platform's name, so the scope control's segment of the
+ * same name — which sits outside the list — is never in reach.
  */
 function podiumRow(podium: Locator, platform: string) {
-  return podium.getByRole("button", { name: new RegExp(`^${platform},`) });
+  return podium.getByRole("button", { name: platform });
+}
+
+/**
+ * The bars of the podium: the tracks the scores are drawn on.
+ *
+ * A bar is a drawing with no name of its own, so the suite takes it through
+ * the app's own hook for the element that draws it, the way it takes the
+ * table's Mention marks through theirs.
+ */
+function standingBars(scope: Page | Locator) {
+  return scope.locator("[data-standing-bar]");
 }
 
 /**
@@ -626,4 +639,17 @@ test("The overview holds at a phone viewport", async ({ page }) => {
   );
 
   expect(overflow).toBeLessThanOrEqual(0);
+
+  // The podium compares only if its bars are the same width, so the scores
+  // they draw can be read against each other. The widths are a layout, so
+  // the bundle is the only place they can be read.
+  const bars = standingBars(page);
+  await expect(bars).toHaveCount(4);
+
+  const widths = await bars.evaluateAll((tracks) =>
+    tracks.map((track) => track.getBoundingClientRect().width),
+  );
+
+  expect(widths[0]).toBeGreaterThan(0);
+  expect(new Set(widths).size).toBe(1);
 });

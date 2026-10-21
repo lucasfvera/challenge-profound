@@ -18,13 +18,11 @@ Answers those Prompts collected (with their Mentions and Citations), and 30
 daily visibility points per brand and Platform — plus the pure derivations on
 top of it: Visibility Score, Share of Voice, Average Position, per-platform
 aggregation, answer segmentation, the window-level average and trend, the
-first-mention position, the chart's series and tracked-day rows, the prompt
-table's rows — every tracked Prompt with the brand's Mention state on each
-Platform, ordered by the Platform the view is scoped to — and the platform
-standings — every Platform ranked by the brand's Visibility Score on it. The
-chart reads the tracked window through the same layer, and the last tracked
-day of a series is the score its Answers produce, so the chart's history ends
-where the cards' number begins.
+first-mention position, the chart's series and tracked-day rows, and the
+subject's metrics on every Platform. The chart reads
+the tracked window through the same layer, and the last tracked day of a
+series is the score its Answers produce, so the chart's history ends where
+the cards' number begins.
 
 Nothing is fetched and nothing is generated at runtime: the fixture is a set of
 literals, and the derivations are pure functions of it. A metric the data
@@ -51,8 +49,9 @@ activate it.
 The podium reads the Snapshot through a contract of its own
 (`src/lib/platform-standings.ts`): one standing per tracked Platform,
 carrying the Visibility Score the KPI cards count and the place that score
-holds. The standings are a reading, not a second measurement, so the podium
-and the cards cannot disagree about a Platform.
+holds. The standings are a reading, not a second measurement — the subject's
+metrics on every Platform are read once, in the derivation layer — so the
+podium and the cards cannot disagree about a Platform.
 
 ## Design system
 
@@ -164,7 +163,7 @@ assert the interaction and accessibility contracts — the segmented control's
 keyboard and ARIA, the KPI card's delta formatting and its metric
 explanation, the answer panel's Mention highlights, the prompt row's
 activation, the chart's tooltip and legend and the reference each series
-wears, the podium's ranking and the pick it reports, and the citations
+wears, the podium's order and the pick it reports, and the citations
 panel's links. `npm run build` produces a production bundle; run it with
 `npm run start` to serve that bundle locally.
 
@@ -231,7 +230,7 @@ score of every visible series on it. A Platform with no tracked window draws
 the em dash instead of an empty plot.
 
 The podium is the answer to "where does my brand already show up well?": the
-Platforms ranked by Northstar's Visibility Score on each, best first, with
+Platforms ordered by Northstar's Visibility Score on each, best first, with
 the place it holds, the score, and a bar in the brand accent. Claude leads it
 at 73.3% and Perplexity comes last at 26.7% — the same bad case the movements
 report. Every row is a control: picking one selects that Platform, the same

@@ -9,13 +9,19 @@ import type { Platform, PlatformId } from "@/lib/snapshot";
 /** The name the podium's list carries. */
 const STANDINGS_LIST = "Brand standings";
 
-/** The metric the podium ranks by. */
+/** The metric the podium orders by. */
 const VISIBILITY_SCORE = KPIS.visibilityScore.label;
 
-/** The Visibility Score the Platform that leads the podium reaches. */
-const LEADER_SCORE = "73.3%";
+/** The Platforms the podium stands for. */
+const CLAUDE = "Claude";
+const CHATGPT = "ChatGPT";
+const GEMINI = "Gemini";
+const PERPLEXITY = "Perplexity";
 
-/** The Visibility Score the Platform that comes last reaches. */
+/** The Visibility Scores the podium shows. */
+const LEADER_SCORE = "73.3%";
+const SECOND_SCORE = "66.7%";
+const THIRD_SCORE = "53.3%";
 const LAST_SCORE = "26.7%";
 
 /** The podium, held in state the way the overview holds the scope. */
@@ -33,7 +39,7 @@ function Podium({ onPick }: { onPick?: (platform: Platform) => void }) {
   );
 }
 
-/** The rows of the podium, in the order it ranks them. */
+/** The rows of the podium, in the order it holds them. */
 function rows() {
   const list = screen.getByRole("list", { name: STANDINGS_LIST });
 
@@ -46,38 +52,40 @@ function rowFor(platform: string) {
 }
 
 describe("the platform standings", () => {
-  it("ranks the platforms by how often they name the brand", () => {
+  it("orders the platforms by how often they name the brand", () => {
     render(<Podium />);
 
     const standings = rows();
 
     expect(standings).toHaveLength(4);
     expect(standings[0]).toHaveAccessibleName(
-      `Claude, rank 1, ${LEADER_SCORE} ${VISIBILITY_SCORE}`,
+      `${CLAUDE}, place 1, ${LEADER_SCORE} ${VISIBILITY_SCORE}`,
     );
     expect(standings[1]).toHaveAccessibleName(
-      `ChatGPT, rank 2, 66.7% ${VISIBILITY_SCORE}`,
+      `${CHATGPT}, place 2, ${SECOND_SCORE} ${VISIBILITY_SCORE}`,
     );
     expect(standings[2]).toHaveAccessibleName(
-      `Gemini, rank 3, 53.3% ${VISIBILITY_SCORE}`,
+      `${GEMINI}, place 3, ${THIRD_SCORE} ${VISIBILITY_SCORE}`,
     );
     expect(standings[3]).toHaveAccessibleName(
-      `Perplexity, rank 4, ${LAST_SCORE} ${VISIBILITY_SCORE}`,
+      `${PERPLEXITY}, place 4, ${LAST_SCORE} ${VISIBILITY_SCORE}`,
     );
   });
 
   it("shows the score the platform reaches", () => {
     render(<Podium />);
 
-    expect(within(rowFor("Claude")).getByText(LEADER_SCORE)).toBeInTheDocument();
-    expect(within(rowFor("Perplexity")).getByText(LAST_SCORE)).toBeInTheDocument();
+    expect(within(rowFor(CLAUDE)).getByText(LEADER_SCORE)).toBeInTheDocument();
+    expect(
+      within(rowFor(PERPLEXITY)).getByText(LAST_SCORE),
+    ).toBeInTheDocument();
   });
 
   it("says which platform the view is scoped to", () => {
     render(<Podium />);
 
-    expect(rowFor("ChatGPT")).toHaveAttribute("aria-pressed", "true");
-    expect(rowFor("Claude")).toHaveAttribute("aria-pressed", "false");
+    expect(rowFor(CHATGPT)).toHaveAttribute("aria-pressed", "true");
+    expect(rowFor(CLAUDE)).toHaveAttribute("aria-pressed", "false");
   });
 
   it("picks the platform the reader clicks", async () => {
@@ -85,10 +93,10 @@ describe("the platform standings", () => {
 
     render(<Podium />);
 
-    await user.click(rowFor("Gemini"));
+    await user.click(rowFor(GEMINI));
 
-    expect(rowFor("Gemini")).toHaveAttribute("aria-pressed", "true");
-    expect(rowFor("ChatGPT")).toHaveAttribute("aria-pressed", "false");
+    expect(rowFor(GEMINI)).toHaveAttribute("aria-pressed", "true");
+    expect(rowFor(CHATGPT)).toHaveAttribute("aria-pressed", "false");
   });
 
   it("leaves the scope alone when the reader picks the platform it is already on", async () => {
@@ -97,7 +105,7 @@ describe("the platform standings", () => {
 
     render(<Podium onPick={picked} />);
 
-    await user.click(rowFor("ChatGPT"));
+    await user.click(rowFor(CHATGPT));
 
     expect(picked).not.toHaveBeenCalled();
   });
