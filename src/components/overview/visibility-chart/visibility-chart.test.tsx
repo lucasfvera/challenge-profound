@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { VisibilityChart } from "@/components/overview/visibility-chart";
+import { VisibilityChart } from "@/components/overview/visibility-chart/visibility-chart";
 
 /** The size the chart's container is measured at. */
 const WIDTH = 800;
@@ -132,9 +132,7 @@ function referenceStroke(button: HTMLElement) {
  * competitors' group, each named by the label it shows.
  */
 function groupStrokes(group: HTMLElement) {
-  return within(group)
-    .getAllByRole("button")
-    .map(referenceStroke);
+  return within(group).getAllByRole("button").map(referenceStroke);
 }
 
 describe("the chart", () => {
@@ -186,9 +184,7 @@ describe("the chart", () => {
     render(<VisibilityChart platformId="chatgpt" />);
 
     const legend = screen.getByRole("group", { name: "Series" });
-    const samples = within(legend)
-      .getAllByRole("button")
-      .map(referenceSample);
+    const samples = within(legend).getAllByRole("button").map(referenceSample);
 
     // The reference is what names the line, so it has to carry a whole dash
     // pattern: a sample too short for the pattern cuts the dash that tells
@@ -263,8 +259,8 @@ describe("the chart", () => {
 
     render(<VisibilityChart platformId="chatgpt" />);
 
-    const toggle = screen.getByRole("button", { name: "Greyscale competitors" });
-    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    const toggle = screen.getByRole("switch", { name: "Greyscale" });
+    expect(toggle).toHaveAttribute("aria-checked", "false");
 
     const legend = screen.getByRole("group", { name: "Series" });
     const brand = within(legend).getByRole("group", { name: "Your brand" });
@@ -277,7 +273,7 @@ describe("the chart", () => {
 
     await user.click(toggle);
 
-    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(toggle).toHaveAttribute("aria-checked", "true");
 
     // The brand keeps its colour: the mode takes the hue off the competitors
     // only, so the brand's line is the one hue left on the plot.
@@ -297,7 +293,7 @@ describe("the chart", () => {
     // hue again when the reader switches it off.
     await user.click(toggle);
 
-    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(toggle).toHaveAttribute("aria-checked", "false");
     expect(groupStrokes(brand)).toEqual(brandBefore);
     expect(groupStrokes(competitors)).toEqual(competitorsBefore);
   });

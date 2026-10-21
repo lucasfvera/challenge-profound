@@ -59,7 +59,7 @@ const PLATFORM_GROUP = "Platform";
 const SERIES_GROUP = "Series";
 
 /** The toggle that takes the hue off the competitors, as it names itself. */
-const GREYSCALE_COMPETITORS = "Greyscale competitors";
+const GREYSCALE_MODE = "Greyscale";
 
 /** The Claude platform, as the scope control names it. */
 const CLAUDE = "Claude";
@@ -304,12 +304,12 @@ test("The chart draws each series' reference at the scale of the line it names",
 test("The chart can take the hue off the competitors", async ({ page }) => {
   await page.goto("/");
 
-  const toggle = page.getByRole("button", { name: GREYSCALE_COMPETITORS });
-  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  const toggle = page.getByRole("switch", { name: GREYSCALE_MODE });
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
 
   await toggle.click();
 
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
 
   // The plot is what the mode is about, so the colours are read from the
   // lines the plot draws.
@@ -340,7 +340,7 @@ test("The chart can take the hue off the competitors", async ({ page }) => {
   await platformSegment(page, CLAUDE).click();
 
   await expect(page).toHaveURL("/?platform=claude");
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({
@@ -503,7 +503,9 @@ test("The overview holds at a phone viewport", async ({ page }) => {
   const table = page.getByRole("table", { includeHidden: true });
   await expect(table).toHaveCount(1);
   await expect(table).toBeHidden();
-  await expect(page.getByRole("link", { name: FIRST_PROMPT_TEXT })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: FIRST_PROMPT_TEXT }),
+  ).toBeVisible();
 
   // The flow has to work from ~390px to desktop without scrolling
   // sideways. The measure is the content's width against the layout

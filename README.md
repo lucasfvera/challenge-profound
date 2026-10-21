@@ -57,10 +57,10 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
-primitives, skeleton, the segmented control, and the popover. The platform
-scope control lives in `src/components/`, because the overview and the prompt
-detail route share it; the KPI cards and the visibility chart live in
-`src/components/overview/`, and the overview's prompt table and the prompt
+primitives, skeleton, the segmented control, the popover, and the switch. The
+platform scope control lives in `src/components/`, because the overview and
+the prompt detail route share it; the KPI cards and the visibility chart live
+in `src/components/overview/`, and the overview's prompt table and the prompt
 detail route's panels in `src/components/prompts/`. They compose the base
 components rather than adding to the inventory.
 

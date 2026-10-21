@@ -258,6 +258,7 @@ preference.
 | Skeleton | `src/components/ui/skeleton.tsx` | default — inert, it has no interactive states |
 | Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled, pointer |
 | Popover | `src/components/ui/popover.tsx` | default; the trigger carries hover, focus-visible and pointer |
+| Switch | `src/components/ui/switch.tsx` | default, checked, focus-visible, pointer, disabled |
 
 The vocabulary is shared; each component implements the states in its
 inventory row.
@@ -266,11 +267,12 @@ inventory row.
 |-------|---------------------|
 | default | the variant's own surface and text tokens |
 | hover | a quiet surface shift to `--muted` with the foreground text; a filled variant shifts its own fill; a link underlines |
-| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, the badge in its link rendering, where it covers the anchor that is not a hyperlink, and the popover's trigger. An element that is not clickable keeps the default cursor. |
+| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, the switch, the badge in its link rendering, where it covers the anchor that is not a hyperlink, and the popover's trigger. An element that is not clickable keeps the default cursor. |
 | focus-visible | the global outline — a component never draws one and never suppresses one |
 | disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
 | invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
 | selected | `bg-secondary` plus `text-foreground`, on the hairline the element already carries |
+| checked | the selected chrome: the switch's track is `bg-secondary` and its thumb `bg-foreground`, so the state is a change in the control and not only in the track behind it |
 
 The components are generated with the shadcn CLI and restyled against this
 document: the CLI's `focus-visible:ring-*` and `outline-none` utilities are
@@ -359,7 +361,7 @@ metric it explains, so the explanation is reachable without seeing the icon
 at all, and the popover's own title and description name the metric and its
 explanation to a screen reader.
 
-**The visibility chart** (`src/components/overview/visibility-chart.tsx`) is
+**The visibility chart** (`src/components/overview/visibility-chart/`) is
 the overview's third surface: the Visibility Score over the tracked window,
 for the selected Platform. It is a card — the title names the metric, the
 description names the Platform and the tracked window — drawn with Recharts
@@ -375,10 +377,12 @@ colour of its own.
   own — amber, teal, orchid — and separate by line pattern as well: a long
   dash, a fine dot, and a dash-dot, so no two series are told apart by hue
   alone.
-- **The chart carries a greyscale mode.** The toggle is the button
-  `Greyscale competitors`, and it sits in the card's action slot, beside the
-  chart's title. It carries `aria-pressed`: a chart control, not a series
-  toggle, so the legend still holds nothing but the series. Switched on, the
+- **The chart carries a greyscale mode.** The control is the switch
+  `Greyscale`, and it sits in the card's action slot, beside the
+  chart's title. It is a switch and not a button, because the mode is on or
+  off: the control says so itself, in `role="switch"` and `aria-checked`. It
+  is a chart control, not a series toggle, so the legend still holds nothing
+  but the series. Switched on, the
   competitors wear the greyscale ramp and the brand keeps `--chart-1`, so the
   brand's line is the one hue on the plot — the reader's way of asking for
   their own line and nothing else. The mode is a view choice: it survives a
@@ -551,11 +555,12 @@ interactive during the wait.
   `border-border` rule colours dividers only. `--input` clears 3:1 against
   both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
-- The chart's greyscale mode carries its state in `aria-pressed` too, so the
-  reader knows the rivals have lost their hue without seeing it.
+- The chart's greyscale mode is a switch, so it carries its state in
+  `aria-checked` and the reader knows the rivals have lost their hue without
+  seeing it.
 - The chart's plot is an image with a description: it names the metric, the
   brands and the Platform, so a screen reader does not read the axis ticks as
-  the chart's name. The legend and the mode toggle are the chart's controls.
+  the chart's name. The legend and the mode switch are the chart's controls.
 
 ## Data semantics
 
