@@ -89,7 +89,8 @@ the hue off the competitors, and the brand keeps `--chart-1`, so the brand's
 line is the one hue left on the plot. The greys are ten points of lightness
 apart, so the rivals are still told apart by their lightness and by their line
 pattern — never by a hue of their own, and never by one grey between them. The
-brand has no grey of its own: it is the hue the mode leaves.
+brand's greyscale colour is its own colour: the mode leaves the brand's hue
+alone, and the brand is the hue the mode leaves.
 
 | Token | Value | Use |
 |-------|-------|-----|
@@ -554,7 +555,7 @@ interactive during the wait.
   reader knows the rivals have lost their hue without seeing it.
 - The chart's plot is an image with a description: it names the metric, the
   brands and the Platform, so a screen reader does not read the axis ticks as
-  the chart's name. The legend is the chart's control.
+  the chart's name. The legend and the mode toggle are the chart's controls.
 
 ## Data semantics
 

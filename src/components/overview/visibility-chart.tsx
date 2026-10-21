@@ -34,9 +34,7 @@ import type { Brand, BrandId, ChartRow, PlatformId } from "@/lib/snapshot";
 type ChartToken = `var(--chart-${string})`;
 
 /**
- * How one series is drawn: its colour token, its line pattern, its weight.
- *
- * The colour is a CSS custom property, so no raw colour reaches the DOM.
+ * How one series is drawn: its colour tokens, its line pattern, its weight.
  */
 interface Treatment {
   /** The chart colour token of the series, in the colour mode. */

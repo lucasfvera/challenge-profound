@@ -24,14 +24,17 @@ import type { Locator, Page } from "@playwright/test";
  * series' token into a colour, and a unit test would have to assert the class
  * or the token instead of the affordance.
  *
- * Three kinds of surface are read another way, and all three are named in the
+ * Four kinds of surface are read another way, and all four are named in the
  * open: the cards — the metric cards and the chart's card — which the card
  * primitive gives no role and no name, so the suite takes them through the
  * primitive's own `data-slot` hook; the badge, which is a span with no name
- * of its own, so the suite reads the text it shows; and the chart's series
+ * of its own, so the suite reads the text it shows; the chart's series
  * references, which are decorative drawings inside named toggles, so the
- * suite takes them through the markup they are drawn in. A CSS class is
- * never asserted.
+ * suite takes them through the markup they are drawn in; and the chart's
+ * plotted lines, which are drawings with no name at all, so the suite takes
+ * them through the charting library's own mark for a series line. A CSS
+ * class is never asserted: a class is a way in, and the library's own is the
+ * only one the chart's markup offers.
  */
 
 /** The Visibility Score, as the KPI row names its card. */
@@ -173,7 +176,9 @@ function seriesReferences(page: Page) {
  *
  * The lines are drawings with no name of their own, so the suite takes them
  * through the markup they are drawn in — the same way it reads the reference
- * each legend toggle wears.
+ * each legend toggle wears. The class is the charting library's own mark for
+ * a series line: an implementation detail of the library, not a contract the
+ * app holds.
  */
 function plottedLines(page: Page) {
   return page
@@ -256,10 +261,7 @@ test("The chart tells its series apart by colour", async ({ page }) => {
   await page.goto("/");
 
   // Every brand wears a colour of its own, so a reader tells the lines
-  // apart by their colour. The colour is read from the computed style,
-  // because the bundle carries the stylesheet that resolves the series'
-  // token into a colour — a unit test would have to assert the token
-  // instead, and the tokens were distinct before the colours were.
+  // apart by their colour.
   const colours = await seriesColours(seriesReferences(page));
 
   expect(colours).toHaveLength(4);
@@ -332,6 +334,13 @@ test("The chart can take the hue off the competitors", async ({ page }) => {
   // And the reference in the legend is a sample of the line it names, so it
   // wears the same colour the plot draws.
   expect(await seriesColours(seriesReferences(page))).toEqual(colours);
+
+  // The mode is a view choice: it survives a change of Platform, the way the
+  // legend's hidden series do.
+  await platformSegment(page, CLAUDE).click();
+
+  await expect(page).toHaveURL("/?platform=claude");
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({
