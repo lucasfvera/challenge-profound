@@ -224,13 +224,16 @@ The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the
 position Northstar was named at on each Mention — beside the mark, or inside
 it where the brand was named first, so the Platform that named the brand
-before the others reads at a glance. It is scoped by the same Platform as the
-KPI cards, and its rows are ordered by Northstar's strength on that Platform,
-so the table and the cards above it always read the same scope. Below the `sm`
-breakpoint the table gives way to cards. Every row is a link into the prompt
-detail route: a click anywhere on the row opens the Prompt's detail, Enter and
-Space open it from the keyboard, and the link carries the Platform the table
-is scoped to, so the detail route answers with the same Platform.
+before the others reads at a glance. The table is scoped by the same Platform
+as the KPI cards, and its rows are ordered by Northstar's strength on that
+Platform, so the table and the cards above it always read the same scope.
+Below the `sm` breakpoint the table gives way to cards, and a key sits above
+both layouts: the Position is the place Northstar was named in the Platform's
+answer, and the key shows the two marks a position wears. Every row is a link
+into the prompt detail route: a click anywhere on the row opens the Prompt's
+detail, Enter and Space open it from the keyboard, and the link carries the
+Platform the table is scoped to, so the detail route answers with the same
+Platform.
 
 The prompt detail route — `/prompts/<prompt-id>`, for example
 `/prompts/p-01` — is the evidence view. It renders on the server from the

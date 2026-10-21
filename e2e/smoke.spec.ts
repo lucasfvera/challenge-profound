@@ -192,14 +192,15 @@ function plottedLines(page: Page) {
 }
 
 /**
- * The element that renders a position in the table's Mention cells.
+ * The element that renders a position number in the table.
  *
  * A mark is a drawing with no name of its own — the cell carries the label a
  * screen reader reads — so the suite takes it through the hook it is drawn
  * with, the way it takes the chart's series references through the markup
  * they are drawn in. The hook names the element that renders the position
  * number: the circle that carries the first position's number, and the
- * number itself for a later position.
+ * number itself for a later position. The key draws the same marks, so a
+ * suite that counts them has to scope itself to the table.
  */
 function mentionMark(scope: Page | Locator, position: "first" | "later") {
   return scope.locator(`[${MENTION_POSITION}="${position}"]`);

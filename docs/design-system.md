@@ -454,6 +454,22 @@ this document fixes at 4.61:1. The words carry it too: the label a screen
 reader reads says the brand was named first, so the difference is in the
 accessibility tree and not only in the picture.
 
+**The table names the number it shows.** A key sits above the table and above
+the card list: the label `Position`, the metric's name, in the label role
+(`text-xs font-medium uppercase tracking-widest`); the sentence *the place
+Northstar was named in the Platform's answer*; and the two marks a position
+wears — the first position's circle, named *named first*, and the later
+position's dot with its number, named *named after another brand*. The later
+mark is drawn with a `2` as its sample. Everything the key says is in
+`--muted-foreground` at the Micro step (12/16).
+
+The key is visible copy and not an overlay: the number is unclear to a
+reader who never goes looking for the explanation, and an overlay answers
+nobody who does not find it. The marks in the key are the components the
+cells draw, so the key cannot drift from the table. The key carries no state
+and answers no click: the marks in it are drawings, and the words beside them
+carry the meaning.
+
 The table is scoped by the Platform the overview's scope holds: the selected
 Platform's column sits on the selected chrome (`--secondary`) and its head
 reads in the foreground colour, and the rows are ordered by the brand's

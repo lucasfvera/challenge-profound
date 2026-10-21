@@ -60,13 +60,13 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
         <CardTitle>Tracked prompts</CardTitle>
         <CardDescription>
           Every tracked Prompt, with Northstar&apos;s Mentions on each
-          Platform. The number on a Mention is the position Northstar was
-          named at — 1 means it was named first, and it wears a mark of its
-          own. The rows are ordered by Northstar&apos;s strength on the
+          Platform. The rows are ordered by Northstar&apos;s strength on the
           selected Platform.
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <PositionKey />
+
         <ul className="grid gap-3 sm:hidden">
           {rows.map((row) => (
             <li key={row.prompt.id}>
@@ -139,6 +139,45 @@ export function PromptTable({ platformId }: { platformId: PlatformId }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * The key the table's Mention marks are read through.
+ *
+ * The number on a Mention is a position, and a reader who does not know that
+ * cannot read the table: `1, 2, 3` reads as a count of Mentions. The key
+ * names the metric, says what the number is — the place Northstar was named
+ * in the Platform's answer — and shows the two marks a position wears, each
+ * named beside it, so the first position and the later ones are told apart
+ * by more than their shape.
+ *
+ * The key is visible copy and not an overlay: the number is unclear to a
+ * reader who never goes looking for the explanation, and an overlay answers
+ * nobody who does not find it. It sits above the table and above the card
+ * list, so both layouts read it.
+ *
+ * The marks it shows are the components the cells draw, so the key cannot
+ * drift from the table.
+ */
+function PositionKey() {
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs leading-4 text-muted-foreground">
+      <span className="font-medium uppercase tracking-widest text-muted-foreground">
+        Position
+      </span>
+      <span>the place Northstar was named in the Platform&apos;s answer</span>
+      <span className="inline-flex items-center gap-1.5">
+        <FirstPositionMark />
+        named first
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        {/* The example of a later position: the brand was named at it
+            after another brand was named first. */}
+        <PositionMark position={LATER_POSITION} />
+        named after another brand
+      </span>
+    </div>
   );
 }
 
@@ -357,6 +396,14 @@ function MentionIndicator({
 const FIRST_POSITION = 1;
 
 /**
+ * The position the key shows as the example of a later one.
+ *
+ * It is the position after the first: the brand was named at it after
+ * another brand was named first.
+ */
+const LATER_POSITION = FIRST_POSITION + 1;
+
+/**
  * The mark of a Mention that named the brand first.
  *
  * The first position wears the brand fill and carries the number inside it,
@@ -374,7 +421,8 @@ function FirstPositionMark() {
   return (
     <span
       aria-hidden="true"
-      // The hook names the element that renders the position number, so the
+      // The hook names the element that renders the position number,
+      // wherever the mark is drawn — in a cell and in the key — so the
       // smoke suite reads the two numbers the way a reader reads them.
       data-mention-position="first"
       className="inline-flex size-5 items-center justify-center rounded-full bg-accent text-xs font-semibold tabular-nums text-accent-foreground"
