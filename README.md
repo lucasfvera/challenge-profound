@@ -8,6 +8,21 @@ A deterministic, dark-only dashboard for the fictional brand **Northstar**: how 
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`).
 
+## Data
+
+The app reads one module: `src/lib/snapshot`. It holds the Snapshot fixture —
+15 tracked Prompts across 4 Platforms, Northstar plus 3 Competitors, the
+Answers those Prompts collected (with their Mentions and Citations), and 30
+daily visibility points per brand and Platform — plus the pure derivations on
+top of it: Visibility Score, Share of Voice, Average Position, per-platform
+aggregation, answer segmentation, and the window-level average and trend.
+
+Nothing is fetched and nothing is generated at runtime: the fixture is a set of
+literals, and the derivations are pure functions of it. A metric the data
+cannot answer is `null` — never `NaN` — and the dashboard renders it as an em
+dash. The last daily point of every series is the score that brand's Answers
+on that Platform produce, so the history and the evidence agree.
+
 ## Design system
 
 The visual language lives in the semantic tokens of `src/app/globals.css` and is
@@ -40,14 +55,19 @@ Open <http://localhost:3000>.
 ```bash
 npm run lint
 npm run typecheck
+npm run test
 npm run build
 ```
 
-`npm run build` produces a production bundle; run it with `npm run start` to serve that bundle locally.
+`npm run test` runs the Vitest suite over the derivation layer and the
+fixture. `npm run build` produces a production bundle; run it with `npm run start` to serve that bundle locally.
 
 ## What the app renders today
 
-The dark app shell: a header with the product name and a "Simulated data" badge.
+The dark app shell: a header with the product name and a "Simulated data"
+badge, and an Overview heading on the home route. The dashboard surfaces read
+the Snapshot module but do not render it yet — they arrive with their own
+tickets.
 
 ## Adding shadcn/ui components
 
