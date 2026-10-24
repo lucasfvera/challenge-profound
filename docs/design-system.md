@@ -15,7 +15,8 @@ theme switcher: the token values live on `:root`, and the `dark` class stays on
 A black base with a single Profound Blue accent, hairline borders, dense
 tabular data, and restrained motion. The accent means **Northstar** — it is
 never decorative. The one other colour in the app is the chart's series ramp:
-every tracked brand wears a hue of its own there, and nowhere else.
+every tracked brand wears a hue of its own there — the greyscale ramp is the
+one exception, and it is a mode of that ramp — and nowhere else.
 
 ## Color tokens
 
@@ -78,9 +79,25 @@ happened, so they are literals and not derivations.
 Every brand wears a colour of its own, so the lines are told apart by colour.
 The competitor hues are less saturated than the brand's, so they read as rivals
 rather than as decoration, and the series separate by line treatment as well,
-so colour is never the only signal. **Every series colour is a hue**: a grey
-cannot tell one series from another, so the neutral ramp of the surfaces is
-not a series colour.
+so colour is never the only signal. **Every series colour is a hue**: the
+neutral ramp of the surfaces is not a series colour. The greyscale ramp below
+is the one exception, and it earns it — it is a mode's own set of tokens, and
+its steps are told apart by their lightness and by their line pattern.
+
+The greyscale ramp is what the chart's greyscale mode wears: the reader takes
+the hue off the competitors, and the brand keeps `--chart-1`, so the brand's
+line is the one hue left on the plot. The greys are ten points of lightness
+apart, so the rivals are still told apart by their lightness and by their line
+pattern — never by a hue of their own, and never by one grey between them. The
+brand's greyscale colour is its own colour: the mode leaves the brand's hue
+alone, and the brand is the hue the mode leaves.
+
+| Token | Value | Use |
+|-------|-------|-----|
+| `--chart-2-grey` | `#B4B4BE` | competitor 1 without its hue (9.56:1 on `--card`) |
+| `--chart-3-grey` | `#9898A2` | competitor 2 without its hue (6.88:1 on `--card`) |
+| `--chart-4-grey` | `#7C7C86` | competitor 3 without its hue (4.76:1 on `--card`) |
+| `--chart-5-grey` | `#62626C` | competitor 4 without its hue, unused today (3.26:1 on `--card`) |
 
 The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
 shadcn's sidebar primitives stay on-contract.
@@ -102,6 +119,14 @@ shadcn's sidebar primitives stay on-contract.
   competitors take `--chart-2` onwards, one token of the ramp per brand, in
   order. A brand keeps its colour and its line pattern when the Platform
   changes, so the same brand is the same series in every view.
+- The brand the Snapshot measures wears the heaviest line on the plot, and the
+  legend groups it under `Your brand` while the competitors sit under
+  `Competitors`. The reader is told which line is the reader's own in words,
+  and not only by the colour of that line.
+- The greyscale mode takes the hue off the competitors and leaves the brand
+  alone, so the brand's line is the one hue on the plot. It is a second set
+  of tokens, not a filter: the competitor hues stay in the ramp, and the
+  reader switches between the two.
 
 ## Typography
 
@@ -233,6 +258,7 @@ preference.
 | Skeleton | `src/components/ui/skeleton.tsx` | default — inert, it has no interactive states |
 | Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled, pointer |
 | Popover | `src/components/ui/popover.tsx` | default; the trigger carries hover, focus-visible and pointer |
+| Switch | `src/components/ui/switch.tsx` | default, checked, focus-visible, pointer, disabled |
 
 The vocabulary is shared; each component implements the states in its
 inventory row.
@@ -241,11 +267,12 @@ inventory row.
 |-------|---------------------|
 | default | the variant's own surface and text tokens |
 | hover | a quiet surface shift to `--muted` with the foreground text; a filled variant shifts its own fill; a link underlines |
-| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, the badge in its link rendering, where it covers the anchor that is not a hyperlink, and the popover's trigger. An element that is not clickable keeps the default cursor. |
+| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, the switch, the badge in its link rendering, where it covers the anchor that is not a hyperlink, and the popover's trigger. An element that is not clickable keeps the default cursor. |
 | focus-visible | the global outline — a component never draws one and never suppresses one |
 | disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
 | invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
 | selected | `bg-secondary` plus `text-foreground`, on the hairline the element already carries |
+| checked | the selected chrome: the switch's track is `bg-secondary` and its thumb `bg-foreground`, so the state is a change in the control and not only in the track behind it |
 
 The components are generated with the shadcn CLI and restyled against this
 document: the CLI's `focus-visible:ring-*` and `outline-none` utilities are
@@ -334,22 +361,42 @@ metric it explains, so the explanation is reachable without seeing the icon
 at all, and the popover's own title and description name the metric and its
 explanation to a screen reader.
 
-**The visibility chart** (`src/components/overview/visibility-chart.tsx`) is
+**The visibility chart** (`src/components/overview/visibility-chart/`) is
 the overview's third surface: the Visibility Score over the tracked window,
 for the selected Platform. It is a card — the title names the metric, the
 description names the Platform and the tracked window — drawn with Recharts
-and the chart ramp. It composes the base components; it adds no component and
-no token.
+and the chart ramp. It composes the base components; it adds no component, and
+it wears the ramp — the colour ramp and the greyscale one — rather than a
+colour of its own.
 
-- Northstar wears `--chart-1` and a solid, heavier line. The competitors wear
-  a colour of their own — amber, teal, orchid — and separate by line pattern
-  as well: a long dash, a fine dot, and a dash-dot, so no two series are told
-  apart by hue alone.
-- The legend is a real control, not a static key: every series is a toggle
-  carrying `aria-pressed`, and a hidden series leaves the plot and the
-  tooltip as well. The choice survives a change of Platform. The toggles are
-  the base button in its selected and its quiet rendering, so the legend
-  holds no chrome of its own.
+- Northstar wears `--chart-1` and a solid line that is heavier than any
+  competitor wears: the line the reader is looking for is the heaviest one on
+  the plot, and weight is the signal that survives a greyscale plot, a
+  projector and a phone. The competitors take the ramp from `--chart-2`
+  (`--chart-5` is the ramp's reserved fourth step), each in a colour of its
+  own — amber, teal, orchid — and separate by line pattern as well: a long
+  dash, a fine dot, and a dash-dot, so no two series are told apart by hue
+  alone.
+- **The chart carries a greyscale mode.** The control is the switch
+  `Greyscale`, and it sits in the card's action slot, beside the
+  chart's title. It is a switch and not a button, because the mode is on or
+  off: the control says so itself, in `role="switch"` and `aria-checked`. It
+  is a chart control, not a series toggle, so the legend still holds nothing
+  but the series. Switched on, the
+  competitors wear the greyscale ramp and the brand keeps `--chart-1`, so the
+  brand's line is the one hue on the plot — the reader's way of asking for
+  their own line and nothing else. The mode is a view choice: it survives a
+  change of Platform the way the legend's hidden series do.
+- The legend is a real control, not a static key: a group named `Series`
+  holding a toggle per series, each carrying `aria-pressed`, and a hidden
+  series leaves the plot and the tooltip as well. The choice survives a change
+  of Platform. The toggles are the base button in its selected and its quiet
+  rendering, so the legend holds no chrome of its own.
+- **The legend is grouped: the brand and the competitors are named.** The brand
+  the Snapshot measures sits under a `Your brand` label and the rivals under a
+  `Competitors` label, and each of the two is a group in the accessibility
+  tree, named by the label it shows. The reader is told which line is the
+  reader's own in words, and not only by the colour of that line.
 - The reference each series wears in the legend and in the tooltip is a
   sample of the line it names: the series' own stroke width and the series'
   own dash, and at least as wide as the longest pattern's cycle, so the whole
@@ -362,41 +409,16 @@ no token.
   Visibility Score card reports Northstar's score on the last tracked day.
 - The vertical axis is fixed at 0–100 and labelled in percent, so the series
   move and the axis does not. The horizontal axis carries the tracked days,
-  thinned so the labels thin out instead of overlapping at 390px.
-- A Platform the Snapshot tracks no window for renders the em dash, not an
-  empty plot.
-**The visibility chart** (`src/components/overview/visibility-chart.tsx`) is a
-card as well, and it draws the series the design system already fixed: the
-measured brand takes `--chart-1` — the brand accent — on a solid, heavier
-line, and the competitors take the ramp from `--chart-2` (`--chart-5` is the
-ramp's reserved fourth step), each in a colour of its own and on a line
-pattern of its own, so the series are told apart by colour and by treatment
-rather than by hue alone. The colours are CSS custom properties, so no raw
-colour reaches the DOM.
+  thinned by `minTickGap` so the labels thin out instead of overlapping at
+  390px.
 
-The chart's legend is a control, not a key: a group of toggle buttons named
-`Series`, each carrying `aria-pressed`, so a hidden series is readable
-without colour. A hidden series is hidden from the plot and from the tooltip
-as well, and the legend keeps its state when the Platform changes, so the
-reader's reading of the chart survives a re-scope. Each series wears a
-reference in the legend and in the tooltip: a sample of the line it names,
-drawn with that line's own stroke width and dash, and wide enough to carry
-the longest pattern's cycle — a sample that cannot show the treatment cannot
-name the line.
-
-The tooltip is a custom one: the tracked day as its heading, then one row
-per visible series with its exact score to one decimal, in the legend's
-order. The values are the tracked scores, and the last tracked day's score
-is the number the KPI card reports, so the chart's history ends where the
-card's number begins. The vertical axis is fixed at 0–100 and labelled in
-percent, so the series move and the axis does not; the horizontal axis
-carries the tracked days, thinned by `minTickGap` so the labels thin out
-instead of overlapping at 390px. The dates are formatted from their ISO
-parts, not through `Date`, so the day never shifts with the reader's time
-zone. The plot keeps at least `h-60` of height below `sm`, and a Platform
-with no tracked window renders the em dash instead of an empty plot — the
-mark this document reserves for a value the Snapshot cannot report. Every
-Platform the Snapshot holds carries a window, so the chart never draws it.
+The colours are CSS custom properties, so no raw colour reaches the DOM. The
+dates are formatted from their ISO parts, not through `Date`, so the day never
+shifts with the reader's time zone. The plot keeps at least `h-60` of height
+below `sm`, and a Platform with no tracked window renders the em dash instead
+of an empty plot — the mark this document reserves for a value the Snapshot
+cannot report. Every Platform the Snapshot holds carries a window, so the chart
+never draws it.
 
 The chart is a client component: the charting library measures its
 container, so the chart cannot be rendered on the server.
@@ -525,21 +547,29 @@ interactive during the wait.
   description, so a screen reader reads it.
 - The chart's legend carries its state in `aria-pressed`, so a hidden series
   is readable without colour, and the tooltip names the day and every visible
-  series.
+  series. The legend groups the brand and the competitors under the labels it
+  shows, and each group is a group in the accessibility tree, so the reader is
+  told which line is the reader's own without reading a colour.
 - Focus is always visible and is drawn by the global outline.
 - Controls (inputs, selects, textareas) set `border-input`; the universal
   `border-border` rule colours dividers only. `--input` clears 3:1 against
   both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
+- The chart's greyscale mode is a switch, so it carries its state in
+  `aria-checked` and the reader knows the rivals have lost their hue without
+  seeing it.
 - The chart's plot is an image with a description: it names the metric, the
   brands and the Platform, so a screen reader does not read the axis ticks as
-  the chart's name. The legend is the chart's control.
+  the chart's name. The legend and the mode switch are the chart's controls.
 
 ## Data semantics
 
 - Northstar uses `--accent` and `--chart-1`.
 - Competitors use the chart ramp — a colour of their own — plus a distinct
   line treatment.
+- The greyscale mode wears the greyscale ramp on the competitors alone:
+  Northstar keeps `--chart-1` in both modes, so the brand's line is the one
+  hue on the plot.
 - Missing or undefined metrics render as an em dash (`—`), never `NaN`.
 - A movement with no earlier period to compare against renders as an em dash
   too, and says so to a screen reader.

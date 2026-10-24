@@ -2,7 +2,7 @@
 
 import { KpiCard } from "@/components/overview/kpi-card";
 import { KPIS } from "@/components/overview/kpis";
-import { VisibilityChart } from "@/components/overview/visibility-chart";
+import { VisibilityChart } from "@/components/overview/visibility-chart/visibility-chart";
 import { PlatformScope } from "@/components/platform-scope";
 import { PromptTable } from "@/components/prompts/prompt-table";
 import { snapshot, subjectMetrics } from "@/lib/snapshot";
@@ -28,10 +28,7 @@ export function Overview({ platform }: { platform: Platform }) {
       <section className="mt-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-sm font-semibold tracking-tight">Northstar</h2>
-          <PlatformScope
-            platformId={selected.id}
-            onPlatformChange={select}
-          />
+          <PlatformScope platformId={selected.id} onPlatformChange={select} />
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <KpiCard

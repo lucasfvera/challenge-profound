@@ -57,10 +57,10 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
-primitives, skeleton, the segmented control, and the popover. The platform
-scope control lives in `src/components/`, because the overview and the prompt
-detail route share it; the KPI cards and the visibility chart live in
-`src/components/overview/`, and the overview's prompt table and the prompt
+primitives, skeleton, the segmented control, the popover, and the switch. The
+platform scope control lives in `src/components/`, because the overview and
+the prompt detail route share it; the KPI cards and the visibility chart live
+in `src/components/overview/`, and the overview's prompt table and the prompt
 detail route's panels in `src/components/prompts/`. They compose the base
 components rather than adding to the inventory.
 
@@ -149,9 +149,9 @@ on <http://127.0.0.1:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
-contract, the prompt row contract, the seven component tests, and the app's
-date formatting. The component tests are the second seam, next to the pure
-one: they render the surfaces in a DOM and assert the interaction and
+contract, the prompt row contract, the component tests, and the app's date
+formatting. The component tests are the second seam, next to the pure one:
+they render the surfaces in a DOM and assert the interaction and
 accessibility contracts — the segmented control's keyboard and ARIA, the KPI
 card's delta formatting and its metric explanation, the answer panel's Mention
 highlights, the prompt row's activation, the chart's tooltip and legend and
@@ -164,14 +164,15 @@ build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: eight end-to-end tests that prove the demo
+The smoke suite is the third seam: eleven end-to-end tests that prove the demo
 story — the metric cards and the chart render, the chart tells its series
-apart by colour, the platform switch rewrites the URL and moves the table's
-scope, the clickable filters say they are clickable, the movements say which
-way they went, a prompt row opens the
-detail with the highlighted mentions and the citations, an unknown prompt id
-answers 404, the overview holds at 390px, and an unknown platform param falls
-back to the default with the table still rendered. It reads the app the way a
+apart by colour, the chart draws each series' reference at the scale of the
+line it names, the chart can take the hue off the competitors, the platform
+switch rewrites the URL and moves the table's scope, the clickable filters say
+they are clickable, the movements say which way they went, a prompt row opens
+the detail with the highlighted mentions and the citations, an unknown prompt
+id answers 404, the overview holds at 390px, and an unknown platform param
+falls back to the default with the table still rendered. It reads the app the way a
 reader does — by role and accessible name, and by the text a reader sees
 where the surface carries no name — with three kinds of surface reached
 another way: the cards, which the card primitive gives no role and no name,
@@ -205,12 +206,16 @@ Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.
-Northstar's line is the brand accent; every competitor wears a colour of its
-own — amber, teal, orchid — and a line pattern of its own, so the lines are
-told apart by colour and by treatment rather than by hue alone. The legend is
-a set of toggles that carry their state in `aria-pressed`, and the tooltip
-names the tracked day and the exact score of every visible series on it. A
-Platform with no tracked window draws the em dash instead of an empty plot.
+Northstar's line is the brand accent, on the heaviest line on the plot; every
+competitor wears a colour of its own — amber, teal, orchid — and a line
+pattern of its own, so the lines are told apart by colour and by treatment
+rather than by hue alone. The legend is grouped: the brand sits under a
+`Your brand` label and the rivals under a `Competitors` label, and every
+series is a toggle that carries its state in `aria-pressed`. A toggle beside
+the chart's title takes the hue off the competitors, so the brand's line is
+the one hue left on the plot. The tooltip names the tracked day and the exact
+score of every visible series on it. A Platform with no tracked window draws
+the em dash instead of an empty plot.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the

@@ -24,14 +24,17 @@ import type { Locator, Page } from "@playwright/test";
  * series' token into a colour, and a unit test would have to assert the class
  * or the token instead of the affordance.
  *
- * Three kinds of surface are read another way, and all three are named in the
+ * Four kinds of surface are read another way, and all four are named in the
  * open: the cards — the metric cards and the chart's card — which the card
  * primitive gives no role and no name, so the suite takes them through the
  * primitive's own `data-slot` hook; the badge, which is a span with no name
- * of its own, so the suite reads the text it shows; and the chart's series
+ * of its own, so the suite reads the text it shows; the chart's series
  * references, which are decorative drawings inside named toggles, so the
- * suite takes them through the markup they are drawn in. A CSS class is
- * never asserted.
+ * suite takes them through the markup they are drawn in; and the chart's
+ * plotted lines, which are drawings with no name at all, so the suite takes
+ * them through the charting library's own mark for a series line. A CSS
+ * class is never asserted: a class is a way in, and the library's own is the
+ * only one the chart's markup offers.
  */
 
 /** The Visibility Score, as the KPI row names its card. */
@@ -54,6 +57,9 @@ const PLATFORM_GROUP = "Platform";
 
 /** The chart's legend, as the app names its group. */
 const SERIES_GROUP = "Series";
+
+/** The toggle that takes the hue off the competitors, as it names itself. */
+const GREYSCALE_MODE = "Greyscale";
 
 /** The Claude platform, as the scope control names it. */
 const CLAUDE = "Claude";
@@ -166,6 +172,35 @@ function seriesReferences(page: Page) {
 }
 
 /**
+ * The chart's plotted series: the lines the plot draws.
+ *
+ * The lines are drawings with no name of their own, so the suite takes them
+ * through the markup they are drawn in — the same way it reads the reference
+ * each legend toggle wears. The class is the charting library's own mark for
+ * a series line: an implementation detail of the library, not a contract the
+ * app holds.
+ */
+function plottedLines(page: Page) {
+  return page
+    .getByRole("img", { name: /Visibility Score of/ })
+    .locator("path.recharts-line-curve");
+}
+
+/**
+ * The colours a set of series is drawn with.
+ *
+ * The colour is read from the computed style, because the bundle carries the
+ * stylesheet that resolves the series' token into a colour — a unit test
+ * would have to assert the token instead, and the tokens were distinct
+ * before the colours were.
+ */
+async function seriesColours(lines: Locator) {
+  return lines.evaluateAll((marks) =>
+    marks.map((mark) => getComputedStyle(mark).stroke),
+  );
+}
+
+/**
  * The saturation of a colour, from 0 (a grey) to 1 (the most saturated
  * colour there is).
  *
@@ -226,13 +261,8 @@ test("The chart tells its series apart by colour", async ({ page }) => {
   await page.goto("/");
 
   // Every brand wears a colour of its own, so a reader tells the lines
-  // apart by their colour. The colour is read from the computed style,
-  // because the bundle carries the stylesheet that resolves the series'
-  // token into a colour — a unit test would have to assert the token
-  // instead, and the tokens were distinct before the colours were.
-  const colours = await seriesReferences(page).evaluateAll((marks) =>
-    marks.map((mark) => getComputedStyle(mark).stroke),
-  );
+  // apart by their colour.
+  const colours = await seriesColours(seriesReferences(page));
 
   expect(colours).toHaveLength(4);
 
@@ -269,6 +299,48 @@ test("The chart draws each series' reference at the scale of the line it names",
   for (const sample of samples) {
     expect(sample.drawn).toBe(sample.declared);
   }
+});
+
+test("The chart can take the hue off the competitors", async ({ page }) => {
+  await page.goto("/");
+
+  const toggle = page.getByRole("switch", { name: GREYSCALE_MODE });
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+
+  await toggle.click();
+
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
+
+  // The plot is what the mode is about, so the colours are read from the
+  // lines the plot draws.
+  const colours = await seriesColours(plottedLines(page));
+
+  expect(colours).toHaveLength(4);
+
+  // The references come in the legend's order, and the legend puts the brand
+  // the reader is measuring first. The brand keeps its hue: it is the one
+  // line the reader is looking for...
+  expect(saturation(colours[0])).toBeGreaterThanOrEqual(SERIES_HUE_FLOOR);
+
+  // ... and the rivals lose theirs, so the plot carries a single hue.
+  for (const colour of colours.slice(1)) {
+    expect(saturation(colour)).toBeLessThan(SERIES_HUE_FLOOR);
+  }
+
+  // The rivals are still told apart: the greyscale ramp is a ramp of its
+  // own, so no two of them wear the same grey.
+  expect(new Set(colours.slice(1)).size).toBe(colours.length - 1);
+
+  // And the reference in the legend is a sample of the line it names, so it
+  // wears the same colour the plot draws.
+  expect(await seriesColours(seriesReferences(page))).toEqual(colours);
+
+  // The mode is a view choice: it survives a change of Platform, the way the
+  // legend's hidden series do.
+  await platformSegment(page, CLAUDE).click();
+
+  await expect(page).toHaveURL("/?platform=claude");
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({
@@ -431,7 +503,9 @@ test("The overview holds at a phone viewport", async ({ page }) => {
   const table = page.getByRole("table", { includeHidden: true });
   await expect(table).toHaveCount(1);
   await expect(table).toBeHidden();
-  await expect(page.getByRole("link", { name: FIRST_PROMPT_TEXT })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: FIRST_PROMPT_TEXT }),
+  ).toBeVisible();
 
   // The flow has to work from ~390px to desktop without scrolling
   // sideways. The measure is the content's width against the layout
