@@ -45,16 +45,19 @@ interface Treatment {
  * brand is the same series in every view.
  *
  * The brand the Snapshot measures wears the brand accent and a solid, heavier
- * line. The competitors take the neutral ramp and separate by line pattern, so
- * the series are told apart by treatment and not by hue alone — the rule the
- * design system sets for every chart series. The record is exhaustive: a brand
- * added to the Snapshot has no treatment until the ramp grows one.
+ * line. The competitors wear colours of their own — amber, teal, orchid — and
+ * separate by line pattern as well, so the series are told apart by colour
+ * and by treatment, never by hue alone — the rule the design system sets for
+ * every chart series. The patterns are as distinct from each other as three
+ * patterns can be at two pixels: a long dash, a fine dot, and a dash-dot. The
+ * record is exhaustive: a brand added to the Snapshot has no treatment until
+ * the ramp grows one.
  */
 const TREATMENTS: Record<BrandId, Treatment> = {
   northstar: { color: "var(--chart-1)", width: 2.5 },
-  lumen: { color: "var(--chart-2)", dash: "7 5", width: 2 },
-  vantage: { color: "var(--chart-3)", dash: "2 5", width: 2 },
-  arcadia: { color: "var(--chart-4)", dash: "9 4 2 4", width: 2 },
+  lumen: { color: "var(--chart-2)", dash: "10 6", width: 2 },
+  vantage: { color: "var(--chart-3)", dash: "1 6", width: 2 },
+  arcadia: { color: "var(--chart-4)", dash: "12 5 2 5", width: 2 },
 };
 
 /**
@@ -283,21 +286,47 @@ function VisibilityTooltip({
   );
 }
 
-/** The mark of a series: a short line in the series' own treatment. */
+/**
+ * The size of a series reference, in pixels.
+ *
+ * The reference has to carry a whole dash pattern: the longest cycle is the
+ * dash-dot's, 24px, so a sample narrower than that would cut its dot off and
+ * the reference would no longer tell that series from the long dash.
+ *
+ * The size is written twice — in the class, which is what the sample is drawn
+ * at, and in the viewBox, which is the space the dash is drawn in — and the
+ * two have to agree: the sample has to be drawn at the scale it declares, or
+ * the dash it shows is not the dash the plot draws.
+ */
+const REFERENCE_WIDTH = 28;
+const REFERENCE_HEIGHT = 10;
+
+/**
+ * The reference of a series: a sample of the line it names.
+ *
+ * The sample is drawn with the series' own stroke width and its own dash, so
+ * the reference in the legend and in the tooltip shows the treatment the plot
+ * draws — only shorter. A reference too short to carry the dash cannot tell
+ * two series apart.
+ */
 function SeriesMark({ treatment }: { treatment: Treatment }) {
   return (
     <svg
-      width="16"
-      height="8"
-      viewBox="0 0 16 8"
+      width={REFERENCE_WIDTH}
+      height={REFERENCE_HEIGHT}
+      viewBox={`0 0 ${REFERENCE_WIDTH} ${REFERENCE_HEIGHT}`}
       aria-hidden="true"
-      className="shrink-0 overflow-visible"
+      // The Button sizes every icon it holds to its own size, and the
+      // reference is not an icon: it is a sample of a line, and the Button's
+      // rule would shrink it to half the scale the plot draws it at. A class
+      // carrying `size-` is the escape hatch the Button leaves.
+      className="size-[28px_10px] shrink-0 overflow-visible"
     >
       <line
         x1="0"
-        y1="4"
-        x2="16"
-        y2="4"
+        y1={REFERENCE_HEIGHT / 2}
+        x2={REFERENCE_WIDTH}
+        y2={REFERENCE_HEIGHT / 2}
         stroke={treatment.color}
         strokeWidth={treatment.width}
         strokeDasharray={treatment.dash}

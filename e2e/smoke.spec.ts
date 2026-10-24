@@ -18,16 +18,19 @@ import type { Locator, Page } from "@playwright/test";
  * with a caption, and a row's link is named after the Prompt it opens. A
  * surface that carries no name is read through the text a reader sees.
  *
- * The cursor is read here and not in the component suite: the bundle carries
- * the stylesheet that turns the pointer utility into a cursor, and a unit
- * test would have to assert the class instead of the affordance. The
- * movement's colour is read here for the same reason.
+ * The cursor, the movement's colour and the series' colours are read here and
+ * not in the component suite: the bundle carries the stylesheet that turns
+ * the pointer utility into a cursor and that resolves a movement's and a
+ * series' token into a colour, and a unit test would have to assert the class
+ * or the token instead of the affordance.
  *
- * Two kinds of surface are read another way, and both are named in the open:
- * the cards — the metric cards and the chart's card — which the card
+ * Three kinds of surface are read another way, and all three are named in the
+ * open: the cards — the metric cards and the chart's card — which the card
  * primitive gives no role and no name, so the suite takes them through the
- * primitive's own `data-slot` hook; and the badge, which is a span with no
- * name of its own, so the suite reads the text it shows. A CSS class is
+ * primitive's own `data-slot` hook; the badge, which is a span with no name
+ * of its own, so the suite reads the text it shows; and the chart's series
+ * references, which are decorative drawings inside named toggles, so the
+ * suite takes them through the markup they are drawn in. A CSS class is
  * never asserted.
  */
 
@@ -63,6 +66,15 @@ const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
 
 /** The hook the card primitive leaves for the suite to take a card by. */
 const CARD_SLOT = "[data-slot='card']";
+
+/**
+ * The saturation a series colour has to reach to be a hue.
+ *
+ * The neutral greys the ramp used to hold sat under 0.1, and the hues it
+ * holds now sit above 0.4; 0.2 is the line between a colour that names a
+ * series and one that cannot.
+ */
+const SERIES_HUE_FLOOR = 0.2;
 
 /**
  * The name of a column header for the platform the table is scoped to.
@@ -142,6 +154,38 @@ function chartCard(page: Page, legend: Locator) {
   return page.locator(CARD_SLOT).filter({ has: legend });
 }
 
+/**
+ * The chart's series references: the sample each legend toggle wears.
+ *
+ * The reference is a decorative drawing with no name of its own — the toggle
+ * carries the series' name — so the suite takes it through the markup it is
+ * drawn in.
+ */
+function seriesReferences(page: Page) {
+  return page.getByRole("group", { name: SERIES_GROUP }).locator("svg line");
+}
+
+/**
+ * The saturation of a colour, from 0 (a grey) to 1 (the most saturated
+ * colour there is).
+ *
+ * A resolved colour reads as `rgb(r, g, b)`, so the channels are the numbers
+ * in it.
+ */
+function saturation(colour: string) {
+  const channels = colour.match(/^rgb\((\d+), (\d+), (\d+)\)$/);
+
+  if (!channels) {
+    throw new Error(`the series colour ${colour} is not a colour`);
+  }
+
+  const [red, green, blue] = channels.slice(1).map(Number);
+  const lightest = Math.max(red, green, blue);
+  const darkest = Math.min(red, green, blue);
+
+  return (lightest - darkest) / lightest;
+}
+
 test("The overview renders the metric cards and the chart", async ({
   page,
 }) => {
@@ -176,6 +220,55 @@ test("The overview renders the metric cards and the chart", async ({
   // overlap, so the suite reads the labels the axis drew rather than a day
   // it expects.
   await expect(plot.getByText(/^Sep \d+$/).first()).toBeVisible();
+});
+
+test("The chart tells its series apart by colour", async ({ page }) => {
+  await page.goto("/");
+
+  // Every brand wears a colour of its own, so a reader tells the lines
+  // apart by their colour. The colour is read from the computed style,
+  // because the bundle carries the stylesheet that resolves the series'
+  // token into a colour — a unit test would have to assert the token
+  // instead, and the tokens were distinct before the colours were.
+  const colours = await seriesReferences(page).evaluateAll((marks) =>
+    marks.map((mark) => getComputedStyle(mark).stroke),
+  );
+
+  expect(colours).toHaveLength(4);
+
+  // No two series wear the same colour...
+  expect(new Set(colours).size).toBe(colours.length);
+
+  // ... and every one of them is a hue: a grey cannot tell one series from
+  // another, which is why the neutral ramp the chart used to wear could not
+  // name a line.
+  for (const colour of colours) {
+    expect(saturation(colour)).toBeGreaterThanOrEqual(SERIES_HUE_FLOOR);
+  }
+});
+
+test("The chart draws each series' reference at the scale of the line it names", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  // The reference is what names the line, so it is drawn at the scale the
+  // plot draws it at: the sample is as long as the space it declares, or
+  // the dash it shows is not the dash the line wears.
+  const samples = await seriesReferences(page).evaluateAll((marks) =>
+    marks.map((mark) => ({
+      drawn: mark.getBoundingClientRect().width,
+      declared: Number(
+        mark.parentElement?.getAttribute("viewBox")?.split(" ")[2],
+      ),
+    })),
+  );
+
+  expect(samples).toHaveLength(4);
+
+  for (const sample of samples) {
+    expect(sample.drawn).toBe(sample.declared);
+  }
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({

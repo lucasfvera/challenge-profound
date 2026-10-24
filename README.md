@@ -149,14 +149,15 @@ on <http://127.0.0.1:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
-contract, the prompt row contract, the six component tests, and the app's
+contract, the prompt row contract, the seven component tests, and the app's
 date formatting. The component tests are the second seam, next to the pure
 one: they render the surfaces in a DOM and assert the interaction and
 accessibility contracts — the segmented control's keyboard and ARIA, the KPI
 card's delta formatting and its metric explanation, the answer panel's Mention
-highlights, the prompt row's activation, the chart's tooltip and legend, and
-the citations panel's links. `npm run build` produces a production bundle;
-run it with `npm run start` to serve that bundle locally.
+highlights, the prompt row's activation, the chart's tooltip and legend and
+the reference each series wears, and the citations panel's links. `npm run
+build` produces a production bundle; run it with `npm run start` to serve
+that bundle locally.
 
 `npm run test:e2e` runs the Playwright smoke suite against a **production
 build**: the harness runs `next build && next start` on a port of its own and
@@ -164,16 +165,21 @@ the suite talks to that bundle, so a green run is a statement about what
 ships.
 
 The smoke suite is the third seam: eight end-to-end tests that prove the demo
-story — the metric cards and the chart render, the platform switch rewrites
-the URL and moves the table's scope, the clickable filters say they are
-clickable, the movements say which way they went, a prompt row opens the
+story — the metric cards and the chart render, the chart tells its series
+apart by colour, the platform switch rewrites the URL and moves the table's
+scope, the clickable filters say they are clickable, the movements say which
+way they went, a prompt row opens the
 detail with the highlighted mentions and the citations, an unknown prompt id
 answers 404, the overview holds at 390px, and an unknown platform param falls
 back to the default with the table still rendered. It reads the app the way a
 reader does — by role and accessible name, and by the text a reader sees
-where the surface carries no name — with one kind of surface reached through
-a hook of its own: the cards, which the card primitive gives no role and no
-name, so the suite takes them through the primitive's `data-slot` attribute.
+where the surface carries no name — with three kinds of surface reached
+another way: the cards, which the card primitive gives no role and no name,
+so the suite takes them through the primitive's `data-slot` attribute; the
+badge, which is a span with no name of its own, so the suite reads the text
+it shows; and the chart's series references, which are decorative drawings
+inside named toggles, so the suite takes them through the markup they are
+drawn in.
 
 ## What the app renders today
 
@@ -199,12 +205,12 @@ Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.
-Northstar's line is the brand accent; the competitors take the neutral ramp
-and a line pattern of their own, so the series are told apart by lightness
-and by treatment rather than by hue. The legend is a set of toggles that
-carry their state in `aria-pressed`, and the tooltip names the tracked day
-and the exact score of every visible series on it. A Platform with no tracked
-window draws the em dash instead of an empty plot.
+Northstar's line is the brand accent; every competitor wears a colour of its
+own — amber, teal, orchid — and a line pattern of its own, so the lines are
+told apart by colour and by treatment rather than by hue alone. The legend is
+a set of toggles that carry their state in `aria-pressed`, and the tooltip
+names the tracked day and the exact score of every visible series on it. A
+Platform with no tracked window draws the em dash instead of an empty plot.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the
@@ -241,8 +247,8 @@ The CLI reads `components.json`; components land in `src/components/ui/`. It
 writes its own defaults, which the design system overrides: strip the
 `focus-visible:ring-*` and `outline-none` utilities (focus is drawn once, by
 the global outline in `src/app/globals.css`), replace `bg-accent` chrome
-with `bg-secondary` or `bg-muted` (`--accent` is the brand color), and
-restyle an overlay: the popover's `ring-foreground/10` becomes the
-`--border` hairline, its fixed `w-72` panel becomes a popup that fits its
-copy, and its slide-and-zoom becomes a fade. See
+with `bg-secondary` or `bg-muted` (`--accent` is the brand tone, reserved for
+Northstar's data), and restyle an overlay: the popover's `ring-foreground/10`
+becomes the `--border` hairline, its fixed `w-72` panel becomes a popup that
+fits its copy, and its slide-and-zoom becomes a fade. See
 [`docs/design-system.md`](docs/design-system.md).

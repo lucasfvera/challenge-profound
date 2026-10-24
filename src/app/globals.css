@@ -67,12 +67,16 @@
   --selection: color-mix(in oklab, var(--brand) 30%, transparent);
 
   /* Series: chart-1 is Northstar, chart-2..5 are the competitors.
-   * Every step clears 3:1 against --card. */
+   * Every tracked brand wears a colour of its own, so the lines are told
+   * apart by colour; every one clears 3:1 against --card. The competitor
+   * hues are less saturated than the brand's, so they read as rivals rather
+   * than as decoration, and the line treatment separates the series too, so
+   * colour is never the only signal. */
   --chart-1: var(--brand);
-  --chart-2: #a1a1aa;
-  --chart-3: #8b8b95;
-  --chart-4: #75757f;
-  --chart-5: #62626c;
+  --chart-2: #d2963c;
+  --chart-3: #3aae9e;
+  --chart-4: #b96fc4;
+  --chart-5: #c96685;
 
   --sidebar: var(--card);
   --sidebar-foreground: var(--foreground);
