@@ -5,12 +5,12 @@ import {
   SegmentedControlItem,
 } from "@/components/ui/segmented-control";
 import { isPlatformId } from "@/lib/platform-scope";
-import { snapshot } from "@/lib/snapshot";
-import type { PlatformId } from "@/lib/snapshot";
+import { PLATFORMS, platformById } from "@/lib/snapshot/platforms";
+import type { Platform, PlatformId } from "@/lib/snapshot";
 
 /**
- * The platform scope control: the one filter the overview, the chart, and
- * the table share.
+ * The platform scope control: the one filter the overview, the detail route,
+ * the chart, and the table share.
  *
  * It is the segmented control the design system locked in — a single-select
  * toggle group whose segment carries `aria-pressed` — bound to the Platforms
@@ -21,16 +21,19 @@ import type { PlatformId } from "@/lib/snapshot";
  * move between the platforms and the filter changes with them. The selected
  * Platform holds the group's single tab stop, so tabbing into the control
  * lands on it and leaves the scope alone.
+ *
+ * The control holds no domain state. It hands the caller the Platform that
+ * was picked, so the caller never has to look one up.
  */
 export function PlatformScope({
   platformId,
   onPlatformChange,
 }: {
   platformId: PlatformId;
-  onPlatformChange: (platformId: PlatformId) => void;
+  onPlatformChange: (platform: Platform) => void;
 }) {
   function select(next: PlatformId) {
-    if (next !== platformId) onPlatformChange(next);
+    if (next !== platformId) onPlatformChange(platformById(next));
   }
 
   return (
@@ -42,7 +45,7 @@ export function PlatformScope({
       }}
       aria-label="Platform"
     >
-      {snapshot.platforms.map((platform) => (
+      {PLATFORMS.map((platform) => (
         <SegmentedControlItem
           key={platform.id}
           value={platform.id}

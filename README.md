@@ -24,6 +24,10 @@ cannot answer is `null` — never `NaN` — and the dashboard renders it as an e
 dash. The last daily point of every series is the score that brand's Answers
 on that Platform produce, so the history and the evidence agree.
 
+The tracked Platforms live in their own module
+(`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
+boundary can read them without pulling the whole fixture into the browser.
+
 ## Design system
 
 The visual language lives in the semantic tokens of `src/app/globals.css` and is
@@ -34,9 +38,11 @@ conventions. Components consume tokens through Tailwind utilities (`bg-card`,
 colors.
 
 The base components live in `src/components/ui/`: card, badge, button, table
-primitives, skeleton, and the segmented control. The overview's own surfaces —
-the platform scope control, the KPI cards, and the visibility chart — live in
-`src/components/overview/`, and compose the base components rather than
+primitives, skeleton, and the segmented control. The platform scope control
+lives in `src/components/`, because the overview and the prompt detail route
+share it; the KPI cards and the visibility chart live in
+`src/components/overview/`, and the prompt detail route's surfaces in
+`src/components/prompts/`. They compose the base components rather than
 adding to the inventory.
 
 ## Requirements
@@ -62,9 +68,9 @@ npm run build
 ```
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
-the platform scope contract, and the app's date formatting. `npm run build`
-produces a production bundle; run it with `npm run start` to serve that bundle
-locally.
+the platform scope contract, the prompt detail contract, and the app's date
+formatting. `npm run build` produces a production bundle; run it with `npm run
+start` to serve that bundle locally.
 
 ## What the app renders today
 
@@ -85,6 +91,18 @@ Northstar wears the brand accent; the competitors take the neutral chart ramp
 and separate by line pattern, so no two series are told apart by hue alone.
 The legend toggles a series out of the plot and the tooltip, and the tooltip
 names the exact tracked score of every visible series on the hovered day.
+
+The prompt detail route — `/prompts/<prompt-id>`, for example
+`/prompts/p-01` — is the evidence view. It renders on the server from the
+Snapshot: the tracked question as the heading, the Answer the selected
+Platform gave for it, and the sources behind that Answer. Northstar's Mentions
+are picked out in the brand accent and the Competitors' Mentions in a dotted
+underline, each with a label a screen reader reads. The same `platform` search
+param scopes the route, so a shared link carries both halves of the view, and
+a prompt id the Snapshot does not track — or a platform with no answer for it
+— is a 404. Switching the platform is a navigation, so a loading skeleton
+holds the content while the server answers. The prompt list that links into
+the route arrives with the prompt table.
 
 ## Adding shadcn/ui components
 

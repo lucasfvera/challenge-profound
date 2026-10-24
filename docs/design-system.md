@@ -179,9 +179,9 @@ Numbers must align in columns.
 
 ## Responsive conventions
 
-These are the conventions the dashboard is built against; only the shell and
-the overview's surfaces exist today, and the rest arrive with their own
-tickets.
+These are the conventions the dashboard is built against; the shell, the
+overview's surfaces, and the prompt detail route's surfaces exist today, and
+the rest arrive with their own tickets.
 
 | Breakpoint | Width | Behavior |
 |------------|-------|----------|
@@ -237,19 +237,21 @@ control holds no domain state: the group is single-select and takes its
 pressed values as an array through `value`, reporting them through
 `onValueChange` — the way Base UI's toggle group models them — and a segment
 expresses its selection as `aria-pressed`. The Platforms the segments stand
-for are bound to the control by the overview, below.
+for are bound to the control by the platform scope control, below.
 
 ## The overview's surfaces
 
 Three surfaces compose the base components; none adds to the inventory above.
 
-**The platform scope control** (`src/components/overview/platform-scope.tsx`)
+**The platform scope control** (`src/components/platform-scope.tsx`)
 is the segmented control bound to the Platforms the Snapshot tracks. The group
 carries the accessible name (`Platform`); each segment is named by its own
 label. The selected Platform holds the group's single tab stop, so tabbing
 into the control lands on it. The scope follows the focus between the
 segments, the way a radio group behaves: the arrow keys move between the
-Platforms and the filter changes with them.
+Platforms and the filter changes with them. The control is shared: the
+overview and the prompt detail route both scope by it, so it lives outside
+the overview's folder.
 
 **The KPI cards** (`src/components/overview/kpi-card.tsx`) are cards, not new
 components: the metric's name in the label role, the value in the display
@@ -282,6 +284,55 @@ no token.
   thinned so the labels thin out instead of overlapping at 390px.
 - A Platform the Snapshot tracks no window for renders the em dash, not an
   empty plot.
+## The prompt detail route's surfaces
+
+The prompt detail route (`/prompts/<prompt-id>`) is the app's first surface
+outside the overview. It renders on the server from the Snapshot: the Prompt
+comes from the path, the Platform from the `platform` search param, and a Prompt
+the Snapshot does not track — or a Platform with no Answer for it — is a
+404.
+
+**The answer panel** (`src/components/prompts/answer-panel.tsx`) renders the
+Answer's segments — the Snapshot's own segmentation, so the Mentions on the
+panel are the ones the KPI cards count. A Mention carries one of two
+treatments:
+
+| Mention | Treatment | Label a screen reader reads |
+|---------|-----------|------------------------------|
+| Northstar | the brand accent as a fill, with `--accent-foreground` on it | "the brand being measured" |
+| a Competitor | the foreground colour with a dotted underline in `--muted-foreground` | "competitor" |
+
+Northstar is a fill rather than accent-coloured text: accent text on `--card`
+sits at 4.45:1, under the AA this document asks of body text, and the fill
+carries the accent foreground at 4.61:1. The two treatments differ by fill,
+text colour, and line treatment, so colour is never the only signal — and
+each one carries a hidden label that says what the treatment says.
+
+A Citation marker in the body (`[1]`) links to that Citation's entry in the
+citations panel. Its accessible name starts with the marker, so the name a
+screen reader reads contains the text on screen.
+
+**The citations panel** (`src/components/prompts/citations-panel.tsx`) lists
+the Answer's sources in the order of the markers, so the number in the body
+is the number in the list. The list is an ordered list with its own markers —
+a flex container would drop them. A source with a web address is an external link that opens
+in a new tab with `rel="noopener noreferrer"`, its accessible name is the
+title plus a hidden "opens in a new tab"; a source whose URL is not a web
+address is rendered as text rather than as a link. The panel ends with
+the note that says where the sources come from: they are the fixture's
+fictional publications on reserved example domains.
+
+**The route's layout and its loading UI.** Above the content, a scope row
+carries the selected Platform's name and the day the Snapshot's Answers
+belong to, with the scope control beside it. The answer and the citations
+sit side by side from `md` in a 3:2 grid and stack below it, in the shared
+layout (`src/components/prompts/prompt-detail-layout.tsx`). Switching the Platform
+is a navigation — the URL carries it and the server answers with that
+Platform's Answer — so the route shows one skeleton
+(`src/components/prompts/prompt-detail-skeleton.tsx`) while the answer is on
+its way. The skeleton stands in for the content inside that same layout, so
+the page does not jump when the content arrives. The scope control stays
+interactive during the wait.
 
 ## Accessibility rules
 
