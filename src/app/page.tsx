@@ -1,6 +1,15 @@
+import { Overview } from "@/components/overview/overview";
+import { PLATFORM_PARAM, resolvePlatformId } from "@/lib/platform-scope";
+import type { PlatformSearchParams } from "@/lib/platform-scope";
 import { PRODUCT_NAME } from "@/lib/site";
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<PlatformSearchParams>;
+}) {
+  const params = await searchParams;
+
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
@@ -8,6 +17,7 @@ export default function Home() {
         {PRODUCT_NAME} is a deterministic snapshot of how Northstar appears in
         AI answers.
       </p>
+      <Overview platformId={resolvePlatformId(params[PLATFORM_PARAM])} />
     </main>
   );
 }

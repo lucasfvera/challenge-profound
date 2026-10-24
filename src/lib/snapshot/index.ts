@@ -14,7 +14,7 @@ export type {
   TextSegment,
 } from "./segment";
 export { segmentAnswer } from "./segment";
-export type { BrandMetrics, PlatformMetrics } from "./derive";
+export type { BrandMetrics, PlatformMetrics, SubjectMetrics } from "./derive";
 export {
   averagePosition,
   averageVisibilityScore,
@@ -22,6 +22,8 @@ export {
   platformSeries,
   seriesPoints,
   shareOfVoice,
+  shareOfVoiceTrend,
+  subjectMetrics,
   visibilityScore,
   visibilityTrend,
 } from "./derive";

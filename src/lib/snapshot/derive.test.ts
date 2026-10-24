@@ -5,7 +5,9 @@ import {
   platformMetrics,
   seriesPoints,
   shareOfVoice,
+  shareOfVoiceTrend,
   snapshot,
+  subjectMetrics,
   visibilityScore,
   visibilityTrend,
 } from "@/lib/snapshot";
@@ -21,6 +23,24 @@ const withoutMentions: Snapshot = {
 
 /** A Snapshot with no Answer at all. */
 const withoutAnswers: Snapshot = { ...snapshot, answers: [] };
+
+/** A Snapshot that measures no brand. */
+const withoutSubject: Snapshot = {
+  ...snapshot,
+  brands: snapshot.brands.filter((brand) => brand.kind !== "subject"),
+};
+
+/** A Snapshot whose tracked window holds a single day. */
+const oneDay: Snapshot = {
+  ...snapshot,
+  series: snapshot.series.map((series) => ({
+    ...series,
+    points: series.points.slice(0, 1),
+  })),
+};
+
+/** How many days of the tracked window its first half holds. */
+const FIRST_HALF_DAYS = 15;
 
 describe("the derivation layer", () => {
   it("computes the Visibility Score as the share of tracked prompts whose answer mentions the brand", () => {
@@ -75,6 +95,58 @@ describe("the derivation layer", () => {
         { date: "2026-09-03", score: 70 },
       ]),
     ).toBe(45);
+  });
+
+  it("compares the two halves of the tracked window for the Share of Voice", () => {
+    expect(shareOfVoiceTrend(snapshot, "northstar", "chatgpt")).toBe(5.1);
+    expect(shareOfVoiceTrend(snapshot, "northstar", "perplexity")).toBe(2.7);
+  });
+
+  it("moves the Share of Voice trend when the tracked scores move", () => {
+    // The brand drops out of the first half of the window, so its share of
+    // voice there falls to nothing and the movement grows.
+    const withoutFirstHalf: Snapshot = {
+      ...snapshot,
+      series: snapshot.series.map((series) =>
+        series.brandId === "northstar" && series.platformId === "chatgpt"
+          ? {
+              ...series,
+              points: series.points.map((point, index) => ({
+                ...point,
+                score: index < FIRST_HALF_DAYS ? 0 : point.score,
+              })),
+            }
+          : series,
+      ),
+    };
+
+    expect(shareOfVoiceTrend(withoutFirstHalf, "northstar", "chatgpt")).toBe(38.1);
+  });
+
+  it("reports the measured brand's metrics and movements for a platform", () => {
+    expect(subjectMetrics(snapshot, "chatgpt")).toEqual({
+      visibilityScore: 66.7,
+      shareOfVoice: 40,
+      averagePosition: 1.5,
+      visibilityTrend: 6.7,
+      shareOfVoiceTrend: 5.1,
+      averagePositionTrend: null,
+    });
+  });
+
+  it("reports no metrics when the Snapshot measures no brand", () => {
+    expect(subjectMetrics(withoutSubject, "chatgpt")).toEqual({
+      visibilityScore: null,
+      shareOfVoice: null,
+      averagePosition: null,
+      visibilityTrend: null,
+      shareOfVoiceTrend: null,
+      averagePositionTrend: null,
+    });
+  });
+
+  it("returns null for a Share of Voice trend with nothing to compare", () => {
+    expect(shareOfVoiceTrend(oneDay, "northstar", "chatgpt")).toBeNull();
   });
 
   it("reports zero Visibility Score and null Share of Voice when no answer mentions the brand", () => {
