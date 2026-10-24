@@ -1,20 +1,13 @@
 "use client";
 
 import { KpiCard } from "@/components/overview/kpi-card";
-import type { Kpi } from "@/components/overview/kpi-card";
+import { KPIS } from "@/components/overview/kpis";
 import { VisibilityChart } from "@/components/overview/visibility-chart";
 import { PlatformScope } from "@/components/platform-scope";
 import { PromptTable } from "@/components/prompts/prompt-table";
 import { snapshot, subjectMetrics } from "@/lib/snapshot";
 import type { Platform } from "@/lib/snapshot";
 import { usePlatformScope } from "@/lib/use-platform-scope";
-
-/** The metrics the overview reports, with the unit each one is reported in. */
-const KPIS = {
-  visibilityScore: { label: "Visibility Score", unit: "percent" },
-  shareOfVoice: { label: "Share of Voice", unit: "percent" },
-  averagePosition: { label: "Average Position", unit: "position" },
-} as const satisfies Record<string, Kpi>;
 
 /**
  * The overview: the platform scope and everything that scope filters.

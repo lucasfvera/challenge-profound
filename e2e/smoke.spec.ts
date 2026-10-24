@@ -7,8 +7,9 @@ import type { Locator, Page } from "@playwright/test";
  * The suite is a smoke suite, not a second component suite. It proves that
  * the built app still tells the story: the metrics and the chart render,
  * the scope moves the view and rewrites the URL, a row opens the evidence
- * behind it, the clickable filters say they are clickable, and the edges the
- * app promises to hold still hold.
+ * behind it, the clickable filters say they are clickable, the movements
+ * say which way they went, and the edges the app promises to hold still
+ * hold.
  *
  * The suite reads what a reader can reach: a role and an accessible name
  * wherever the surface carries one — the scope control is a group named
@@ -19,7 +20,8 @@ import type { Locator, Page } from "@playwright/test";
  *
  * The cursor is read here and not in the component suite: the bundle carries
  * the stylesheet that turns the pointer utility into a cursor, and a unit
- * test would have to assert the class instead of the affordance.
+ * test would have to assert the class instead of the affordance. The
+ * movement's colour is read here for the same reason.
  *
  * Two kinds of surface are read another way, and both are named in the open:
  * the cards — the metric cards and the chart's card — which the card
@@ -83,6 +85,34 @@ function platformSegment(page: Page, platform: string) {
   return page
     .getByRole("group", { name: PLATFORM_GROUP })
     .getByRole("button", { name: platform });
+}
+
+/**
+ * The colour a token resolves to.
+ *
+ * A movement wears the token of the direction it names, so the suite reads
+ * the token and reads the movement against it, rather than pinning a colour
+ * the design system may move. A token that is not defined is a failure,
+ * not a colour to compare against: without it the movement and the token
+ * would both fall back to the inherited foreground and pass.
+ */
+async function tokenColor(page: Page, token: string) {
+  return page.evaluate((name) => {
+    const value = getComputedStyle(document.documentElement)
+      .getPropertyValue(name)
+      .trim();
+
+    if (!value) {
+      throw new Error(`the ${name} token is not defined`);
+    }
+
+    const probe = document.createElement("span");
+    probe.style.color = value;
+    document.body.append(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, token);
 }
 
 /**
@@ -194,6 +224,26 @@ test("The clickable filters say they are clickable", async ({ page }) => {
   // The badge is not clickable, so it keeps the default cursor: a pointer on
   // an inert badge would be a lie.
   await expect(page.getByText(SIMULATED_DATA)).toHaveCSS("cursor", "auto");
+});
+
+test("The movements say which way they went", async ({ page }) => {
+  await page.goto("/");
+
+  // The movement wears the colour of the direction it names: up is the
+  // positive green, down is the destructive red. The words and the mark
+  // say it too, and the component suite proves both; the colour is only
+  // observable where the stylesheet is. Every movement the Snapshot
+  // reports is up today, so the down branch is the one this case cannot
+  // reach.
+  const movement = kpiCard(page, VISIBILITY_SCORE).getByText(
+    /^(Up|Down) [\d.]+ pts$/,
+  );
+
+  const token = await movement.evaluate((element) =>
+    element.textContent?.startsWith("Down") ? "--destructive" : "--positive",
+  );
+
+  await expect(movement).toHaveCSS("color", await tokenColor(page, token));
 });
 
 test("A prompt row opens the detail with the highlighted mentions and the citations", async ({
