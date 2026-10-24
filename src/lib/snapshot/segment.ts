@@ -2,7 +2,7 @@ import type { Answer, Brand, BrandId, Citation } from "./types";
 
 /**
  * Answer segmentation: the pure pipeline that turns a stored Answer body into
- * the ordered segments the answer panel renders.
+ * the ordered segments the answer message renders.
  *
  * The body is the only source of truth. Mentions are found by matching the
  * tracked brand names — whole words, ignoring case — and a `[n]` marker

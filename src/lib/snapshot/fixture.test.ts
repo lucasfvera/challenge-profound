@@ -20,6 +20,17 @@ describe("the Snapshot fixture", () => {
     }
   });
 
+  it("holds one prompt long enough to be a long message", () => {
+    // The Prompt the demo reaches is p-04: its text is a real user's
+    // sentence, and it is the case the detail route's long Prompt is. The
+    // next longest tracked Prompt is 62 characters, so a bar of 120 keeps
+    // the long case well clear of the search-style questions.
+    const long = snapshot.prompts.find((prompt) => prompt.id === "p-04");
+    if (!long) throw new Error("missing the tracked prompt p-04");
+
+    expect(long.text.length).toBeGreaterThan(120);
+  });
+
   it("resolves every id it references", () => {
     const promptIds = new Set(snapshot.prompts.map((prompt) => prompt.id));
     const platformIds = new Set(snapshot.platforms.map((platform) => platform.id));

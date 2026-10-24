@@ -11,7 +11,7 @@ import { snapshot } from "@/lib/snapshot";
  */
 export default function PromptNotFound() {
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
       <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
         Prompt not found
       </p>

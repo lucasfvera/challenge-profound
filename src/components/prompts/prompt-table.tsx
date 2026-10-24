@@ -23,6 +23,7 @@ import { promptDetailHref, rowActivation } from "@/lib/prompt-row";
 import type { RowPress } from "@/lib/prompt-row";
 import { promptTableRows } from "@/lib/prompt-table";
 import type { MentionState, PromptRow } from "@/lib/prompt-table";
+import { CATEGORY_LABELS } from "@/lib/snapshot/categories";
 import { snapshot } from "@/lib/snapshot";
 import type {
   Platform,
@@ -266,7 +267,7 @@ function PromptLink({
   return (
     <Link
       href={promptDetailHref(prompt.id, platformId)}
-      className="underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
+      className="wrap-anywhere underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
       onKeyDown={activateRow}
     >
       {prompt.text}
@@ -492,19 +493,6 @@ function noDataLabel(
 
   return `No brand to measure on ${platform.name}.`;
 }
-
-/**
- * The category of a tracked Prompt, in the words the Snapshot's own
- * `PromptCategory` uses.
- */
-const CATEGORY_LABELS: Record<PromptCategory, string> = {
-  discovery: "Discovery",
-  comparison: "Comparison",
-  alternatives: "Alternatives",
-  "how-to": "How-to",
-  pricing: "Pricing",
-  trust: "Trust",
-};
 
 /** The category of a tracked Prompt, as a quiet badge. */
 function CategoryBadge({ category }: { category: PromptCategory }) {

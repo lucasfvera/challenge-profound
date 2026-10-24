@@ -2,8 +2,7 @@
 
 import type { ReactNode } from "react";
 import { PlatformScope } from "@/components/platform-scope";
-import { PromptDetailLayout } from "@/components/prompts/prompt-detail-layout";
-import { PromptDetailSkeleton } from "@/components/prompts/prompt-detail-skeleton";
+import { PromptTranscriptSkeleton } from "@/components/prompts/prompt-transcript-skeleton";
 import type { Platform } from "@/lib/snapshot";
 import { usePlatformScope } from "@/lib/use-platform-scope";
 
@@ -13,7 +12,7 @@ import { usePlatformScope } from "@/lib/use-platform-scope";
  *
  * Switching the Platform is a navigation, not a local swap: the URL carries
  * the Platform, and the server answers with that Platform's Answer. The
- * skeleton holds the content while the answer is on its way, so the page
+ * skeleton holds the exchange while the answer is on its way, so the page
  * never shows one Platform's answer under another's name.
  */
 export function PromptDetail({
@@ -25,7 +24,7 @@ export function PromptDetail({
   platform: Platform;
   /** The day the Snapshot's stored Answers belong to. */
   asOf: string;
-  /** The server-rendered content the Platform filters. */
+  /** The server-rendered exchange the Platform filters. */
   children: ReactNode;
 }) {
   const { selected, select, isPending } = usePlatformScope(platform);
@@ -39,11 +38,7 @@ export function PromptDetail({
         </p>
         <PlatformScope platformId={selected.id} onPlatformChange={select} />
       </div>
-      {isPending ? (
-        <PromptDetailSkeleton />
-      ) : (
-        <PromptDetailLayout>{children}</PromptDetailLayout>
-      )}
+      {isPending ? <PromptTranscriptSkeleton /> : children}
     </>
   );
 }

@@ -5,12 +5,13 @@ import type { Answer, CitationId, PlatformId, Prompt, PromptId } from "@/lib/sna
  * The prompt detail contract: the detail route's read of the Snapshot.
  *
  * The route shows one tracked Prompt, the Answer a Platform gave for it, and
- * the sources behind that Answer. These are the lookups it makes. They answer
- * `undefined` rather than throwing, so the route decides what a Prompt the
- * Snapshot does not track means — a 404 — instead of a lookup deciding it.
+ * the Citations behind that Answer. These are the lookups it makes. They
+ * answer `undefined` rather than throwing, so the route decides what a
+ * Prompt the Snapshot does not track means — a 404 — instead of a lookup
+ * deciding it.
  *
- * The link policy for those sources lives here too: the citations panel has
- * to know which of the Snapshot's URLs may become an anchor.
+ * The link policy for those Citations lives here too: the Platform's message
+ * has to know which of the Snapshot's URLs may become an anchor.
  */
 
 /**
@@ -45,7 +46,7 @@ export function findAnswer(
 const LINKABLE_PROTOCOLS = ["http:", "https:"];
 
 /**
- * The id of a Citation's entry in the citations panel.
+ * The id of a Citation's entry in the Platform's message.
  *
  * The marker in the answer body links to it, so both sides of that link
  * agree on the id.

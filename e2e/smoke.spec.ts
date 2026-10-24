@@ -68,6 +68,12 @@ const SERIES_GROUP = "Series";
 /** The podium, as the app names its list. */
 const STANDINGS_LIST = "Brand standings";
 
+/** The conversation, as the prompt detail route names its list. */
+const CONVERSATION_LIST = "Conversation";
+
+/** The phone the whole flow has to hold at. */
+const PHONE_VIEWPORT = { width: 390, height: 844 };
+
 /** The toggle that takes the hue off the competitors, as it names itself. */
 const GREYSCALE_MODE = "Greyscale";
 
@@ -171,6 +177,35 @@ async function tokenColor(page: Page, token: string) {
     probe.remove();
     return color;
   }, token);
+}
+
+/**
+ * How far the page scrolls sideways.
+ *
+ * The measure is the content's width against the layout viewport, so a
+ * vertical scrollbar is not counted as an overflow.
+ */
+async function horizontalOverflow(page: Page) {
+  return page.evaluate(
+    () =>
+      document.documentElement.scrollWidth -
+      document.documentElement.clientWidth,
+  );
+}
+
+/**
+ * The number of lines a text takes.
+ *
+ * The line boxes are only readable in the browser: the component suite has
+ * no layout to read. The range takes the text's own boxes, so a wrapped
+ * message is counted line by line.
+ */
+async function textLines(locator: Locator) {
+  return locator.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getClientRects().length;
+  });
 }
 
 /**
@@ -549,8 +584,13 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
     .click();
 
   await expect(page).toHaveURL("/prompts/p-01?platform=claude");
+
+  // The Prompt is a message in the conversation, not the page's title: the
+  // route draws the exchange, and the question is the first message in it.
   await expect(
-    page.getByRole("heading", { name: FIRST_PROMPT_TEXT }),
+    page
+      .getByRole("list", { name: CONVERSATION_LIST })
+      .getByText(FIRST_PROMPT_TEXT),
   ).toBeVisible();
 
   // The Mention of the brand being measured wears the brand accent. The
@@ -561,7 +601,7 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
   await expect(mention).toContainText("(the brand being measured)");
 
   // The sources behind the answer: the body carries a marker for each
-  // citation, and the marker points at the entry the panel lists.
+  // citation, and the marker points at the entry the reply lists.
   const marker = page.getByRole("link", {
     name: `[1] ${BUYERS_GUIDE}`,
   });
@@ -578,6 +618,73 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
     "id",
     href.replace(/^#/, ""),
   );
+});
+
+test("The detail route reads as a conversation", async ({ page }) => {
+  await page.goto("/prompts/p-01");
+
+  const conversation = page.getByRole("list", { name: CONVERSATION_LIST });
+
+  // The exchange names who is speaking, so the page reads on its own: a
+  // user sent the Prompt, and the Platform answered it.
+  await expect(conversation.getByText("A user asked")).toBeVisible();
+  await expect(conversation.getByText("ChatGPT answered")).toBeVisible();
+
+  // The two messages are told apart by where they are, not by colour
+  // alone: the user's message sits on the right and hugs its text, and the
+  // reply fills the column. The positions are a layout, so the bundle is
+  // the only place they can be read.
+  const messages = conversation.locator(CARD_SLOT);
+
+  const asked = await messages.nth(0).boundingBox();
+  const answered = await messages.nth(1).boundingBox();
+
+  expect(asked).not.toBeNull();
+  expect(answered).not.toBeNull();
+  expect(asked?.x).toBeGreaterThan(answered?.x ?? 0);
+  expect(asked?.width).toBeLessThan(answered?.width ?? 0);
+});
+
+test("The page's title names what the page holds", async ({ page }) => {
+  await page.goto("/prompts/p-01");
+
+  // The Prompt is a message in the exchange and not the page's title: the
+  // heading says what the page holds, and it names no Platform, because the
+  // scope is a navigation and the Platform's name changes with it.
+  await expect(
+    page.getByRole("heading", { name: "Prompt and Answer" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: FIRST_PROMPT_TEXT }),
+  ).toHaveCount(0);
+});
+
+test("The detail route holds at a phone viewport", async ({ page }) => {
+  await page.setViewportSize(PHONE_VIEWPORT);
+
+  // p-04 is the Snapshot's long Prompt: a user's sentence rather than a
+  // search phrase. It is a message, so it wraps inside the column and never
+  // pushes the page sideways.
+  await page.goto("/prompts/p-04");
+
+  const conversation = page.getByRole("list", { name: CONVERSATION_LIST });
+
+  // The long Prompt is on the page and it takes more than one line: the
+  // lines are a layout, so the bundle is the only place they can be read.
+  const message = conversation.locator(CARD_SLOT).first();
+  const question = message.locator("p");
+
+  expect(await textLines(question)).toBeGreaterThan(1);
+
+  // The message does not clip its text: the Prompt is never cut short, and
+  // a word too long to fit is broken rather than trimmed.
+  const clipped = await message.evaluate(
+    (element) => element.scrollWidth - element.clientWidth,
+  );
+
+  expect(clipped).toBeLessThanOrEqual(0);
+
+  expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
 });
 
 test("An unknown prompt id answers 404", async ({ page }) => {
@@ -617,7 +724,7 @@ test("An unknown platform param falls back to the default platform", async ({
 });
 
 test("The overview holds at a phone viewport", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize(PHONE_VIEWPORT);
   await page.goto("/");
 
   // Below the `sm` breakpoint the table gives way to cards, so the same
@@ -630,15 +737,8 @@ test("The overview holds at a phone viewport", async ({ page }) => {
   ).toBeVisible();
 
   // The flow has to work from ~390px to desktop without scrolling
-  // sideways. The measure is the content's width against the layout
-  // viewport, so a vertical scrollbar is not counted as an overflow.
-  const overflow = await page.evaluate(
-    () =>
-      document.documentElement.scrollWidth -
-      document.documentElement.clientWidth,
-  );
-
-  expect(overflow).toBeLessThanOrEqual(0);
+  // sideways.
+  expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
 
   // The podium compares only if its bars are the same width, so the scores
   // they draw can be read against each other. The widths are a layout, so
