@@ -67,7 +67,7 @@ Everything else derives from these two, so a brand change is a one-line change.
 | `--chart-2` | `#A1A1AA` | competitor 1 (7.67:1 on `--card`) |
 | `--chart-3` | `#8B8B95` | competitor 2 (5.83:1 on `--card`) |
 | `--chart-4` | `#75757F` | competitor 3 (4.31:1 on `--card`) |
-| `--chart-5` | `#62626C` | competitor 4 (3.26:1 on `--card`) |
+| `--chart-5` | `#62626C` | competitor 4, unused today (3.26:1 on `--card`) |
 
 The sidebar tokens (`--sidebar*`) alias the same surfaces; they exist so
 shadcn's sidebar primitives stay on-contract.
@@ -84,6 +84,10 @@ shadcn's sidebar primitives stay on-contract.
   always carries `--primary-foreground` or `--accent-foreground`.
 - Every series colour clears 3:1 against `--card`; competitors are separable
   by lightness and by line treatment, not by hue.
+- The chart ramp is assigned per brand — Northstar takes `--chart-1`, and the
+  competitors take `--chart-2` onwards, one step of the ramp per brand. A
+  brand keeps its colour and its line pattern when the Platform changes, so
+  the same brand is the same series in every view.
 
 ## Typography
 
@@ -237,7 +241,7 @@ for are bound to the control by the overview, below.
 
 ## The overview's surfaces
 
-Two surfaces compose the base components; neither adds to the inventory above.
+Three surfaces compose the base components; none adds to the inventory above.
 
 **The platform scope control** (`src/components/overview/platform-scope.tsx`)
 is the segmented control bound to the Platforms the Snapshot tracks. The group
@@ -253,6 +257,32 @@ metric role, and the movement in the micro role. A movement carries its
 direction in an icon and in the words a screen reader reads, so colour is
 never the only signal.
 
+**The visibility chart** (`src/components/overview/visibility-chart.tsx`) is
+the overview's third surface: the Visibility Score over the tracked window,
+for the selected Platform. It is a card — the title names the metric, the
+description names the Platform and the tracked window — drawn with Recharts
+and the chart ramp. It composes the base components; it adds no component and
+no token.
+
+- Northstar wears `--chart-1` and a solid, heavier line. The competitors take
+  the neutral ramp and separate by line pattern — dashed, dotted, dash-dot —
+  so no two series are told apart by hue alone.
+- The legend is a real control, not a static key: every series is a toggle
+  carrying `aria-pressed`, and a hidden series leaves the plot and the
+  tooltip as well. The choice survives a change of Platform. The toggles are
+  the base button in its selected and its quiet rendering, so the legend
+  holds no chrome of its own.
+- The tooltip is a custom component, never Recharts' default chrome: the
+  hovered day as its heading, then one row per visible series with its exact
+  tracked score, in the legend's order. The scores are the tracked ones, so
+  the chart and the KPI cards cannot disagree about a day they share — the
+  Visibility Score card reports Northstar's score on the last tracked day.
+- The vertical axis is fixed at 0–100 and labelled in percent, so the series
+  move and the axis does not. The horizontal axis carries the tracked days,
+  thinned so the labels thin out instead of overlapping at 390px.
+- A Platform the Snapshot tracks no window for renders the em dash, not an
+  empty plot.
+
 ## Accessibility rules
 
 - Body and label text meets WCAG AA on `--background` and `--card`.
@@ -264,6 +294,9 @@ never the only signal.
   `border-border` rule colours dividers only. `--input` clears 3:1 against
   both `--background` and `--card`.
 - Every chart series clears 3:1 against `--card`.
+- The chart's plot is an image with a description: it names the metric, the
+  brands and the Platform, so a screen reader does not read the axis ticks as
+  the chart's name. The legend is the chart's control.
 
 ## Data semantics
 
@@ -275,3 +308,10 @@ never the only signal.
 - The movement beside the Share of Voice is the movement of the tracked
   window's score-derived share of voice, which equals the mention share while
   no Answer names a brand twice.
+- The chart's tooltip shows the tracked score to one decimal and says the day
+  it belongs to.
+- A brand that goes untracked on a day has no point on that day: the series
+  breaks and the tooltip leaves it out. It is never a zero, which would read
+  as a real measurement. The Snapshot tracks every brand on every day of its
+  window, so this is a promise the derivation layer keeps rather than a state
+  the chart reaches today.

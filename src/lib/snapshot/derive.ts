@@ -176,6 +176,59 @@ export function seriesPoints(
 }
 
 /**
+ * One tracked day of the chart: the Visibility Score of every brand tracked on
+ * that day.
+ */
+export interface ChartRow {
+  /** The tracked day, as an ISO date (`YYYY-MM-DD`). */
+  date: string;
+  /**
+   * The Visibility Score of each brand tracked on that day, by brand id.
+   *
+   * A brand that was not tracked on the day has no entry at all: never `0`,
+   * which would read as a real measurement, and never `NaN`.
+   */
+  scores: Partial<Record<BrandId, number>>;
+}
+
+/**
+ * The chart's data: the series it draws, and the tracked days it draws them
+ * from.
+ */
+export interface ChartData {
+  /**
+   * The series: the brands the platform tracks, the brand the Snapshot measures
+   * first. Each one carries the display name the legend and the tooltip show.
+   */
+  series: Brand[];
+  /** One row per tracked day, in ascending date order. */
+  rows: ChartRow[];
+}
+
+/**
+ * The chart's data for one platform: the series it draws and the tracked days
+ * it draws them from.
+ *
+ * The series are the brands that platform tracks — the brand the Snapshot
+ * measures first, then the competitors in the Snapshot's brand order. The rows
+ * are the union of the tracked days, in ascending date order; a brand that was
+ * not tracked on a day leaves its score out of that day's row.
+ *
+ * The rows carry the tracked scores verbatim, so the chart and the KPI cards
+ * cannot disagree about the same day.
+ */
+export function chartData(snapshot: Snapshot, platformId: PlatformId): ChartData {
+  const tracked = platformSeries(snapshot, platformId);
+  const brands = trackedBrands(snapshot, tracked);
+  const brandIds = new Set(brands.map((brand) => brand.id));
+
+  return {
+    series: brands,
+    rows: chartRows(tracked, brandIds),
+  };
+}
+
+/**
  * The mean Visibility Score of a tracked window.
  *
  * `null` when the window is empty. A one-day window has a mean: its only
@@ -281,6 +334,50 @@ export function subjectMetrics(
     shareOfVoiceTrend: shareOfVoiceTrend(snapshot, brand.id, platformId),
     averagePositionTrend: null,
   };
+}
+
+/**
+ * The brands one platform tracks, the brand the Snapshot measures first and the
+ * competitors after it in the Snapshot's brand order.
+ */
+function trackedBrands(snapshot: Snapshot, tracked: VisibilitySeries[]): Brand[] {
+  const trackedIds = new Set(tracked.map((entry) => entry.brandId));
+  const brands = snapshot.brands.filter((brand) => trackedIds.has(brand.id));
+
+  const measured = brands.filter((brand) => brand.kind === "subject");
+  const competitors = brands.filter((brand) => brand.kind === "competitor");
+
+  return [...measured, ...competitors];
+}
+
+/**
+ * One row per tracked day of one platform, in ascending date order.
+ *
+ * A series whose brand is not one of the platform's brands is left out: the
+ * chart draws no line for it, so the row must not carry a score for it either.
+ */
+function chartRows(
+  tracked: VisibilitySeries[],
+  brandIds: ReadonlySet<BrandId>,
+): ChartRow[] {
+  const rows = new Map<string, ChartRow>();
+
+  for (const series of tracked) {
+    if (!brandIds.has(series.brandId)) continue;
+
+    for (const point of series.points) {
+      const row: ChartRow = rows.get(point.date) ?? {
+        date: point.date,
+        scores: {},
+      };
+      row.scores[series.brandId] = point.score;
+      rows.set(point.date, row);
+    }
+  }
+
+  return [...rows.values()].sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
+  );
 }
 
 /** The answers one platform gave for the tracked Prompts. */

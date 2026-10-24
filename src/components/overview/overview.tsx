@@ -5,6 +5,7 @@ import { useState } from "react";
 import { KpiCard } from "@/components/overview/kpi-card";
 import type { Kpi } from "@/components/overview/kpi-card";
 import { PlatformScope } from "@/components/overview/platform-scope";
+import { VisibilityChart } from "@/components/overview/visibility-chart";
 import { PLATFORM_PARAM } from "@/lib/platform-scope";
 import { snapshot, subjectMetrics } from "@/lib/snapshot";
 import type { PlatformId } from "@/lib/snapshot";
@@ -75,6 +76,9 @@ export function Overview({ platformId }: { platformId: PlatformId }) {
           value={kpis.averagePosition}
           delta={kpis.averagePositionTrend}
         />
+      </div>
+      <div className="mt-6">
+        <VisibilityChart platformId={selected} />
       </div>
     </section>
   );
