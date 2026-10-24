@@ -59,3 +59,14 @@ export function platformScopeHref(
 
   return `${pathname}?${params.toString()}`;
 }
+
+/**
+ * The overview's URL, scoped to a Platform.
+ *
+ * The prompt detail route's way back lands here, and it carries the Platform
+ * the route is showing: the reader comes back to the scope they drilled down
+ * from instead of to the default one.
+ */
+export function overviewHref(platformId: PlatformId): string {
+  return platformScopeHref("/", new URLSearchParams(), platformId);
+}

@@ -33,7 +33,9 @@ boundary can read them without pulling the whole fixture into the browser.
 The prompt table reads the Snapshot through its own contract
 (`src/lib/prompt-table.ts`): it derives every tracked Prompt's Mention state
 on every Platform from the same segmentation the KPI cards count, and orders
-the rows by the Platform the view is scoped to.
+the rows by the Platform the view is scoped to. The rows' own rules live
+beside it in `src/lib/prompt-row.ts`: the URL a row opens, and the keys that
+activate it.
 
 ## Design system
 
@@ -76,7 +78,8 @@ npm run build
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
-contract, and the app's date formatting. `npm run build` produces a production
+contract, the prompt row contract, and the app's date formatting. `npm run
+build` produces a production
 bundle; run it with `npm run start` to serve that bundle locally.
 
 ## What the app renders today
@@ -104,8 +107,11 @@ tracked Prompt with its category and a Mention indicator per Platform, the
 position Northstar was named at beside each Mention. It is scoped by the same
 Platform as the KPI cards, and its rows are ordered by Northstar's strength on
 that Platform, so the table and the cards above it always read the same scope.
-Below the `sm` breakpoint the table gives way to cards. The rows are not
-links yet: navigation into the prompt detail route lands with a later ticket.
+Below the `sm` breakpoint the table gives way to cards. Every row is a link
+into the prompt detail route: a click anywhere on the row opens the Prompt's
+detail, Enter and Space open it from the keyboard, and the link carries the
+Platform the table is scoped to, so the detail route answers with the same
+Platform.
 
 The prompt detail route — `/prompts/<prompt-id>`, for example
 `/prompts/p-01` — is the evidence view. It renders on the server from the
@@ -116,8 +122,10 @@ underline, each with a label a screen reader reads. The same `platform` search
 param scopes the route, so a shared link carries both halves of the view, and
 a prompt id the Snapshot does not track — or a platform with no answer for it
 — is a 404. Switching the platform is a navigation, so a loading skeleton
-holds the content while the server answers. The prompt list is the overview's
-prompt table.
+holds the content while the server answers. The route opens with a way back to
+the overview, scoped to the same Platform, so the flow can be walked in both
+directions — on a phone, where there is no browser chrome. The prompt list is
+the overview's prompt table.
 
 ## Adding shadcn/ui components
 

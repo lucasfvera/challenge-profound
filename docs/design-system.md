@@ -311,13 +311,33 @@ without naming it, and last the Prompts with no Answer to read. The order is
 a default, not a setting: there is no sort control, and Prompts the Platform
 ranks equally keep the Snapshot's own order.
 
-Below `sm` the table gives way to a list of cards, the way the responsive
+Below `sm` the table gives way to a list of cards — the Card primitive, one
+per Prompt, at the denser `--card-spacing` — the way the responsive
 conventions say it does: the Prompt's text, its category badge, and the
-Platforms in two columns, each with the same mark. The card marks the scoped
-Platform in its label — the foreground colour instead of the muted one, and
-the label a screen reader reads — rather than with the column's fill. The
-rows are not links yet — navigation into the prompt detail route lands with a
-later ticket — so a row carries no hover and nothing to click.
+Platforms in two columns, each with the same mark. The card is a panel like
+the one that holds the table: a `--card` surface with the panel's radius,
+and it carries `data-interactive`, so it hovers the way a card does. The
+card marks the scoped Platform in its label — the foreground colour instead
+of the muted one, and the label a screen reader reads — rather than with the
+column's fill.
+
+Every row is a link into the prompt detail route. The link carries the
+Prompt's own text, so the row keeps one tab stop, and it carries a hidden
+" (prompt detail)" after it, so the name a screen reader reads says what
+the row opens. The link is stretched over the row — over the card below
+`sm` — so a click anywhere on the row opens the Prompt's detail. The row
+and the card each carry `data-interactive`, and the primitive they are
+made of draws its own hover: the table primitives for the row, the Card
+primitive for the card. The link underlines on hover the way a link does.
+The link carries the Platform the table is scoped to, so the detail route
+answers with the Platform the reader was looking at.
+
+A row is activated by Enter and by Space, and the app activates it for both:
+the browser's own Enter activation is prevented, so the row is not opened
+twice. A press that repeats is the key held down: the row does not open
+again, and the browser's default is kept off, so a held Space does not
+scroll the page and a held Enter does not fill the history with the same
+URL. A press with a modifier is left to the browser.
 
 ## The prompt detail route's surfaces
 
@@ -326,6 +346,13 @@ outside the overview. It renders on the server from the Snapshot: the Prompt
 comes from the path, the Platform from the `platform` search param, and a Prompt
 the Snapshot does not track — or a Platform with no Answer for it — is a
 404.
+
+**The route's way back.** The route opens with a link back to the overview,
+scoped to the Platform the route is showing, so the reader comes back to the
+scope they drilled down from. It is a link and not a control that announces
+itself as a button — a control that navigates has to say so — and it wears the
+Button's `link` variant with the default size's own padding dropped, so its
+text sits on the page's edge with the rest of the route.
 
 **The answer panel** (`src/components/prompts/answer-panel.tsx`) renders the
 Answer's segments — the Snapshot's own segmentation, so the Mentions on the
