@@ -191,6 +191,9 @@ the rest arrive with their own tickets.
 | `lg` | `≥ 1024px` | full dashboard density |
 
 The whole flow has to work from ~390px to desktop without horizontal overflow.
+The end-to-end smoke suite holds that floor: it opens the overview at 390px
+and asserts that the prompt table is there but hidden, that a row is still
+reachable as a link, and that the page does not scroll sideways.
 
 ## Component inventory
 

@@ -6,7 +6,7 @@ A deterministic, dark-only dashboard for the fictional brand **Northstar**: how 
 
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`) · Recharts 3.
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (Base UI preset, `components.json`) · Recharts 3 · Playwright.
 
 ## Data
 
@@ -61,6 +61,11 @@ components rather than adding to the inventory.
 
 Node.js >= 20.9.
 
+The end-to-end smoke suite needs Chromium, which Playwright installs once per
+machine — `npx playwright install chromium`, or
+`npx playwright install --with-deps chromium` on Linux, where the browser
+also needs the system libraries it links against.
+
 ## Run locally
 
 ```bash
@@ -77,6 +82,7 @@ npm run lint
 npm run typecheck
 npm run test
 npm run build
+npm run test:e2e
 ```
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
@@ -89,6 +95,23 @@ card's delta formatting, the answer panel's Mention highlights, the prompt
 row's activation, the chart's tooltip and legend, and the citations panel's
 links. `npm run build` produces a production bundle; run it with `npm run
 start` to serve that bundle locally.
+
+`npm run test:e2e` runs the Playwright smoke suite against a **production
+build**: the harness runs `next build && next start` on a port of its own and
+the suite talks to that bundle, so a green run is a statement about what
+ships.
+
+The smoke suite is the third seam: six end-to-end tests that prove the demo
+story — the metric cards and the chart render, the platform switch rewrites
+the URL and moves the table's scope, a prompt row opens the detail with the
+highlighted mentions and the citations, an unknown prompt id answers 404, the
+overview holds at 390px, and an unknown platform param falls back to the
+default with the table still rendered. It reads the app the way a reader
+does — by role and accessible name — with two exceptions the surfaces leave
+no other handle for: the metric cards, which the card primitive gives no
+role and no name, so the suite reaches them through the card primitive's
+`data-slot` attribute; and the chart's plot, a drawing with no text, which
+carries a test id of its own.
 
 ## What the app renders today
 

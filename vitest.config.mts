@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
@@ -14,5 +14,9 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     // Wide enough that a spec is collected rather than silently skipped.
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    // The end-to-end suite runs on Playwright, not on Vitest, and it lives
+    // outside `src/`. The exclusion states the other half of that seam, so
+    // widening the include above can never collect a Playwright spec.
+    exclude: [...configDefaults.exclude, "e2e/**"],
   },
 });
