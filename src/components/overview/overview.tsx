@@ -2,6 +2,7 @@
 
 import { KpiCard } from "@/components/overview/kpi-card";
 import { KPIS } from "@/components/overview/kpis";
+import { PlatformStandings } from "@/components/overview/platform-standings";
 import { VisibilityChart } from "@/components/overview/visibility-chart/visibility-chart";
 import { PlatformScope } from "@/components/platform-scope";
 import { PromptTable } from "@/components/prompts/prompt-table";
@@ -17,6 +18,10 @@ import { usePlatformScope } from "@/lib/use-platform-scope";
  * whoever the view is shared with. The chart and the prompt table are scoped
  * by the same selection, so the metrics above them and the surfaces below
  * always read the same Platform.
+ *
+ * The podium of Platforms picks that same selection, so a reader who sees
+ * the brand doing badly on one of them can go straight to the prompts behind
+ * it.
  */
 export function Overview({ platform }: { platform: Platform }) {
   const { selected, select } = usePlatformScope(platform);
@@ -50,6 +55,12 @@ export function Overview({ platform }: { platform: Platform }) {
         <div className="mt-6">
           <VisibilityChart platformId={selected.id} />
         </div>
+      </section>
+      <section className="mt-6">
+        <PlatformStandings
+          platformId={selected.id}
+          onPlatformChange={select}
+        />
       </section>
       <section className="mt-6">
         <PromptTable platformId={selected.id} />

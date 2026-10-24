@@ -20,6 +20,7 @@ export type {
   ChartRow,
   PlatformMetrics,
   SubjectMetrics,
+  SubjectPlatformMetrics,
 } from "./derive";
 export {
   averagePosition,
@@ -33,6 +34,7 @@ export {
   shareOfVoiceTrend,
   subjectBrand,
   subjectMetrics,
+  subjectPlatformMetrics,
   visibilityScore,
   visibilityTrend,
 } from "./derive";

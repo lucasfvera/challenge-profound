@@ -6,17 +6,20 @@ import type { Locator, Page } from "@playwright/test";
  *
  * The suite is a smoke suite, not a second component suite. It proves that
  * the built app still tells the story: the metrics and the chart render,
- * the scope moves the view and rewrites the URL, a row opens the evidence
- * behind it, the clickable filters say they are clickable, the movements
- * say which way they went, and the edges the app promises to hold still
- * hold.
+ * the scope moves the view and rewrites the URL, the podium picks the same
+ * scope, a row opens the evidence behind it, the clickable filters say they
+ * are clickable, the movements say which way they went, and the edges the app
+ * promises to hold still hold.
  *
  * The suite reads what a reader can reach: a role and an accessible name
  * wherever the surface carries one — the scope control is a group named
- * "Platform", the chart's legend is a group named "Series", the chart's plot
- * is an image named after the metric it draws, the prompt table is a table
- * with a caption, and a row's link is named after the Prompt it opens. A
- * surface that carries no name is read through the text a reader sees.
+ * "Platform", the chart's legend is a group named "Series", the podium is a
+ * list named "Brand standings" whose rows are buttons named after the
+ * Platform they stand for, the place it holds and the score it reaches, the
+ * chart's plot is an image named after the metric it draws, the prompt table
+ * is a table with a caption, and a row's link is named after the Prompt it
+ * opens. A surface that carries no name is read through the text a reader
+ * sees.
  *
  * The cursor, the movement's colour, the series' colours and the table's
  * Mention marks are read here and
@@ -62,11 +65,17 @@ const PLATFORM_GROUP = "Platform";
 /** The chart's legend, as the app names its group. */
 const SERIES_GROUP = "Series";
 
+/** The podium, as the app names its list. */
+const STANDINGS_LIST = "Brand standings";
+
 /** The toggle that takes the hue off the competitors, as it names itself. */
 const GREYSCALE_MODE = "Greyscale";
 
 /** The Claude platform, as the scope control names it. */
 const CLAUDE = "Claude";
+
+/** The Gemini platform, as the podium and the scope control name it. */
+const GEMINI = "Gemini";
 
 /** The badge the header carries, as the app labels it. */
 const SIMULATED_DATA = "Simulated data";
@@ -110,6 +119,30 @@ function platformSegment(page: Page, platform: string) {
   return page
     .getByRole("group", { name: PLATFORM_GROUP })
     .getByRole("button", { name: platform });
+}
+
+/**
+ * The row of the podium that stands for one Platform.
+ *
+ * The podium is a list of rows, and each row is a button named after the
+ * Platform, the place it holds and the score it reaches, so the suite
+ * reaches a row the way a reader does: by the name it carries. The name
+ * starts with the Platform's name, so the scope control's segment of the
+ * same name — which sits outside the list — is never in reach.
+ */
+function podiumRow(podium: Locator, platform: string) {
+  return podium.getByRole("button", { name: platform });
+}
+
+/**
+ * The bars of the podium: the tracks the scores are drawn on.
+ *
+ * A bar is a drawing with no name of its own, so the suite takes it through
+ * the app's own hook for the element that draws it, the way it takes the
+ * table's Mention marks through theirs.
+ */
+function standingBars(scope: Page | Locator) {
+  return scope.locator("[data-standing-bar]");
 }
 
 /**
@@ -394,6 +427,34 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
   ).toHaveAttribute("href", "/prompts/p-01?platform=claude");
 });
 
+test("The podium scopes the view to the platform it picks", async ({
+  page,
+}) => {
+  await page.goto("/");
+
+  const podium = page.getByRole("list", { name: STANDINGS_LIST });
+
+  // Picking a Platform on the podium scopes the view the way the scope
+  // control does: the URL carries the pick...
+  await podiumRow(podium, GEMINI).click();
+
+  await expect(page).toHaveURL("/?platform=gemini");
+
+  // ... the scope control agrees...
+  await expect(platformSegment(page, GEMINI)).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  // ... and the prompt table reads the same scope, so a reader who sees the
+  // brand doing badly on a Platform lands on the prompts behind it.
+  await expect(
+    page
+      .getByRole("table")
+      .getByRole("columnheader", { name: selectedPlatform(GEMINI) }),
+  ).toBeVisible();
+});
+
 test("The table tells the platform that named the brand first from the ones that did not", async ({
   page,
 }) => {
@@ -578,4 +639,17 @@ test("The overview holds at a phone viewport", async ({ page }) => {
   );
 
   expect(overflow).toBeLessThanOrEqual(0);
+
+  // The podium compares only if its bars are the same width, so the scores
+  // they draw can be read against each other. The widths are a layout, so
+  // the bundle is the only place they can be read.
+  const bars = standingBars(page);
+  await expect(bars).toHaveCount(4);
+
+  const widths = await bars.evaluateAll((tracks) =>
+    tracks.map((track) => track.getBoundingClientRect().width),
+  );
+
+  expect(widths[0]).toBeGreaterThan(0);
+  expect(new Set(widths).size).toBe(1);
 });

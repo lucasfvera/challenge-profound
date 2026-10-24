@@ -19,8 +19,7 @@ daily visibility points per brand and Platform — plus the pure derivations on
 top of it: Visibility Score, Share of Voice, Average Position, per-platform
 aggregation, answer segmentation, the window-level average and trend, the
 first-mention position, the chart's series and tracked-day rows, and the
-prompt table's rows — every tracked Prompt with the brand's Mention state on
-each Platform, ordered by the Platform the view is scoped to. The chart reads
+subject's metrics on every Platform. The chart reads
 the tracked window through the same layer, and the last tracked day of a
 series is the score its Answers produce, so the chart's history ends where
 the cards' number begins.
@@ -47,6 +46,13 @@ the rows by the Platform the view is scoped to. The rows' own rules live
 beside it in `src/lib/prompt-row.ts`: the URL a row opens, and the keys that
 activate it.
 
+The podium reads the Snapshot through a contract of its own
+(`src/lib/platform-standings.ts`): one standing per tracked Platform,
+carrying the Visibility Score the KPI cards count and the place that score
+holds. The standings are a reading, not a second measurement — the subject's
+metrics on every Platform are read once, in the derivation layer — so the
+podium and the cards cannot disagree about a Platform.
+
 ## Design system
 
 The visual language lives in the semantic tokens of `src/app/globals.css` and is
@@ -59,7 +65,8 @@ colors.
 The base components live in `src/components/ui/`: card, badge, button, table
 primitives, skeleton, the segmented control, the popover, and the switch. The
 platform scope control lives in `src/components/`, because the overview and
-the prompt detail route share it; the KPI cards and the visibility chart live
+the prompt detail route share it; the KPI cards, the visibility chart and the
+podium live
 in `src/components/overview/`, and the overview's prompt table and the prompt
 detail route's panels in `src/components/prompts/`. They compose the base
 components rather than adding to the inventory.
@@ -149,31 +156,33 @@ on <http://127.0.0.1:3000>. See [Run in a container](#run-in-a-container).
 
 `npm run test` runs the Vitest suite over the derivation layer, the fixture,
 the platform scope contract, the prompt detail contract, the prompt table
-contract, the prompt row contract, the component tests, and the app's date
-formatting. The component tests are the second seam, next to the pure one:
-they render the surfaces in a DOM and assert the interaction and
-accessibility contracts — the segmented control's keyboard and ARIA, the KPI
-card's delta formatting and its metric explanation, the answer panel's Mention
-highlights, the prompt row's activation, the chart's tooltip and legend and
-the reference each series wears, and the citations panel's links. `npm run
-build` produces a production bundle; run it with `npm run start` to serve
-that bundle locally.
+contract, the prompt row contract, the platform standings contract, the
+component tests, and the app's date formatting. The component tests are the
+second seam, next to the pure one: they render the surfaces in a DOM and
+assert the interaction and accessibility contracts — the segmented control's
+keyboard and ARIA, the KPI card's delta formatting and its metric
+explanation, the answer panel's Mention highlights, the prompt row's
+activation, the chart's tooltip and legend and the reference each series
+wears, the podium's order and the pick it reports, and the citations
+panel's links. `npm run build` produces a production bundle; run it with
+`npm run start` to serve that bundle locally.
 
 `npm run test:e2e` runs the Playwright smoke suite against a **production
 build**: the harness runs `next build && next start` on a port of its own and
 the suite talks to that bundle, so a green run is a statement about what
 ships.
 
-The smoke suite is the third seam: twelve end-to-end tests that prove the demo
-story — the metric cards and the chart render, the chart tells its series
+The smoke suite is the third seam: thirteen end-to-end tests that prove the
+demo story — the metric cards and the chart render, the chart tells its series
 apart by colour, the chart draws each series' reference at the scale of the
 line it names, the chart can take the hue off the competitors, the platform
-switch rewrites the URL and moves the table's scope, the table tells the
-platform that named the brand first from the ones that did not, the clickable
-filters say they are clickable, the movements say which way they went, a
-prompt row opens the detail with the highlighted mentions and the citations,
-an unknown prompt id answers 404, the overview holds at 390px, and an unknown
-platform param falls back to the default with the table still rendered. It
+switch rewrites the URL and moves the table's scope, the podium scopes the
+view to the platform it picks, the table tells the platform that named the
+brand first from the ones that did not, the clickable filters say they are
+clickable, the movements say which way they went, a prompt row opens the
+detail with the highlighted mentions and the citations, an unknown prompt id
+answers 404, the overview holds at 390px, and an unknown platform param falls
+back to the default with the table still rendered. It
 reads the app the way a reader does — by role and accessible name, and by the
 text a reader sees where the surface carries no name — with five kinds of
 surface reached another way: the cards, which the card primitive gives no
@@ -189,8 +198,8 @@ app's own hook for the element that renders a position.
 
 The dark app shell — a header with the product name and a "Simulated data"
 badge — and, on the home route, the overview: the platform scope control, the
-three KPI cards, the visibility chart, and the prompt table. The scope
-control filters the overview by Platform and writes the choice to the
+three KPI cards, the visibility chart, the podium, and the prompt table. The
+scope control filters the overview by Platform and writes the choice to the
 `platform` search param, so a view of the dashboard is shareable; a value the
 Snapshot does not track falls back to ChatGPT. The KPI cards report
 Northstar's Visibility Score, Share of Voice, and Average Position for the
@@ -219,6 +228,15 @@ the chart's title takes the hue off the competitors, so the brand's line is
 the one hue left on the plot. The tooltip names the tracked day and the exact
 score of every visible series on it. A Platform with no tracked window draws
 the em dash instead of an empty plot.
+
+The podium is the answer to "where does my brand already show up well?": the
+Platforms ordered by Northstar's Visibility Score on each, best first, with
+the place it holds, the score, and a bar in the brand accent. Claude leads it
+at 73.3% and Perplexity comes last at 26.7% — the same bad case the movements
+report. Every row is a control: picking one selects that Platform, the same
+selection the scope control holds, so the URL carries it and the prompt table
+below reads it. A reader who sees the brand doing badly on one of them can go
+straight to the prompts behind it.
 
 The prompt table is the read-only exploration view under the metrics: every
 tracked Prompt with its category and a Mention indicator per Platform, the

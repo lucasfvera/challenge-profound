@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import type { Kpi } from "@/components/overview/kpis";
-import { formatMetric } from "@/lib/format";
+import { formatMetricValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** The direction a metric moved in. */
@@ -78,7 +78,7 @@ export function KpiCard({
       </CardHeader>
       <CardContent>
         <p className="text-3xl font-semibold tracking-tight tabular-nums">
-          {formatValue(value, kpi.unit)}
+          {formatMetricValue(value, kpi.unit)}
         </p>
         <Trend delta={delta} unit={kpi.unit} />
       </CardContent>
@@ -120,13 +120,6 @@ function Trend({
       <span className="sr-only">{trendText(direction, amount, unit)}</span>
     </p>
   );
-}
-
-/** The metric's value, in the unit it is reported in. */
-function formatValue(value: number | null, unit: Kpi["unit"]): string {
-  if (value === null) return "—";
-
-  return formatMetric(value, unit);
 }
 
 /** The movement, in the metric's own unit. */

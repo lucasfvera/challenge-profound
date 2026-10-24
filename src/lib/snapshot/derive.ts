@@ -335,9 +335,9 @@ export function subjectMetrics(
     };
   }
 
-  const metrics = platformMetrics(snapshot)
-    .find((entry) => entry.platformId === platformId)
-    ?.brands.find((entry) => entry.brandId === brand.id);
+  const metrics = subjectPlatformMetrics(snapshot).find(
+    (entry) => entry.platformId === platformId,
+  );
 
   return {
     visibilityScore: metrics?.visibilityScore ?? null,
@@ -347,6 +347,48 @@ export function subjectMetrics(
     shareOfVoiceTrend: shareOfVoiceTrend(snapshot, brand.id, platformId),
     averagePositionTrend: null,
   };
+}
+
+/**
+ * The metrics of the brand the Snapshot measures, for every tracked Platform.
+ */
+export interface SubjectPlatformMetrics {
+  /** The Platform the metrics belong to. */
+  platformId: PlatformId;
+  /** Visibility Score: the percentage of tracked Prompts whose Answer names the brand. */
+  visibilityScore: number | null;
+  /** Share of Voice: the brand's Mentions as a percentage of all brand Mentions. */
+  shareOfVoice: number | null;
+  /** Average Position: the mean ordinal position of the brand's first Mention. */
+  averagePosition: number | null;
+}
+
+/**
+ * The metrics of the brand the Snapshot measures, for every tracked Platform.
+ *
+ * The KPI cards report the brand's metrics for the Platform the view is
+ * scoped to, and the podium orders the Platforms by the same numbers, so the
+ * read lives here once: the two cannot disagree about a Platform, because
+ * they read the same measurement.
+ */
+export function subjectPlatformMetrics(
+  snapshot: Snapshot,
+): SubjectPlatformMetrics[] {
+  const brand = subjectBrand(snapshot);
+  const metrics = platformMetrics(snapshot);
+
+  return metrics.map((entry) => {
+    const subject = entry.brands.find(
+      (candidate) => candidate.brandId === brand?.id,
+    );
+
+    return {
+      platformId: entry.platformId,
+      visibilityScore: subject?.visibilityScore ?? null,
+      shareOfVoice: subject?.shareOfVoice ?? null,
+      averagePosition: subject?.averagePosition ?? null,
+    };
+  });
 }
 
 /**
