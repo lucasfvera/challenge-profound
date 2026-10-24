@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 
 /**
  * The smoke suite: the demo story, proven against the production bundle.
@@ -7,19 +7,26 @@ import type { Page } from "@playwright/test";
  * The suite is a smoke suite, not a second component suite. It proves that
  * the built app still tells the story: the metrics and the chart render,
  * the scope moves the view and rewrites the URL, a row opens the evidence
- * behind it, and the edges the app promises to hold still hold.
+ * behind it, the clickable filters say they are clickable, and the edges the
+ * app promises to hold still hold.
  *
  * The suite reads what a reader can reach: a role and an accessible name
  * wherever the surface carries one — the scope control is a group named
- * "Platform", the chart's legend is a group named "Series", the prompt
- * table is a table with a caption, and a row's link is named after the
- * Prompt it opens.
+ * "Platform", the chart's legend is a group named "Series", the chart's plot
+ * is an image named after the metric it draws, the prompt table is a table
+ * with a caption, and a row's link is named after the Prompt it opens. A
+ * surface that carries no name is read through the text a reader sees.
  *
- * Two targets have no such handle, and both are named in the open: a metric
- * card, which the card primitive gives no role and no name, so the suite
- * takes it through the primitive's own `data-slot` hook; and the chart's
- * plot, a drawing with no text, which carries a test id of its own. A CSS
- * class is never asserted.
+ * The cursor is read here and not in the component suite: the bundle carries
+ * the stylesheet that turns the pointer utility into a cursor, and a unit
+ * test would have to assert the class instead of the affordance.
+ *
+ * Two kinds of surface are read another way, and both are named in the open:
+ * the cards — the metric cards and the chart's card — which the card
+ * primitive gives no role and no name, so the suite takes them through the
+ * primitive's own `data-slot` hook; and the badge, which is a span with no
+ * name of its own, so the suite reads the text it shows. A CSS class is
+ * never asserted.
  */
 
 /** The Visibility Score, as the KPI row names its card. */
@@ -30,9 +37,6 @@ const SHARE_OF_VOICE = /^Share of Voice/;
 
 /** The Average Position, as the KPI row names its card. */
 const AVERAGE_POSITION = /^Average Position/;
-
-/** The first tracked day of the Snapshot's window, as the axis labels it. */
-const FIRST_TRACKED_DAY = "Sep 1";
 
 /** The text of the first tracked Prompt, `p-01`. */
 const FIRST_PROMPT_TEXT = "best AI visibility analytics tools";
@@ -49,8 +53,14 @@ const SERIES_GROUP = "Series";
 /** The Claude platform, as the scope control names it. */
 const CLAUDE = "Claude";
 
+/** The badge the header carries, as the app labels it. */
+const SIMULATED_DATA = "Simulated data";
+
 /** The title of the source the answer for the first Prompt cites. */
 const BUYERS_GUIDE = "A Buyer's Guide to AI Visibility Platforms";
+
+/** The hook the card primitive leaves for the suite to take a card by. */
+const CARD_SLOT = "[data-slot='card']";
 
 /**
  * The name of a column header for the platform the table is scoped to.
@@ -63,6 +73,19 @@ function selectedPlatform(platform: string) {
 }
 
 /**
+ * The segment of the platform scope that names one Platform.
+ *
+ * The scope control is a group named `Platform` and a segment is a button
+ * inside it, so the suite reaches a Platform the way a reader does: by the
+ * name the group and the segment carry.
+ */
+function platformSegment(page: Page, platform: string) {
+  return page
+    .getByRole("group", { name: PLATFORM_GROUP })
+    .getByRole("button", { name: platform });
+}
+
+/**
  * The metric card of one KPI.
  *
  * The card is addressed by the name it starts with. The chart card repeats
@@ -72,10 +95,21 @@ function selectedPlatform(platform: string) {
  * legend, which no metric card carries.
  */
 function kpiCard(page: Page, metric: RegExp) {
-  return page.locator("[data-slot='card']").filter({
+  return page.locator(CARD_SLOT).filter({
     hasText: metric,
     hasNot: page.getByRole("group", { name: SERIES_GROUP }),
   });
+}
+
+/**
+ * The chart's card: the card that holds the legend.
+ *
+ * The card primitive gives no role and no name, so the card is taken
+ * through its own `data-slot` hook and told apart by the legend it holds,
+ * which no metric card carries.
+ */
+function chartCard(page: Page, legend: Locator) {
+  return page.locator(CARD_SLOT).filter({ has: legend });
 }
 
 test("The overview renders the metric cards and the chart", async ({
@@ -93,15 +127,25 @@ test("The overview renders the metric cards and the chart", async ({
   await expect(legend).toBeVisible();
   await expect(legend.getByRole("button", { name: NORTHSTAR })).toBeVisible();
   await expect(legend.getByRole("button", { name: "Lumen" })).toBeVisible();
-  await expect(page.getByText("Last 30 days on ChatGPT")).toBeVisible();
 
-  // The plot is a drawing: it has no role and no text, so it is the one
-  // target the suite reads through the test id the chart already carries.
-  // Its axis labels the tracked days, and a label is there only once the
-  // data reached the screen.
-  const plot = page.getByTestId("visibility-chart-plot");
+  // The chart's card names the Platform it is scoped to and the window it
+  // covers, in the description it carries.
+  await expect(
+    chartCard(page, legend).getByText("ChatGPT · Sep 1 – Sep 30, 2026"),
+  ).toBeVisible();
+
+  // The plot is a drawing, and the chart names it: it is an image whose
+  // name says the metric, the brands and the Platform it draws, so a screen
+  // reader does not read the axis ticks as the chart's name.
+  const plot = page.getByRole("img", { name: /Visibility Score of/ });
+
   await expect(plot).toBeVisible();
-  await expect(plot.getByText(FIRST_TRACKED_DAY, { exact: true })).toBeVisible();
+
+  // Its axis labels the tracked days, and a label is there only once the
+  // data reached the screen. The axis thins the labels so they do not
+  // overlap, so the suite reads the labels the axis drew rather than a day
+  // it expects.
+  await expect(plot.getByText(/^Sep \d+$/).first()).toBeVisible();
 });
 
 test("The platform switch rewrites the URL and moves the table's scope", async ({
@@ -114,10 +158,7 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
     table.getByRole("columnheader", { name: selectedPlatform("ChatGPT") }),
   ).toBeVisible();
 
-  await page
-    .getByRole("group", { name: PLATFORM_GROUP })
-    .getByRole("button", { name: CLAUDE })
-    .click();
+  await platformSegment(page, CLAUDE).click();
 
   // The scope lives in the URL, so the view is shareable: the switch has
   // to rewrite it.
@@ -136,6 +177,25 @@ test("The platform switch rewrites the URL and moves the table's scope", async (
   ).toHaveAttribute("href", "/prompts/p-01?platform=claude");
 });
 
+test("The clickable filters say they are clickable", async ({ page }) => {
+  await page.goto("/");
+
+  // The platform scope and the chart's legend are the two filters of the
+  // overview, and both answer a click. The cursor is the affordance that
+  // says so, so the reader is not left to find out by clicking.
+  await expect(platformSegment(page, CLAUDE)).toHaveCSS("cursor", "pointer");
+
+  await expect(
+    page
+      .getByRole("group", { name: SERIES_GROUP })
+      .getByRole("button", { name: NORTHSTAR }),
+  ).toHaveCSS("cursor", "pointer");
+
+  // The badge is not clickable, so it keeps the default cursor: a pointer on
+  // an inert badge would be a lie.
+  await expect(page.getByText(SIMULATED_DATA)).toHaveCSS("cursor", "auto");
+});
+
 test("A prompt row opens the detail with the highlighted mentions and the citations", async ({
   page,
 }) => {
@@ -143,10 +203,7 @@ test("A prompt row opens the detail with the highlighted mentions and the citati
 
   // The scope moves first, so the drill-down carries a platform of its own
   // and not the default the reader never picked.
-  await page
-    .getByRole("group", { name: PLATFORM_GROUP })
-    .getByRole("button", { name: CLAUDE })
-    .click();
+  await platformSegment(page, CLAUDE).click();
   await expect(page).toHaveURL("/?platform=claude");
 
   await page
@@ -216,11 +273,10 @@ test("An unknown platform param falls back to the default platform", async ({
   ).toBeVisible();
 
   // The scope control agrees with the scope the table reads.
-  await expect(
-    page
-      .getByRole("group", { name: PLATFORM_GROUP })
-      .getByRole("button", { name: "ChatGPT" }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await expect(platformSegment(page, "ChatGPT")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
 });
 
 test("The overview holds at a phone viewport", async ({ page }) => {

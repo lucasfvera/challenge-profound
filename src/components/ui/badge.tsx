@@ -9,13 +9,16 @@ import { cn } from "cn"
 //
 // The badge is a `<span>` by default, so it is not interactive and carries no
 // hover. The hover utilities are scoped to the link rendering (`[a]:`), which
-// is the interactive form of a badge.
+// is the interactive form of a badge. The pointer follows the same scoping:
+// the badge answers a click only in that form, and a pointer on an inert
+// badge would be a lie. Stating it here also covers the anchor that is not
+// a hyperlink, which the browser leaves with the default cursor.
 //
 // The secondary variant mixes the fill with 5% of the foreground on hover:
 // no token is lighter than `--secondary`, and dimming the fill (`/80`) reads
 // as a press instead of a hover.
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-colors has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3! [a]:cursor-pointer",
   {
     variants: {
       variant: {

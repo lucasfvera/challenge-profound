@@ -153,6 +153,16 @@ Numbers must align in columns.
   surface: scope the hover to the unselected state
   (`hover:not-aria-pressed:…`) instead of relying on the cascade, where a
   hover selector outranks the selected one.
+- **Pointer** says the element is clickable: a control that answers a click
+  shows the pointer cursor on hover. The browser gives a hyperlink the
+  pointer for free and gives a button nothing, so a button left without this
+  rule reads as text — the chart's legend, whose series toggles wear the
+  quiet variant, is the clearest case. The badge states the pointer itself,
+  and only in the interactive rendering it has, the link rendering — the
+  same form its hover belongs to — so the anchor that is not a hyperlink
+  shows the pointer too. The app renders the badge inert today, and an
+  inert badge never shows one. An element that is not clickable keeps the
+  default cursor.
 - **Disabled** reduces opacity (`opacity-50`) and drops the pointer
   affordance. The label token still has to clear AA before the dimming —
   inactive controls are exempt from the contrast requirement (WCAG 1.4.3).
@@ -202,12 +212,12 @@ preference.
 
 | Component | Path | States |
 |-----------|------|--------|
-| Badge | `src/components/ui/badge.tsx` | default, secondary, outline, ghost, destructive, link; hover (link rendering), invalid, disabled |
-| Button | `src/components/ui/button.tsx` | default, outline, secondary, ghost, destructive, link; hover, focus-visible, disabled, invalid |
+| Badge | `src/components/ui/badge.tsx` | default, secondary, outline, ghost, destructive, link; hover (link rendering), invalid, disabled, pointer (link rendering) |
+| Button | `src/components/ui/button.tsx` | default, outline, secondary, ghost, destructive, link; hover, focus-visible, disabled, invalid, pointer |
 | Card | `src/components/ui/card.tsx` | default; hover when the card sets `data-interactive`; disabled when the card sets `aria-disabled` |
 | Table primitives | `src/components/ui/table.tsx` | default; hover when a row sets `data-interactive`; selected when a row sets `data-state="selected"`; disabled when a row sets `aria-disabled` |
 | Skeleton | `src/components/ui/skeleton.tsx` | default — inert, it has no interactive states |
-| Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled |
+| Segmented control | `src/components/ui/segmented-control.tsx` | default, hover, focus-visible, selected (the segment carries `aria-pressed`), disabled, pointer |
 
 The vocabulary is shared; each component implements the states in its
 inventory row.
@@ -216,6 +226,7 @@ inventory row.
 |-------|---------------------|
 | default | the variant's own surface and text tokens |
 | hover | a quiet surface shift to `--muted` with the foreground text; a filled variant shifts its own fill; a link underlines |
+| pointer | `cursor-pointer` on the control that answers a click — the button, the segmented control's segment, and the badge in its link rendering, where it covers the anchor that is not a hyperlink. An element that is not clickable keeps the default cursor. |
 | focus-visible | the global outline — a component never draws one and never suppresses one |
 | disabled | `opacity-50` plus no pointer affordance: `disabled:` on a native control, `aria-disabled:` on anything else |
 | invalid | a `--destructive` border and a 3px `--destructive` ring at 40% opacity |
@@ -232,15 +243,16 @@ examples never reach the stylesheet.
 The button's variants are `default`, `outline`, `secondary`, `ghost`,
 `destructive` and `link`, on four sizes: `default` (32px), `sm` (28px), `lg`
 (36px) and `icon` (32px square). The badge is a `<span>`, so it is not
-interactive: its hover belongs to the link rendering (`render={<a />}`), and
-it dims through `aria-disabled`. The card is a panel, not a control: it adds
-no focus ring of its own, and its padding rhythm lives in one CSS variable
-(`--card-spacing`) so a denser card is a class, not a variant. The segmented
-control holds no domain state: the group is single-select and takes its
-pressed values as an array through `value`, reporting them through
-`onValueChange` — the way Base UI's toggle group models them — and a segment
-expresses its selection as `aria-pressed`. The Platforms the segments stand
-for are bound to the control by the platform scope control, below.
+interactive: its hover and its pointer belong to the link rendering
+(`render={<a />}`), and it dims through `aria-disabled`. The card is a panel,
+not a control: it adds no focus ring of its own, and its padding rhythm lives
+in one CSS variable (`--card-spacing`) so a denser card is a class, not a
+variant. The segmented control holds no domain state: the group is
+single-select and takes its pressed values as an array through `value`,
+reporting them through `onValueChange` — the way Base UI's toggle group
+models them — and a segment expresses its selection as `aria-pressed`. The
+Platforms the segments stand for are bound to the control by the platform
+scope control, below.
 
 ## The overview's surfaces
 
