@@ -31,6 +31,11 @@ cannot answer is `null` — never `NaN` — and the dashboard renders it as an e
 dash. The last daily point of every series is the score that brand's Answers
 on that Platform produce, so the history and the evidence agree.
 
+The Snapshot holds a bad case for the brand as well as the good ones. The
+brand gains ground on ChatGPT, Claude and Gemini, and loses it on Perplexity:
+Perplexity names it in four of the fifteen Answers it gave, and the movements
+the cards report go down with it.
+
 The tracked Platforms live in their own module
 (`src/lib/snapshot/platforms.ts`) so the prompt detail route's client
 boundary can read them without pulling the whole fixture into the browser.
@@ -184,8 +189,13 @@ it, click it or tap it, and the metric's explanation opens in a popover, so
 a reader who does not know what the metric measures can ask. The Visibility
 Score and the Share of Voice carry the movement of the tracked window, marked
 with an arrow and coloured by the way it went — green for up, red for down —
-so the direction is readable at a glance; the Average Position has none to
-compare, because the Snapshot tracks no daily mention positions.
+so the direction is readable at a glance and colour is never the only signal.
+The movement follows the data of the scope: it reads as an upward one on the
+three Platforms where the brand gains ground, and as a downward one on
+Perplexity, where the brand is slipping. The direction is carried in the words
+as well, and the landing scope is ChatGPT, so the downward movement is one
+scope switch away. The Average Position has none to compare, because the
+Snapshot tracks no daily mention positions.
 
 Below them, the visibility chart draws the Visibility Score of Northstar and
 its three competitors over the tracked 30 days, for the selected Platform.
